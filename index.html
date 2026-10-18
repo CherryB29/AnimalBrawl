@@ -3,87 +3,186 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f2f4f6">
 <title>Animal Brawl</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <style>
-  html, body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; background: #e9ecef; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
-  body { user-select: none; -webkit-user-select: none; }
-  .emoji { font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; }
-  .tier-n { background: linear-gradient(135deg,#e5e7eb,#9ca3af); }
-  .tier-r { background: linear-gradient(135deg,#bfdbfe,#3b82f6); }
-  .tier-e { background: linear-gradient(135deg,#ddd6fe,#8b5cf6); }
-  .tier-m { background: linear-gradient(135deg,#fecdd3,#f43f5e 60%,#fb923c); }
-  .tier-l { background: linear-gradient(135deg,#fef08a,#f59e0b 60%,#ea580c); }
-  .tier-t { background: linear-gradient(120deg,#ff6b6b,#feca57,#48dbfb,#a29bfe,#ff6b6b); background-size: 300% 300%; animation: rainbow 3s linear infinite; }
-  @keyframes rainbow { 0%{background-position:0% 50%} 100%{background-position:300% 50%} }
-  .tier-text-n{color:#6b7280}.tier-text-r{color:#2563eb}.tier-text-e{color:#7c3aed}.tier-text-m{color:#e11d48}.tier-text-l{color:#d97706}.tier-text-t{color:#db2777}
-  @keyframes shake { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-14deg) scale(1.05)} 40%{transform:rotate(14deg) scale(1.1)} 60%{transform:rotate(-10deg) scale(1.1)} 80%{transform:rotate(10deg) scale(1.05)} }
-  @keyframes popIn { 0%{transform:scale(.2) rotate(-12deg);opacity:0} 60%{transform:scale(1.12) rotate(3deg);opacity:1} 100%{transform:scale(1) rotate(0)} }
-  @keyframes bounceY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  @keyframes fadeOut { from{opacity:1} to{opacity:0} }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  @keyframes slideUp { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
-  @keyframes glow { 0%,100%{box-shadow:0 0 18px 2px rgba(255,255,255,.4)} 50%{box-shadow:0 0 44px 10px rgba(255,255,255,.85)} }
-  @keyframes flipIn { 0%{transform:perspective(500px) rotateY(90deg) scale(.7);opacity:0} 100%{transform:none;opacity:1} }
-  @keyframes slotPop { 0%{transform:scale(.8)} 60%{transform:scale(1.08)} 100%{transform:scale(1)} }
-  @keyframes pulseRing { 0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.45)} 50%{box-shadow:0 0 0 7px rgba(59,130,246,0)} }
-  @keyframes boxGlow { 0%,100%{filter:drop-shadow(0 0 8px var(--gc))} 50%{filter:drop-shadow(0 0 28px var(--gc))} }
-  @keyframes letterIn { 0%{transform:translateY(24px) scale(.6);opacity:0} 60%{transform:translateY(-6px) scale(1.08);opacity:1} 100%{transform:none;opacity:1} }
-  @keyframes floaty { 0%,100%{transform:translateY(0) rotate(-4deg)} 50%{transform:translateY(-12px) rotate(4deg)} }
-  .anim-shake { animation: shake .7s ease-in-out; }
-  .anim-pop { animation: popIn .6s cubic-bezier(.2,1.3,.4,1) both; }
-  .anim-bounce { animation: bounceY 1.4s ease-in-out infinite; }
-  .anim-fade { animation: fadeIn .25s ease both; }
-  .anim-fadeout { animation: fadeOut .45s ease both; }
-  .anim-slide { animation: slideUp .35s cubic-bezier(.2,.8,.2,1) both; }
-  .anim-glow { animation: glow 1.6s ease-in-out infinite; }
-  .reveal { animation: flipIn .5s cubic-bezier(.2,1.2,.4,1) both; }
-  .slot-pop { animation: slotPop .38s cubic-bezier(.2,1.4,.4,1); }
-  .sel-pulse { animation: pulseRing 1.6s ease-in-out infinite; }
-  .box-glow { animation: boxGlow 1.1s ease-in-out infinite; }
-  .rays { position:absolute; inset:-40%; background: repeating-conic-gradient(rgba(255,255,255,.35) 0 8deg, transparent 8deg 24deg); animation: spin 8s linear infinite; border-radius:50%; }
-  .press { transition: transform .12s ease, filter .12s ease; }
-  .press:active { transform: scale(.96); filter: brightness(.96); }
-  .card-shadow { box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 6px 20px rgba(15,23,42,.05); }
-  #toast { transition: opacity .2s ease, transform .2s ease; }
-  .no-scrollbar::-webkit-scrollbar { display:none; }
+  :root {
+    --bg:#f2f4f6; --card:#fff; --ink:#191f28; --ink2:#4e5968; --ink3:#8b95a1; --ink4:#b0b8c1; --line:#e8ebee;
+    --blue:#3182f6; --blue-d:#1b64da; --blue-s:#e8f3ff; --red:#f04452; --red-s:#ffeceb; --green:#03b26c; --gold:#f2a50c;
+  }
+  * { box-sizing: border-box; }
+  html, body { font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif; background:#dde1e6; color:var(--ink); -webkit-tap-highlight-color:transparent; overscroll-behavior:none; letter-spacing:-0.012em; }
+  body { user-select:none; -webkit-user-select:none; font-feature-settings:'tnum' 1; }
+  button { font-family:inherit; letter-spacing:inherit; }
+  .emoji { font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif; letter-spacing:0; }
+  #app { background:var(--bg); }
+
+  /* ───────── 등급 팔레트 ───────── */
+  .t-n { --t:#7b8794; --ts:#eef1f4; --tm:#d5dae0; --tg:rgba(123,135,148,.25); }
+  .t-r { --t:#2f7cf0; --ts:#e6f1ff; --tm:#a9cbfa; --tg:rgba(47,124,240,.28); }
+  .t-e { --t:#7a4de0; --ts:#f0eaff; --tm:#c8b5f5; --tg:rgba(122,77,224,.30); }
+  .t-m { --t:#e5424e; --ts:#ffebed; --tm:#f5adb2; --tg:rgba(229,66,78,.32); }
+  .t-l { --t:#e98a00; --ts:#fff2d6; --tm:#f4cc80; --tg:rgba(233,138,0,.36); }
+  .t-t { --t:#c93fb0; --ts:#fdeaf8; --tm:#eba5dc; --tg:rgba(201,63,176,.40); }
+  .tc { color:var(--t); }
+  .chip { display:inline-flex; align-items:center; gap:4px; height:22px; padding:0 9px; border-radius:99px; font-size:11px; font-weight:700; background:var(--ts); color:var(--t); }
+  .chip.neutral { background:#f2f4f6; color:var(--ink2); }
+  .chip.dark { background:rgba(255,255,255,.14); color:#fff; }
+
+  /* 메달(캐릭터 받침) */
+  .medal { display:flex; align-items:center; justify-content:center; border-radius:50%; position:relative;
+    background:radial-gradient(circle at 50% 30%, #fff 0, var(--ts) 55%, var(--tm) 130%); box-shadow:inset 0 0 0 1.5px var(--tm), 0 6px 14px -6px var(--tg); }
+  .medal > span { filter:drop-shadow(0 3px 3px rgba(25,31,40,.22)); line-height:1; }
+
+  /* 타일 */
+  .tile { position:relative; border-radius:18px; background:linear-gradient(180deg,var(--ts) 0,#fff 78%); box-shadow:inset 0 0 0 1.5px var(--tm); transition:transform .14s ease, box-shadow .14s ease; }
+  .tile.eq { box-shadow:inset 0 0 0 2px var(--ink); }
+  .tile.sel { box-shadow:inset 0 0 0 2.5px var(--blue), 0 0 0 4px rgba(49,130,246,.18); }
+  .tile.locked { background:#f2f4f6; box-shadow:inset 0 0 0 1.5px #e5e8eb; }
+  .tile.hi-m, .tile.hi-l { box-shadow:inset 0 0 0 1.5px var(--tm), 0 8px 18px -10px var(--t); }
+  .holo { position:relative; }
+  .holo::before { content:''; position:absolute; inset:0; border-radius:inherit; padding:2px; pointer-events:none;
+    background:conic-gradient(#ff7eb3,#ffd86b,#6bf0c4,#6bb7ff,#c58bff,#ff7eb3);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; animation:hue 5s linear infinite; }
+  @keyframes hue { to { filter:hue-rotate(360deg); } }
+
+  /* 카드/버튼 */
+  .card { background:var(--card); border-radius:24px; padding:20px; }
+  .soft { box-shadow:0 1px 0 rgba(25,31,40,.03), 0 10px 28px -16px rgba(25,31,40,.18); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:48px; padding:0 18px; border-radius:16px; font-weight:700; font-size:15px; border:0; cursor:pointer; transition:transform .12s ease, background .15s ease, opacity .15s; }
+  .btn:active { transform:scale(.97); }
+  .btn.primary { background:var(--blue); color:#fff; }
+  .btn.primary:active { background:var(--blue-d); }
+  .btn.ghost { background:#f2f4f6; color:var(--ink2); }
+  .btn.danger { background:var(--red-s); color:var(--red); }
+  .btn.sm { height:36px; padding:0 14px; font-size:13px; border-radius:12px; }
+  .btn:disabled { opacity:.4; }
+  .press { transition:transform .12s ease; }
+  .press:active { transform:scale(.96); }
+  .bar { height:6px; border-radius:99px; background:#eceff2; overflow:hidden; }
+  .bar > i { display:block; height:100%; border-radius:99px; background:var(--blue); transition:width .4s cubic-bezier(.2,.8,.2,1); }
+  .coin { width:1.05em; height:1.05em; flex:none; vertical-align:-0.16em; }
+  .seg { display:flex; padding:4px; border-radius:16px; background:#eceff2; }
+  .seg button { flex:1; height:38px; border-radius:12px; font-weight:700; font-size:14px; color:var(--ink3); border:0; background:transparent; transition:all .18s; }
+  .seg button.on { background:#fff; color:var(--ink); box-shadow:0 1px 3px rgba(25,31,40,.12); }
+  .sect { font-size:13px; font-weight:700; color:var(--ink3); margin-bottom:10px; letter-spacing:0; }
+
+  /* 네비게이션 */
+  .navbtn { position:relative; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 0 8px; color:var(--ink4); font-size:11px; font-weight:700; border:0; background:none; transition:color .18s; }
+  .navbtn.on { color:var(--ink); }
+  .navbtn.on::before { content:''; position:absolute; top:0; left:50%; width:22px; height:3px; margin-left:-11px; border-radius:0 0 4px 4px; background:var(--blue); }
+  .navbtn.on i, .navbtn.on svg { color:var(--blue); }
+
+  /* 애니메이션 */
+  @keyframes popIn { 0% { transform:scale(.55) translateY(14px); opacity:0; } 60% { transform:scale(1.04); opacity:1; } 100% { transform:none; } }
+  @keyframes slideUp { from { transform:translateY(14px); opacity:0; } to { transform:none; opacity:1; } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+  @keyframes flipIn { 0% { transform:perspective(500px) rotateY(80deg) scale(.7); opacity:0; } 100% { transform:none; opacity:1; } }
+  @keyframes shakeOrb { 0%,100% { transform:rotate(0); } 15% { transform:rotate(-12deg) translateY(-4px); } 30% { transform:rotate(11deg); } 45% { transform:rotate(-9deg) translateY(-3px); } 60% { transform:rotate(8deg); } 75% { transform:rotate(-5deg); } }
+  @keyframes burst { 0% { transform:scale(.2); opacity:.95; } 100% { transform:scale(3.2); opacity:0; } }
+  @keyframes rise { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(49,130,246,.35); } 50% { box-shadow:0 0 0 7px rgba(49,130,246,0); } }
+  @keyframes spinSlow { to { transform:rotate(360deg); } }
+  @keyframes loadBar { from { width:0%; } to { width:100%; } }
+  @keyframes letterIn { 0% { transform:translateY(18px); opacity:0; } 100% { transform:none; opacity:1; } }
+  @keyframes lvUp { 0% { transform:scale(.6); opacity:0; } 60% { transform:scale(1.12); opacity:1; } 100% { transform:scale(1); } }
+  .a-pop { animation:popIn .55s cubic-bezier(.2,1.2,.4,1) both; }
+  .a-slide { animation:slideUp .38s cubic-bezier(.2,.8,.2,1) backwards; }
+  .a-fade { animation:fadeIn .25s ease backwards; }
+  .a-out { animation:fadeOut .45s ease both; }
+  .a-flip { animation:flipIn .5s cubic-bezier(.2,1.2,.4,1) both; }
+  .a-pulse { animation:pulse 1.7s ease-in-out infinite; }
+  .a-lvup { animation:lvUp .5s cubic-bezier(.2,1.4,.4,1) both; }
+  .a-float { animation:rise 2.6s ease-in-out infinite; }
+
+  /* 가챠 오브 */
+  .orb { width:132px; height:132px; border-radius:50%; position:relative; background:radial-gradient(circle at 34% 28%, #fff 0, #e3e8ee 32%, #9ba7b5 100%); box-shadow:0 26px 40px -14px rgba(0,0,0,.65), inset -10px -12px 22px rgba(0,0,0,.18); animation:shakeOrb .85s ease-in-out; }
+  .orb::before { content:''; position:absolute; left:2px; right:2px; top:50%; height:5px; margin-top:-2px; background:rgba(25,31,40,.22); }
+  .orb::after { content:''; position:absolute; left:50%; top:50%; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%; background:#fff; box-shadow:0 0 0 5px rgba(25,31,40,.2), 0 0 20px 4px var(--og,rgba(255,255,255,.7)); }
+  .burst { position:absolute; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle, #fff 0, var(--og,#fff) 38%, transparent 70%); animation:burst .7s ease-out both; }
+  .rays { position:absolute; inset:-60%; background:repeating-conic-gradient(var(--tg) 0 7deg, transparent 7deg 22deg); animation:spinSlow 14s linear infinite; border-radius:50%; mask-image:radial-gradient(circle, #000 25%, transparent 68%); -webkit-mask-image:radial-gradient(circle, #000 25%, transparent 68%); }
+
+  /* 아레나 */
+  .arena { position:relative; width:100%; border-radius:24px; overflow:hidden; background:#0e1512; box-shadow:0 14px 30px -18px rgba(14,21,18,.7); }
+  .arena-box { position:relative; width:100%; aspect-ratio:720/500; container-type:inline-size; margin:0 auto; }
+  .arena.fs, .arena:fullscreen { position:fixed; inset:0; z-index:90; width:100vw; height:100dvh; border-radius:0; display:flex; align-items:center; justify-content:center; background:#000; box-shadow:none; }
+  .arena.fs .arena-box, .arena:fullscreen .arena-box { width:min(100vw, calc(100dvh * 1.44)); }
+  @media (orientation:portrait) {
+    .arena.fs .arena-box, .arena:fullscreen .arena-box { width:min(100dvh, calc(100vw * 1.44)); transform:rotate(90deg); flex:none; }
+  }
+  .hud { position:absolute; inset:0; pointer-events:none; padding:2.4cqw 2.6cqw; display:flex; flex-direction:column; justify-content:space-between; font-size:clamp(9px,1.95cqw,16px); }
+  .hud .row { display:flex; align-items:flex-start; gap:1.4em; }
+  .plate { flex:1; min-width:0; display:flex; align-items:center; gap:.7em; }
+  .plate.r { flex-direction:row-reverse; text-align:right; }
+  .avatar { width:3.3em; height:3.3em; flex:none; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(9,14,12,.7); box-shadow:0 0 0 .2em var(--team), 0 4px 10px rgba(0,0,0,.4); }
+  .avatar span { font-size:1.75em; line-height:1; }
+  .pinfo { flex:1; min-width:0; }
+  .pname { display:flex; align-items:baseline; gap:.5em; color:#fff; font-weight:800; font-size:1.08em; text-shadow:0 1px 3px rgba(0,0,0,.7); white-space:nowrap; }
+  .plate.r .pname { flex-direction:row-reverse; }
+  .pname small { font-size:.78em; font-weight:700; color:rgba(255,255,255,.66); overflow:hidden; text-overflow:ellipsis; }
+  .hpbar { position:relative; height:.95em; margin-top:.3em; border-radius:99px; background:rgba(0,0,0,.55); overflow:hidden; box-shadow:inset 0 0 0 1px rgba(255,255,255,.12); }
+  .hpbar i { position:absolute; top:0; bottom:0; }
+  .plate .hpnum { color:rgba(255,255,255,.78); font-size:.8em; font-weight:600; margin-top:.2em; }
+  .pill { background:rgba(9,14,12,.66); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border-radius:99px; padding:.4em 1.1em; color:#fff; text-align:center; line-height:1.2; flex:none; box-shadow:inset 0 0 0 1px rgba(255,255,255,.1); }
+  .pill b { display:block; font-size:1.25em; font-weight:800; }
+  .pill small { font-size:.8em; font-weight:600; color:rgba(255,255,255,.65); }
+  .sks { position:relative; width:3.4em; height:3.4em; border-radius:.9em; background:rgba(9,14,12,.7); display:flex; align-items:center; justify-content:center; overflow:hidden; box-shadow:0 0 0 1px rgba(255,255,255,.18); }
+  .sks span.e { font-size:1.65em; line-height:1; }
+  .sks .cd { position:absolute; inset:0; }
+  .sks .n { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:1.1em; text-shadow:0 1px 3px #000; }
+  .hbtn { pointer-events:auto; width:2.9em; height:2.9em; border-radius:50%; border:0; display:flex; align-items:center; justify-content:center; background:rgba(9,14,12,.66); color:#fff; font-weight:800; font-size:.95em; box-shadow:inset 0 0 0 1px rgba(255,255,255,.16); cursor:pointer; }
+  .hbtn:active { transform:scale(.92); }
+  .hbtn svg { width:1.35em; height:1.35em; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .overlay { position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; padding:4cqw; background:rgba(9,14,12,.74); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+  .overlay.on { display:flex; }
+  .rcard { font-size:clamp(11px,2.2cqw,17px); width:min(25em,90%); background:#fff; color:var(--ink); border-radius:1.6em; padding:1.3em 1.4em 1.2em; box-shadow:0 20px 40px -12px rgba(0,0,0,.55); text-align:left; }
+  .rbtn { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; gap:.4em; height:3.1em; border-radius:1em; border:0; font-weight:800; font-size:1em; cursor:pointer; }
+  .rbtn.p { background:var(--blue); color:#fff; }
+  .rbtn.g { background:#eef1f4; color:var(--ink2); }
+  .rbtn .fill { position:absolute; inset:0 auto 0 0; background:rgba(255,255,255,.28); width:0; }
+  #toast { transition:opacity .2s ease, transform .2s ease; }
 </style>
 </head>
-<body class="text-slate-800">
+<body>
 
-<!-- 로딩 화면 -->
-<div id="splash" style="position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#4f46e5,#2563eb 55%,#0ea5e9);">
-  <div class="emoji" style="font-size:72px;animation:floaty 1.8s ease-in-out infinite;">🐾</div>
-  <h1 id="splashTitle" style="margin-top:18px;font-size:38px;font-weight:800;color:#fff;letter-spacing:-0.02em;display:flex;gap:2px;"></h1>
-  <div style="margin-top:34px;width:190px;height:6px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;">
-    <div id="splashBar" style="height:100%;width:0;background:#fff;border-radius:99px;transition:width 1.5s cubic-bezier(.3,.7,.2,1);"></div>
+<!-- 로딩 -->
+<div id="splash" style="position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#3182f6;">
+  <div style="width:84px;height:84px;border-radius:26px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 34px -12px rgba(10,40,110,.55);animation:popIn .7s cubic-bezier(.2,1.2,.4,1) both;">
+    <svg viewBox="0 0 48 48" width="52" height="52" fill="#3182f6"><ellipse cx="24" cy="31" rx="10.5" ry="8.6"/><ellipse cx="11.5" cy="22" rx="4.4" ry="5.6" transform="rotate(-16 11.5 22)"/><ellipse cx="19.2" cy="13.5" rx="4.4" ry="5.8" transform="rotate(-6 19.2 13.5)"/><ellipse cx="28.8" cy="13.5" rx="4.4" ry="5.8" transform="rotate(6 28.8 13.5)"/><ellipse cx="36.5" cy="22" rx="4.4" ry="5.6" transform="rotate(16 36.5 22)"/></svg>
   </div>
-  <div style="margin-top:12px;color:rgba(255,255,255,.75);font-size:12px;font-weight:600;">불러오는 중...</div>
+  <h1 id="splashTitle" style="margin:26px 0 0;font-size:36px;font-weight:800;color:#fff;letter-spacing:-0.03em;display:flex;"></h1>
+  <div style="margin-top:6px;font-size:13px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:0;">방치형 자동 전투</div>
+  <div style="margin-top:44px;width:176px;height:5px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden;">
+    <div style="height:100%;width:0;background:#fff;border-radius:99px;animation:loadBar 1.9s cubic-bezier(.45,.05,.25,1) .1s forwards;"></div>
+  </div>
 </div>
 
-<div id="app" class="relative mx-auto w-full max-w-[480px] min-h-screen bg-[#f2f4f6] shadow-xl">
-  <header class="sticky top-0 z-20 bg-[#f2f4f6]/90 backdrop-blur px-5 pt-4 pb-3 flex items-center justify-between">
-    <div class="flex items-center gap-2">
-      <span class="emoji text-2xl">🐾</span>
-      <h1 class="text-xl font-extrabold tracking-tight">Animal Brawl</h1>
+<div id="app" class="relative mx-auto w-full max-w-[480px] min-h-screen shadow-xl">
+  <header class="sticky top-0 z-20 px-5 pt-4 pb-3 flex items-center justify-between" style="background:rgba(242,244,246,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+    <div class="flex items-center gap-2.5">
+      <div style="width:30px;height:30px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 48 48" width="19" height="19" fill="#fff"><ellipse cx="24" cy="31" rx="10.5" ry="8.6"/><ellipse cx="11.5" cy="22" rx="4.4" ry="5.6" transform="rotate(-16 11.5 22)"/><ellipse cx="19.2" cy="13.5" rx="4.4" ry="5.8" transform="rotate(-6 19.2 13.5)"/><ellipse cx="28.8" cy="13.5" rx="4.4" ry="5.8" transform="rotate(6 28.8 13.5)"/><ellipse cx="36.5" cy="22" rx="4.4" ry="5.6" transform="rotate(16 36.5 22)"/></svg>
+      </div>
+      <h1 style="font-size:19px;font-weight:800;letter-spacing:-0.03em;">Animal Brawl</h1>
     </div>
-    <div class="flex items-center gap-1.5 bg-white rounded-full pl-3 pr-4 py-2 card-shadow">
-      <span class="emoji text-sm">🪙</span>
-      <span id="goldText" class="font-extrabold tabular-nums text-[15px]">0</span>
+    <div class="flex items-center gap-1.5" style="background:#fff;border-radius:99px;padding:7px 14px 7px 10px;box-shadow:0 1px 0 rgba(25,31,40,.03),0 6px 16px -10px rgba(25,31,40,.2);">
+      <span id="coinIcon"></span>
+      <span id="goldText" style="font-weight:800;font-size:15px;" class="tabular-nums">0</span>
     </div>
   </header>
   <main id="view" class="px-4 pb-28"></main>
-  <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30 bg-white/95 backdrop-blur border-t border-slate-100 rounded-t-3xl shadow-[0_-4px_24px_rgba(0,0,0,.06)] px-3 pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
-    <div class="grid grid-cols-4 gap-1" id="navBar"></div>
+  <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30" style="background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:0 8px max(6px,env(safe-area-inset-bottom));">
+    <div class="grid grid-cols-4" id="navBar"></div>
   </nav>
 </div>
 
-<div id="gachaModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm px-5 overflow-y-auto"></div>
-<div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-6"></div>
-<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-28 z-[70] opacity-0 pointer-events-none bg-slate-900/90 text-white text-sm font-medium rounded-2xl px-5 py-3 max-w-[90%] text-center"></div>
+<div id="gachaModal" class="fixed inset-0 z-[80] hidden items-center justify-center px-5 overflow-y-auto" style="background:rgba(8,12,20,.9);"></div>
+<div id="confirmModal" class="fixed inset-0 z-[85] hidden items-center justify-center px-6" style="background:rgba(8,12,20,.55);"></div>
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 z-[95] opacity-0 pointer-events-none text-center" style="background:rgba(25,31,40,.92);color:#fff;font-size:14px;font-weight:600;border-radius:14px;padding:11px 18px;max-width:90%;"></div>
 
 <script>
 /* ===================== 데이터 ===================== */
@@ -161,16 +260,25 @@ const BOSS_KITS = [
 const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 15000;
 const SAVE_KEY = 'animal-brawl-save-v2';
 
+
 /* ===================== 상태 ===================== */
-function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{}, s:{} }, eq: { f:null, s:[null,null,null] }, set: { lose:'retry' } }; }
+function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{}, s:{} }, eq: { f:null, s:[null,null,null] } }; }
 let state = load();
-let tab = 'fight', invTab = 'f', flashSlot = null, battleSpeed = 1;
-let sel = { type:'skill', idx:0 };
+let tab = 'fight', invTab = 'f', flashSlot = null, battleSpeed = 1, mounted = false;
+let sel = { type:'fighter', idx:0 };
 const battleLog = [];
 function load() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (raw) { const s = JSON.parse(raw), d = freshState(); if (s && s.own && s.eq) return Object.assign(d, s, { set: Object.assign(d.set, s.set||{}) }); }
+    if (raw) {
+      const s = JSON.parse(raw), d = freshState();
+      if (s && s.own && s.eq) {
+        const r = Object.assign(d, s);
+        r.stage = Math.max(1, r.stage|0); r.sel = Math.min(Math.max(1, r.sel|0), r.stage);
+        if (!Array.isArray(r.eq.s)) r.eq.s = [null,null,null];
+        return r;
+      }
+    }
   } catch (e) {}
   return freshState();
 }
@@ -186,20 +294,28 @@ const owned = (kind, id) => state.own[kind][id] || 0;
 const poolOf = kind => kind === 'f' ? FIGHTERS : SKILLS;
 const baseOf = (kind, id) => kind === 'f' ? F(id) : SK(id);
 function rollTier(min) {
-  const list = TIERS.filter((t,i) => i >= (min||0));
-  const total = list.reduce((a,t) => a + t.p, 0);
+  const list = TIERS.filter((t,i) => i >= (min||0)), total = list.reduce((a,t) => a + t.p, 0);
   let r = Math.random()*total, acc = 0;
   for (const t of list) { acc += t.p; if (r < acc) return t.k; }
   return list[0].k;
 }
-function rollItem(kind, min) {
-  const tier = rollTier(min), pool = poolOf(kind).filter(x => x.tier === tier);
-  return pool[Math.floor(Math.random()*pool.length)];
+function rollItem(kind, min) { const tier = rollTier(min), pool = poolOf(kind).filter(x => x.tier === tier); return pool[Math.floor(Math.random()*pool.length)]; }
+
+/* 업그레이드: 같은 아이템을 모을수록 레벨이 오른다 (Lv n 도달에 필요한 누적 보유 수 = 1 + n(n-1)/2) */
+const MAXLV = 10;
+const needTotal = lv => 1 + lv*(lv-1)/2;
+function lvOf(n) { let lv = 0; while (lv < MAXLV && n >= needTotal(lv+1)) lv++; return lv; }
+function lvInfo(n) {
+  const lv = lvOf(n);
+  if (lv >= MAXLV) return { lv, cur:1, need:1, max:true };
+  const base = needTotal(lv);
+  return { lv, cur:n - base, need:needTotal(lv+1) - base, max:false };
 }
-function fighterStats(b) {
-  const m = tierOf(b.tier).m;
-  return { hp: Math.round(b.hp*m), atk: Math.round(b.atk*m), def: Math.round(b.def*m), spd: Math.round(b.spd*m) };
-}
+const lvMul = lv => 1 + 0.1*(Math.max(1, lv) - 1);
+const curLv = (kind, id) => Math.max(1, lvOf(owned(kind, id)));
+
+function fighterStats(b, lv) { const m = tierOf(b.tier).m * lvMul(lv || curLv('f', b.id)); return { hp:Math.round(b.hp*m), atk:Math.round(b.atk*m), def:Math.round(b.def*m), spd:Math.round(b.spd*m) }; }
+const skMult = (b, lv) => tierOf(b.tier).m * lvMul(lv || curLv('s', b.id));
 function powerOf(st, entries) {
   let p = st.hp/5 + st.atk*3 + st.def*3 + Math.min(st.spd,220)/2;
   for (const en of entries) {
@@ -213,7 +329,7 @@ function powerOf(st, entries) {
   }
   return Math.round(p);
 }
-const skillEntries = () => state.eq.s.filter(Boolean).map(id => ({ base: SK(id), mult: tierOf(SK(id).tier).m }));
+const skillEntries = () => state.eq.s.filter(Boolean).map(id => ({ base:SK(id), mult:skMult(SK(id)) }));
 function myPower() { return state.eq.f ? powerOf(fighterStats(F(state.eq.f)), skillEntries()) : 0; }
 function calcStyle(fmc, entries) {
   let sum = fmc, w = 1;
@@ -227,32 +343,39 @@ function calcStyle(fmc, entries) {
   return { c, aggr: 0.2 + 0.8*c, pref: 250 + (62-250)*c, label, desc };
 }
 const myStyle = () => state.eq.f ? calcStyle(F(state.eq.f).mc, skillEntries()) : null;
+
+/* 보스 — 전체적으로 낮춘 난이도, 원거리형은 추가로 약하게 */
 function bossStats(stage) {
   const s = stage - 1;
-  return { hp: Math.round(170*(1+0.36*s)*(1+0.008*s*s)), atk: Math.round(13+s*3.6), def: Math.round(2+s*1.5), spd: Math.min(140, 85+Math.round(stage*2.5)) };
+  return { hp: Math.round(115*(1+0.25*s)*(1+0.004*s*s)), atk: Math.round(9+s*2.4), def: Math.round(1+s*0.95), spd: Math.min(125, 80+Math.round(stage*2)) };
 }
 function bossInfo(stage) {
-  const kit = BOSS_KITS[(stage-1) % 3], mult = 1 + (stage-1)*0.12;
-  const entries = kit.skills.map(id => ({ base: SK(id), mult }));
-  return { st: bossStats(stage), emoji: BOSS_EMOJIS[(stage-1) % BOSS_EMOJIS.length], kit, entries, style: calcStyle(kit.fmc, entries) };
+  const kit = BOSS_KITS[(stage-1) % 3], s = stage - 1;
+  const style = calcStyle(kit.fmc, kit.skills.map(id => ({ base:SK(id), mult:1 })));
+  const ranged = style.c < 0.5, scale = ranged ? 0.5 : 0.8;
+  const st = bossStats(stage);
+  if (ranged) { st.hp = Math.round(st.hp*0.72); st.spd = Math.round(st.spd*0.85); }
+  st.atk = Math.max(5, Math.round(st.atk*scale));
+  const entries = kit.skills.map(id => ({ base:SK(id), mult:(1 + s*0.06)*scale }));
+  return { st, emoji:BOSS_EMOJIS[(stage-1) % BOSS_EMOJIS.length], kit, entries, style, ranged };
 }
 const contribMax = stage => 80 + stage*35;
 const clearBonus = stage => 500 + stage*300;
 const rangeLabel = mc => mc >= 0.7 ? '근접' : mc <= 0.3 ? '원거리' : '중거리';
-function skillDesc(b) {
-  const p = [];
+function skillDesc(b, mult) {
+  const m = mult || 1, p = [], v = x => Math.round(x*m);
   if (b.shape === 'zone') {
-    if (b.heal) p.push(`${b.dur}초간 초당 최대 체력 ${Math.round(b.heal*100)}% 회복`);
-    else p.push(`${b.dur}초간 ${b.tick}초마다 ${b.tickDmg} 지속 피해`);
+    if (b.heal) p.push(`${b.dur}초간 초당 최대 체력 ${(b.heal*100*Math.min(m,3)).toFixed(0)}% 회복`);
+    else p.push(`${b.dur}초간 ${b.tick}초마다 ${v(b.tickDmg)} 지속 피해`);
     if (b.zslow) p.push('둔화'); if (b.pull) p.push('끌어당김');
-  } else if (b.shape === 'shower') p.push(`유성 ${b.n}발 · 각 ${b.dmg} 피해`);
-  else if (b.shape === 'flurry') p.push(`${b.hits}연타 광역 피해`);
+  } else if (b.shape === 'shower') p.push(`유성 ${b.n}발 · 각 ${v(b.dmg)} 피해`);
+  else if (b.shape === 'flurry') p.push(`${b.hits}연타 · 각 ${v(b.dmg)} 광역 피해`);
   else if (b.shape === 'buff') { p.push(`${b.dur}초간 공격력 +${Math.round((b.batk-1)*100)}%`); if (b.bspd > 1) p.push(`이동 +${Math.round((b.bspd-1)*100)}%`); if (b.bls) p.push(`${Math.round(b.bls*100)}% 흡혈`); }
-  else if (b.shape === 'shield') p.push(`최대 체력 ${Math.round(b.pct*100)}% 보호막 (${b.dur}초)`);
-  else if (b.shape === 'heal') p.push(`최대 체력 ${Math.round(b.fxv*100)}% 회복`);
+  else if (b.shape === 'shield') p.push(`최대 체력 ${Math.round(b.pct*100*Math.min(m,3))}% 보호막 (${b.dur}초)`);
+  else if (b.shape === 'heal') p.push(`최대 체력 ${Math.round(b.fxv*100*Math.min(m,4))}% 회복`);
   else if (b.shape === 'bind') p.push(`${b.fxv}초간 기절`);
-  else if (b.n > 1) p.push(`${b.n}연발 · 발당 ${b.dmg} 피해`);
-  else if (b.dmg) p.push(`피해 ${b.dmg}`);
+  else if (b.n > 1) p.push(`${b.n}연발 · 발당 ${v(b.dmg)} 피해`);
+  else if (b.dmg) p.push(`피해 ${v(b.dmg)}`);
   if (b.shape === 'rush') p.push('돌진 후 베기');
   if (b.shape === 'blink') p.push('적의 등 뒤로 순간이동');
   if (b.shape === 'strike' || b.shape === 'blast') p.push('범위 지정');
@@ -271,6 +394,10 @@ function toast(msg) {
   toastTimer = setTimeout(() => { t.style.opacity = 0; t.style.transform = 'translate(-50%,8px)'; }, 2000);
 }
 const icons = () => { try { lucide.createIcons(); } catch (e) {} };
+const ic = (name, cls) => `<i data-lucide="${name}" class="${cls||'w-5 h-5'}"></i>`;
+const COIN = '<svg class="coin" viewBox="0 0 20 20"><defs><linearGradient id="cgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd45e"/><stop offset="1" stop-color="#ee9605"/></linearGradient></defs><circle cx="10" cy="10" r="9.2" fill="url(#cgd)"/><circle cx="10" cy="10" r="6.4" fill="none" stroke="#b86e00" stroke-opacity=".5" stroke-width="1.3"/><path d="M7.7 10h4.6M10 7.7v4.6" stroke="#b86e00" stroke-opacity=".6" stroke-width="1.3" stroke-linecap="round"/></svg>';
+$('coinIcon').style.cssText = 'display:flex;font-size:17px';
+$('coinIcon').innerHTML = COIN;
 let shownGold = state.gold, goldAnim = 0;
 function setGold() {
   const el = $('goldText'), to = state.gold, from = shownGold;
@@ -284,78 +411,74 @@ function setGold() {
   };
   goldAnim = requestAnimationFrame(tick);
 }
+const emojiArt = (e, px) => `<span class="emoji" style="font-size:${px}px;line-height:1;filter:drop-shadow(0 3px 3px rgba(25,31,40,.2))">${e}</span>`;
 
 /* ===================== 렌더링 ===================== */
 const TABS = [
-  { id:'fight', label:'전투', icon:'swords' }, { id:'lineup', label:'세팅', icon:'users' },
-  { id:'gacha', label:'영입', icon:'gift' }, { id:'settings', label:'설정', icon:'settings' },
+  { id:'gacha', label:'영입', icon:'sparkles' }, { id:'lineup', label:'세팅', icon:'sliders-horizontal' },
+  { id:'fight', label:'전투', icon:'swords' }, { id:'settings', label:'설정', icon:'settings' },
 ];
 function renderNav() {
-  $('navBar').innerHTML = TABS.map(t => `
-    <button onclick="setTab('${t.id}')" class="press flex flex-col items-center gap-1 py-2 rounded-2xl transition-colors ${tab===t.id?'text-blue-600 bg-blue-50':'text-slate-400'}">
-      <i data-lucide="${t.icon}" class="w-[22px] h-[22px]" ${tab===t.id?'stroke-width="2.5"':''}></i>
-      <span class="text-[11px] font-bold">${t.label}</span>
-    </button>`).join('');
+  $('navBar').innerHTML = TABS.map(t => `<button class="navbtn ${tab===t.id?'on':''}" onclick="setTab('${t.id}')">${ic(t.icon,'w-[22px] h-[22px]').replace('class=', `stroke-width="${tab===t.id?2.4:2}" class=`)}<span>${t.label}</span></button>`).join('');
 }
-function setTab(t) { tab = t; render(true); window.scrollTo({ top: 0 }); }
+function setTab(t) { tab = t; render(true); window.scrollTo({ top:0 }); }
 function render(animate) {
   setGold(); renderNav();
   const v = $('view');
+  if (tab === 'fight' && mounted) { $('fightInfo').innerHTML = fightInfoHtml(); icons(); return; }
+  if (mounted) { exitFs(); mounted = false; }
   v.innerHTML = tab === 'gacha' ? viewGacha() : tab === 'lineup' ? viewLineup() : tab === 'fight' ? viewFight() : viewSettings();
-  if (tab === 'fight') { const slot = $('arenaSlot'); if (slot) slot.replaceWith(arenaEl); }
-  if (animate && v.firstElementChild) v.firstElementChild.classList.add('anim-slide');
+  if (tab === 'fight') { $('arenaSlot').replaceWith(arenaEl); mounted = true; }
+  if (animate && v.firstElementChild) v.firstElementChild.classList.add('a-slide');
   flashSlot = null;
   icons();
 }
 
 /* ---- 영입 ---- */
-function gachaCard(kind, title, sub, emoji, grad, shadow) {
-  const c1 = kind === 'f' ? FIGHTER_COST : SKILL_COST;
-  const total = poolOf(kind).length, have = Object.keys(state.own[kind]).length;
-  return `<div class="rounded-3xl bg-gradient-to-br ${grad} text-white p-5 shadow-lg ${shadow}">
-    <div class="flex items-center gap-4">
-      <div class="emoji text-5xl anim-bounce">${emoji}</div>
-      <div class="flex-1"><div class="font-extrabold text-lg leading-tight">${title}</div><div class="text-xs text-white/80 mt-0.5">${sub}</div></div>
-      <div class="text-right"><div class="text-[10px] font-bold text-white/70">도감</div><div class="font-extrabold tabular-nums">${have}/${total}</div></div>
+function bannerCard(kind) {
+  const isF = kind === 'f', cost = isF ? FIGHTER_COST : SKILL_COST, pool = poolOf(kind);
+  const have = Object.keys(state.own[kind]).length, total = pool.length;
+  const prev = ['m','l','t'].map(t => pool.find(x => x.tier === t)).filter(Boolean);
+  const rot = [-12, 0, 12], off = [-34, 0, 34];
+  const fan = prev.map((b,i) => `<div class="tile t-${b.tier}" style="position:absolute;left:50%;top:6px;width:58px;height:78px;margin-left:-29px;transform:translateX(${off[i]}px) rotate(${rot[i]}deg) translateY(${i===1?-6:0}px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-shadow:inset 0 0 0 1.5px var(--tm),0 8px 14px -8px rgba(25,31,40,.4);">${emojiArt(b.emoji, 26)}<span class="tc" style="font-size:9px;font-weight:800">${tierOf(b.tier).name}</span></div>`).join('');
+  const ok1 = state.gold >= cost, ok10 = state.gold >= cost*10;
+  return `<div class="card soft">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:19px;font-weight:800;letter-spacing:-0.03em">${isF ? '파이터 영입' : '스킬 영입'}</div>
+        <div style="font-size:13px;color:var(--ink3);font-weight:500;margin-top:3px">${isF ? '고유 특성을 가진 동물 전사' : '전투 성향을 바꾸는 필살기'}</div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:8px"><div class="bar" style="width:84px"><i style="width:${have/total*100}%"></i></div><span style="font-size:12px;font-weight:700;color:var(--ink2)">도감 ${have}/${total}</span></div>
+      </div>
+      <div style="position:relative;width:128px;height:96px;flex:none">${fan}</div>
     </div>
-    <div class="grid grid-cols-2 gap-2 mt-4">
-      <button onclick="pull('${kind}')" class="press rounded-2xl bg-white/20 backdrop-blur py-3 text-center">
-        <div class="text-[11px] font-bold text-white/80">1회</div>
-        <div class="font-extrabold flex items-center justify-center gap-1"><span class="emoji text-sm">🪙</span>${fmt(c1)}</div>
-      </button>
-      <button onclick="pullMulti('${kind}')" class="press rounded-2xl bg-white text-slate-900 py-3 text-center shadow">
-        <div class="text-[11px] font-bold text-slate-500">10회 · 희귀 이상 1개 보장</div>
-        <div class="font-extrabold flex items-center justify-center gap-1"><span class="emoji text-sm">🪙</span>${fmt(c1*10)}</div>
-      </button>
+    <div style="display:grid;grid-template-columns:1fr 1.25fr;gap:8px;margin-top:18px">
+      <button class="btn ghost" style="${ok1?'':'opacity:.55'}" onclick="pull('${kind}')">1회 <span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost)}</span></button>
+      <button class="btn primary" style="${ok10?'':'opacity:.55'}" onclick="pullMulti('${kind}')">10회 <span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost*10)}</span></button>
     </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--ink3);text-align:center">10회 뽑기에는 희귀 등급 이상이 1개 이상 보장돼요</div>
   </div>`;
 }
 function viewGacha() {
-  const rows = TIERS.map(t => `
-    <div class="flex items-center justify-between py-2.5">
-      <div class="flex items-center gap-2.5"><span class="w-3 h-3 rounded-full tier-${t.k}"></span><span class="font-bold text-sm tier-text-${t.k}">${t.name}</span></div>
-      <div class="text-xs text-slate-500 tabular-nums text-right">${t.p}% · 스탯 ${t.m}x<br><span class="text-slate-400">파이터 ${FIGHTERS.filter(x=>x.tier===t.k).length} · 스킬 ${SKILLS.filter(x=>x.tier===t.k).length}</span></div>
-    </div>`).join('');
-  return `<div class="space-y-3.5">
-    ${gachaCard('f','파이터 뽑기','고유 특성을 가진 동물 전사','🐾','from-blue-500 to-indigo-600','shadow-blue-500/25')}
-    ${gachaCard('s','스킬 뽑기','전투 성향을 결정하는 필살기','✨','from-fuchsia-500 to-rose-500','shadow-rose-500/25')}
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="font-extrabold mb-1">등급별 확률</div>
-      <div class="text-xs text-slate-400 mb-1">동물과 스킬은 각자 고정된 등급이 있어요. 등급이 결정되면 그 안에서 무작위로 나와요.</div>
-      <div class="divide-y divide-slate-100">${rows}</div>
+  const rows = TIERS.map(t => `<div class="t-${t.k}" style="display:flex;align-items:center;justify-content:space-between;height:46px;border-top:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:10px"><span class="chip" style="min-width:48px;justify-content:center">${t.name}</span><span style="font-size:12px;color:var(--ink3);font-weight:500">파이터 ${FIGHTERS.filter(x=>x.tier===t.k).length} · 스킬 ${SKILLS.filter(x=>x.tier===t.k).length}</span></div>
+      <div style="text-align:right"><span style="font-size:15px;font-weight:800">${t.p}%</span><span style="font-size:12px;color:var(--ink3);font-weight:600;margin-left:8px">x${t.m.toFixed(1)}</span></div></div>`).join('');
+  return `<div class="space-y-3">
+    ${bannerCard('f')}${bannerCard('s')}
+    <div class="card soft" style="padding:20px 20px 8px">
+      <div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">등급별 확률</div>
+      <div style="font-size:12px;color:var(--ink3);margin:4px 0 12px;line-height:1.5">동물과 스킬은 각자 정해진 등급이 있어요. 같은 아이템을 다시 뽑으면 레벨이 올라요 (최대 Lv.${MAXLV}, 레벨당 +10%).</div>
+      ${rows}
     </div>
   </div>`;
 }
 let pulling = false;
-function addOwn(kind, id) { const had = owned(kind, id); state.own[kind][id] = had + 1; return had; }
 function pull(kind) {
   if (pulling) return;
   const cost = kind === 'f' ? FIGHTER_COST : SKILL_COST;
   if (state.gold < cost) { toast('골드가 부족해요'); return; }
   state.gold -= cost;
-  const b = rollItem(kind), had = addOwn(kind, b.id);
-  save(); setGold();
-  showGacha(kind, b, had === 0, had + 1);
+  const b = rollItem(kind), had = owned(kind, b.id); state.own[kind][b.id] = had + 1;
+  save(); setGold(); showGacha(kind, b, had);
 }
 function pullMulti(kind) {
   if (pulling) return;
@@ -366,86 +489,89 @@ function pullMulti(kind) {
   for (let i = 0; i < 10; i++) {
     let b = rollItem(kind);
     if (i === 9 && results.every(r => TIER_IDX[r.b.tier] < 1)) b = rollItem(kind, 1);
-    const had = addOwn(kind, b.id);
-    results.push({ b, isNew: had === 0, count: had + 1 });
+    const had = owned(kind, b.id); state.own[kind][b.id] = had + 1;
+    results.push({ b, had });
   }
-  save(); setGold();
-  showGachaMulti(results, kind);
+  save(); setGold(); showGachaMulti(results, kind);
 }
 function openGachaModal() { const m = $('gachaModal'); m.classList.remove('hidden'); m.classList.add('flex'); return m; }
-function itemDetailHtml(kind, b) {
-  const t = tierOf(b.tier);
+function orbHtml(tierKey) { return `<div class="t-${tierKey}" style="--og:var(--t);text-align:center"><div class="orb" style="margin:0 auto"></div><div style="color:rgba(255,255,255,.7);font-weight:600;font-size:14px;margin-top:30px">뽑는 중...</div></div>`; }
+function burstHtml(tierKey) { return `<div class="t-${tierKey}" style="--og:var(--t);position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center"><div class="burst"></div></div>`; }
+function detailHtml(kind, b, lv) {
   if (kind === 'f') {
-    const st = fighterStats(b);
-    return `<div class="grid grid-cols-4 gap-2 mt-4 text-center">${[['HP',st.hp],['공격',st.atk],['방어',st.def],['속도',st.spd]].map(([l,v])=>`<div class="bg-slate-100 rounded-2xl py-2"><div class="text-[10px] text-slate-400 font-bold">${l}</div><div class="font-extrabold text-sm tabular-nums">${v}</div></div>`).join('')}</div>
-      <div class="mt-2 bg-amber-50 text-amber-700 rounded-2xl p-2.5 text-left"><div class="text-xs font-extrabold">특성 · ${b.pas.name}</div><div class="text-[11px] mt-0.5">${b.pas.desc}</div></div>`;
+    const st = fighterStats(b, lv);
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px">${[['HP',st.hp],['공격',st.atk],['방어',st.def],['속도',st.spd]].map(([l,v])=>`<div style="background:#f5f6f8;border-radius:12px;padding:8px 0"><div style="font-size:10px;color:var(--ink3);font-weight:700">${l}</div><div style="font-size:15px;font-weight:800">${v}</div></div>`).join('')}</div>
+      <div style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px;text-align:left"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div>`;
   }
-  return `<div class="mt-4 bg-slate-100 rounded-2xl p-3 text-sm text-slate-600 font-medium">${skillDesc(b)}
-    <div class="text-xs text-slate-400 mt-1">효과 x${t.m} · ${rangeLabel(b.mc)} 성향 ${b.mc.toFixed(2)}</div></div>`;
+  return `<div style="margin-top:16px;background:#f5f6f8;border-radius:14px;padding:12px;text-align:left;font-size:13px;color:var(--ink2);line-height:1.5;font-weight:500">${skillDesc(b, skMult(b, lv))}<div style="font-size:11px;color:var(--ink3);margin-top:4px;font-weight:600">${rangeLabel(b.mc)} 성향 ${b.mc.toFixed(2)}</div></div>`;
 }
-function showGacha(kind, b, isNew, count) {
+function revealCard(kind, b, had) {
+  const n = had + 1, li = lvInfo(n), isNew = had === 0, up = !isNew && lvOf(n) > lvOf(had), t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3;
+  const badge = isNew ? `<span class="chip" style="position:absolute;top:14px;right:14px;background:var(--red);color:#fff">NEW</span>` : up ? `<span class="chip a-lvup" style="position:absolute;top:14px;right:14px;background:#191f28;color:#ffd45e">LEVEL UP</span>` : `<span class="chip neutral" style="position:absolute;top:14px;right:14px">중복 +1</span>`;
+  const prog = li.max ? 'MAX' : `다음 레벨까지 ${li.cur}/${li.need}`;
+  return `<div class="t-${b.tier} a-pop" style="width:100%;max-width:330px;margin:24px 0">
+    <div class="${b.tier==='t'?'holo':''}" style="position:relative;border-radius:30px;background:#fff;box-shadow:0 0 0 2px var(--tm),0 34px 60px -24px var(--t);overflow:hidden">
+      <div style="position:relative;height:178px;background:linear-gradient(180deg,var(--ts),#fff);display:flex;align-items:center;justify-content:center;overflow:hidden">
+        ${hi ? '<div class="rays"></div>' : ''}
+        <div class="medal" style="width:122px;height:122px"><span class="emoji" style="font-size:70px">${b.emoji}</span></div>
+        <span class="chip" style="position:absolute;top:14px;left:14px">${t.name}</span>${badge}
+      </div>
+      <div style="padding:16px 22px 22px;text-align:center">
+        <div style="font-size:25px;font-weight:800;letter-spacing:-0.03em">${b.name}</div>
+        <div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px">${kind==='f'?'파이터':'스킬'} · Lv.${li.lv}</div>
+        ${detailHtml(kind, b, li.lv)}
+        <div style="margin-top:14px;text-align:left"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px"><span>Lv.${li.lv}</span><span>${prog}</span></div><div class="bar"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div></div>
+      </div>
+    </div></div>`;
+}
+function showGacha(kind, b, had) {
   pulling = true;
-  const m = openGachaModal(), gc = TIER_COLOR[b.tier];
-  m.innerHTML = `<div class="text-center" style="--gc:${gc}"><div class="emoji text-8xl anim-shake box-glow">🎁</div><div class="text-white/90 font-bold mt-4 text-sm">두근두근...</div></div>`;
+  const m = openGachaModal();
+  m.innerHTML = orbHtml(b.tier);
+  setTimeout(() => { m.innerHTML = burstHtml(b.tier); }, 850);
   setTimeout(() => {
-    const t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3;
-    m.innerHTML = `
-      <div class="relative w-full max-w-[340px] anim-pop my-6">
-        <div class="relative rounded-[2rem] overflow-hidden tier-${b.tier} p-1 ${hi?'anim-glow':''}">
-          <div class="relative rounded-[1.8rem] bg-white p-6 text-center overflow-hidden">
-            <div class="absolute inset-x-0 top-0 h-44 tier-${b.tier} opacity-90 overflow-hidden">${hi?'<div class="rays"></div>':''}</div>
-            <div class="relative">
-              <div class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-extrabold bg-white tier-text-${b.tier} shadow">${t.name}${isNew?'<span class="text-rose-500">· NEW</span>':`<span class="text-slate-400">· 중복 x${count}</span>`}</div>
-              <div class="emoji text-[96px] leading-none my-5 anim-bounce drop-shadow-lg">${b.emoji}</div>
-              <div class="text-2xl font-extrabold mt-8">${b.name}</div>
-              <div class="text-xs text-slate-400 font-semibold">${kind==='f'?'파이터':'스킬'}</div>
-              ${itemDetailHtml(kind, b)}
-            </div>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-2 mt-4">
-          <button onclick="closeGacha()" class="press rounded-2xl bg-white/90 text-slate-800 font-bold py-3.5">확인</button>
-          <button onclick="again('${kind}',false)" class="press rounded-2xl bg-blue-500 text-white font-bold py-3.5">한 번 더 (${fmt(kind==='f'?FIGHTER_COST:SKILL_COST)})</button>
-        </div>
-      </div>`;
-  }, 850);
+    const unit = kind === 'f' ? FIGHTER_COST : SKILL_COST;
+    m.innerHTML = `<div style="width:100%;max-width:330px;display:flex;flex-direction:column;align-items:center">${revealCard(kind, b, had)}
+      <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:8px;width:100%;margin-bottom:24px">
+        <button class="btn" style="background:rgba(255,255,255,.14);color:#fff" onclick="closeGacha()">확인</button>
+        <button class="btn primary" onclick="again('${kind}',false)">한 번 더 <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(unit)}</span></button>
+      </div></div>`;
+  }, 1060);
 }
 let multiTimers = [];
 function showGachaMulti(results, kind) {
   pulling = true;
-  const m = openGachaModal();
-  const best = results.reduce((a,r) => Math.max(a, TIER_IDX[r.b.tier]), 0), gc = TIER_COLOR[TIERS[best].k];
-  m.innerHTML = `<div class="text-center" style="--gc:${gc}"><div class="emoji text-8xl anim-shake box-glow">🎁</div><div class="text-white/90 font-bold mt-4 text-sm">10회 뽑는 중...</div></div>`;
+  const m = openGachaModal(), best = results.reduce((a,r) => Math.max(a, TIER_IDX[r.b.tier]), 0), bk = TIERS[best].k;
+  m.innerHTML = orbHtml(bk);
+  setTimeout(() => { m.innerHTML = burstHtml(bk); }, 850);
   const unit = kind === 'f' ? FIGHTER_COST : SKILL_COST;
   setTimeout(() => {
     const cards = results.map((r,i) => {
-      const t = tierOf(r.b.tier), hi = TIER_IDX[r.b.tier] >= 3;
-      return `<div id="mc${i}" class="relative rounded-2xl tier-${r.b.tier} aspect-[3/4] flex flex-col items-center justify-center shadow-lg ${hi?'anim-glow':''}" style="opacity:0">
-        <span class="emoji text-3xl drop-shadow">${r.b.emoji}</span>
-        <span class="text-[10px] font-extrabold text-white drop-shadow mt-1 px-1 truncate max-w-full">${r.b.name}</span>
-        <span class="text-[9px] font-bold text-white/90">${t.name}</span>
-        ${r.isNew?'<span class="absolute -top-1.5 -left-1 bg-rose-500 text-white text-[9px] font-extrabold rounded-full px-1.5 py-0.5 shadow">NEW</span>':`<span class="absolute -top-1.5 -right-1 bg-slate-800/80 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5">x${r.count}</span>`}
+      const b = r.b, t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3, isNew = r.had === 0, up = !isNew && lvOf(r.had+1) > lvOf(r.had);
+      return `<div id="mc${i}" class="tile t-${b.tier} ${hi?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" style="opacity:0;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:3px">
+        ${emojiArt(b.emoji, 28)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span><span class="tc" style="font-size:9px;font-weight:800">${t.name}</span>
+        ${isNew ? '<span style="position:absolute;top:-6px;left:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">NEW</span>' : up ? '<span style="position:absolute;top:-6px;left:-4px;background:#191f28;color:#ffd45e;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">UP</span>' : ''}
       </div>`;
     }).join('');
-    const counts = TIERS.map(t => ({ t, n: results.filter(r => r.b.tier === t.k).length })).filter(x => x.n > 0).reverse();
-    const chips = counts.map(x => `<span class="text-xs font-extrabold px-2.5 py-1 rounded-full bg-white tier-text-${x.t.k}">${x.t.name} ${x.n}</span>`).join('');
-    m.innerHTML = `
-      <div class="w-full max-w-[400px] my-6">
-        <div class="text-center text-white font-extrabold mb-3 text-lg">10회 뽑기 결과</div>
-        <div id="multiGrid" class="grid grid-cols-5 gap-2">${cards}</div>
-        <div id="multiSummary" class="mt-4 flex flex-wrap justify-center gap-1.5" style="opacity:0">${chips}</div>
-        <div id="multiBtns" class="grid grid-cols-2 gap-2 mt-4" style="opacity:0">
-          <button onclick="closeGacha()" class="press rounded-2xl bg-white/90 text-slate-800 font-bold py-3.5">확인</button>
-          <button onclick="again('${kind}',true)" class="press rounded-2xl bg-blue-500 text-white font-bold py-3.5">10회 더 (${fmt(unit*10)})</button>
-        </div>
-      </div>`;
+    const nNew = results.filter(r => r.had === 0).length, nUp = results.filter(r => r.had > 0 && lvOf(r.had+1) > lvOf(r.had)).length;
+    const chips = TIERS.map(t => ({ t, n: results.filter(r => r.b.tier === t.k).length })).filter(x => x.n > 0).reverse().map(x => `<span class="chip t-${x.t.k}" style="background:#fff;height:26px;padding:0 11px;font-size:12px">${x.t.name} ${x.n}</span>`).join('');
+    m.innerHTML = `<div style="width:100%;max-width:400px;margin:24px 0">
+      <div style="text-align:center;color:#fff;font-weight:800;font-size:19px;letter-spacing:-0.02em">10회 뽑기 결과</div>
+      <div style="text-align:center;color:rgba(255,255,255,.55);font-size:12px;margin:4px 0 14px;font-weight:500">신규 ${nNew}개 · 레벨업 ${nUp}개</div>
+      <div id="multiGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">${cards}</div>
+      <div id="multiSummary" style="opacity:0;margin-top:18px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px">${chips}</div>
+      <div id="multiBtns" style="opacity:0;display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:18px">
+        <button class="btn" style="background:rgba(255,255,255,.14);color:#fff" onclick="closeGacha()">확인</button>
+        <button class="btn primary" onclick="again('${kind}',true)">10회 더 <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(unit*10)}</span></button>
+      </div></div>`;
     multiTimers = [];
-    const finish = () => { const s = $('multiSummary'), b = $('multiBtns'); if (s) { s.style.opacity = 1; s.classList.add('anim-fade'); } if (b) { b.style.opacity = 1; b.classList.add('anim-fade'); } };
-    const revealAll = () => { multiTimers.forEach(clearTimeout); results.forEach((r,i) => { const el = $('mc'+i); if (el && el.style.opacity !== '1') { el.style.opacity = 1; el.classList.add('reveal'); } }); finish(); };
-    results.forEach((r,i) => multiTimers.push(setTimeout(() => { const el = $('mc'+i); if (el) { el.style.opacity = 1; el.classList.add('reveal'); } }, 120 + i*170)));
-    multiTimers.push(setTimeout(finish, 120 + 10*170 + 200));
+    const finish = () => { for (const id of ['multiSummary','multiBtns']) { const el = $(id); if (el) { el.style.opacity = 1; el.classList.add('a-fade'); } } };
+    const showOne = i => { const el = $('mc'+i); if (el && el.style.opacity !== '1') { el.style.opacity = 1; el.classList.add('a-flip'); } };
+    const revealAll = () => { multiTimers.forEach(clearTimeout); results.forEach((r,i) => showOne(i)); finish(); };
+    results.forEach((r,i) => multiTimers.push(setTimeout(() => showOne(i), 80 + i*150)));
+    multiTimers.push(setTimeout(finish, 80 + 10*150 + 160));
     $('multiGrid').onclick = revealAll;
-  }, 900);
+  }, 1060);
 }
 function closeGacha() {
   multiTimers.forEach(clearTimeout);
@@ -456,144 +582,121 @@ function again(kind, multi) { closeGacha(); multi ? pullMulti(kind) : pull(kind)
 
 /* ---- 세팅 ---- */
 function styleGauge(st) {
-  if (!st) return '';
-  return `<div class="mt-1">
-    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-1"><span>원거리</span><span class="text-slate-700">${st.label}</span><span>근접</span></div>
-    <div class="relative h-2 rounded-full bg-gradient-to-r from-sky-300 via-slate-200 to-rose-400">
-      <div class="absolute top-1/2 w-4 h-4 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white ring-2 ring-slate-800 shadow" style="left:${Math.round(st.c*100)}%"></div>
-    </div>
-    <div class="text-[11px] text-slate-400 mt-1.5">${st.desc}</div></div>`;
+  return `<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px"><span>원거리</span><span style="color:var(--ink);font-size:13px;font-weight:800">${st.label}</span><span>근접</span></div>
+    <div style="position:relative;height:8px;border-radius:99px;background:linear-gradient(90deg,#8ec5ff,#e5e8eb 50%,#ff9ca3)">
+      <div style="position:absolute;top:50%;left:${Math.round(st.c*100)}%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--ink),0 2px 6px rgba(0,0,0,.25)"></div></div>
+    <div style="font-size:12px;color:var(--ink3);margin-top:10px;line-height:1.5">${st.desc}</div>`;
 }
-function slotBox(kind, id, selected, onclick, label, big, key) {
-  const size = big ? 'h-28' : 'h-24', pop = flashSlot === key ? 'slot-pop' : '';
-  if (!id) {
-    return `<button onclick="${onclick}" class="press ${size} w-full rounded-3xl border-2 border-dashed ${selected?'border-blue-500 bg-blue-50 sel-pulse':'border-slate-300 bg-white'} flex flex-col items-center justify-center gap-1">
-      <i data-lucide="plus" class="w-6 h-6 ${selected?'text-blue-500':'text-slate-300'}"></i>
-      <span class="text-xs font-bold ${selected?'text-blue-500':'text-slate-400'}">${label}</span></button>`;
-  }
-  const b = baseOf(kind, id);
-  return `<button onclick="${onclick}" class="press ${pop} ${size} w-full rounded-3xl tier-${b.tier} flex flex-col items-center justify-center relative ${selected?'ring-4 ring-blue-500 ring-offset-2':''} shadow-md">
-    <span class="emoji ${big?'text-5xl':'text-4xl'} drop-shadow">${b.emoji}</span>
-    <span class="text-[11px] font-extrabold text-white drop-shadow mt-1">${b.name}</span>
-    ${selected?'<span class="absolute top-1.5 right-2 text-[10px] font-bold bg-white/90 text-rose-500 rounded-full px-1.5">탭: 해제</span>':''}
-  </button>`;
+function slot(kind, id, selected, onclick, label, big, key) {
+  const h = big ? 108 : 92;
+  if (!id) return `<button onclick="${onclick}" class="press ${selected?'a-pulse':''}" style="height:${h}px;width:100%;border-radius:20px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-5 h-5')}<span style="font-size:12px;font-weight:700">${label}</span></button>`;
+  const b = baseOf(kind, id), lv = curLv(kind, id);
+  return `<button onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''} ${flashSlot===key?'a-lvup':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''}" style="height:${h}px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+    ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="font-size:10px;font-weight:800">Lv.${lv}</span></button>`;
 }
 function lineupDetail() {
-  const kind = sel.type === 'fighter' ? 'f' : 's';
-  const id = kind === 'f' ? state.eq.f : state.eq.s[sel.idx];
-  if (!id) return `<div class="text-sm text-slate-400 text-center py-3">빈 슬롯이에요. 아래 도감에서 보유한 아이템을 눌러 장착하세요.</div>`;
-  const b = baseOf(kind, id), t = tierOf(b.tier);
-  if (kind === 'f') {
-    const st = fighterStats(b);
-    return `<div class="flex items-center gap-2 mb-2"><span class="text-sm font-extrabold">${b.name}</span><span class="text-[11px] font-bold tier-text-${b.tier}">${t.name} x${t.m}</span><span class="ml-auto text-[11px] text-slate-400 font-bold">근접 성향 ${b.mc.toFixed(2)}</span></div>
-      <div class="grid grid-cols-4 gap-2 text-center">${[['HP',st.hp],['공격',st.atk],['방어',st.def],['속도',st.spd]].map(([l,v])=>`<div class="bg-slate-50 rounded-xl py-1.5"><div class="text-[10px] text-slate-400 font-bold">${l}</div><div class="font-extrabold text-sm tabular-nums">${v}</div></div>`).join('')}</div>
-      <div class="mt-2 bg-amber-50 text-amber-700 rounded-xl p-2.5"><div class="text-xs font-extrabold">특성 · ${b.pas.name}</div><div class="text-[11px] mt-0.5">${b.pas.desc}</div></div>`;
-  }
-  return `<div class="flex items-center gap-2 mb-1.5"><span class="text-sm font-extrabold">${b.name}</span><span class="text-[11px] font-bold tier-text-${b.tier}">${t.name} x${t.m}</span><span class="ml-auto text-[11px] text-slate-400 font-bold">${rangeLabel(b.mc)} · 성향 ${b.mc.toFixed(2)}</span></div>
-    <div class="text-xs text-slate-500 font-medium bg-slate-50 rounded-xl p-2.5">${skillDesc(b)}</div>`;
+  const kind = sel.type === 'fighter' ? 'f' : 's', id = kind === 'f' ? state.eq.f : state.eq.s[sel.idx];
+  if (!id) return `<div style="text-align:center;padding:14px 0;font-size:13px;color:var(--ink3);line-height:1.6">${sel.type==='fighter'?'파이터':'스킬'} 슬롯이 비어 있어요.<br>아래 도감에서 보유한 ${sel.type==='fighter'?'동물':'스킬'}을 눌러 장착하세요.</div>`;
+  const b = baseOf(kind, id), t = tierOf(b.tier), n = owned(kind, id), li = lvInfo(n);
+  const stats = kind === 'f' ? (() => { const st = fighterStats(b, li.lv); return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px">${[['HP',st.hp],['공격',st.atk],['방어',st.def],['속도',st.spd]].map(([l,v])=>`<div style="background:#f5f6f8;border-radius:12px;padding:8px 0;text-align:center"><div style="font-size:10px;color:var(--ink3);font-weight:700">${l}</div><div style="font-size:15px;font-weight:800">${v}</div></div>`).join('')}</div>
+      <div style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div>`; })()
+    : `<div style="margin-top:14px;background:#f5f6f8;border-radius:14px;padding:12px;font-size:13px;color:var(--ink2);line-height:1.5;font-weight:500">${skillDesc(b, skMult(b, li.lv))}<div style="font-size:11px;color:var(--ink3);margin-top:4px;font-weight:600">${rangeLabel(b.mc)} 성향 ${b.mc.toFixed(2)}</div></div>`;
+  return `<div class="t-${b.tier}" style="display:flex;align-items:center;gap:14px">
+      <div class="medal" style="width:58px;height:58px;flex:none"><span class="emoji" style="font-size:32px">${b.emoji}</span></div>
+      <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:18px;font-weight:800;letter-spacing:-0.03em">${b.name}</span><span class="chip">${t.name}</span></div>
+        <div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px">Lv.${li.lv}${li.lv>1?` · 능력 +${Math.round((lvMul(li.lv)-1)*100)}%`:''}</div></div>
+      <button class="btn ghost sm" onclick="unequip()">해제</button>
+    </div>
+    <div class="t-${b.tier}" style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px"><span>${li.max?'최대 레벨':'다음 레벨까지'}</span><span>${li.max?'MAX':`${li.cur}/${li.need}`}</span></div><div class="bar"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div></div>
+    ${stats}`;
 }
 function viewLineup() {
   const eqIds = new Set([state.eq.f, ...state.eq.s].filter(Boolean));
-  const kind = invTab, pool = poolOf(kind).slice().sort((a,b) => TIER_IDX[b.tier]-TIER_IDX[a.tier]);
+  const kind = invTab, pool = poolOf(kind).slice().sort((a,b) => TIER_IDX[b.tier] - TIER_IDX[a.tier]);
   const have = pool.filter(x => owned(kind, x.id)).length;
   const grid = pool.map(b => {
-    const n = owned(kind, b.id), eq = eqIds.has(b.id);
-    if (!n) return `<div class="relative rounded-2xl bg-slate-100 py-3 flex flex-col items-center opacity-70">
-      <span class="text-2xl text-slate-300">🔒</span><span class="text-[10px] font-extrabold text-slate-400 mt-1">???</span><span class="text-[9px] font-bold tier-text-${b.tier}">${tierOf(b.tier).name}</span></div>`;
-    const tag = kind === 's' ? `<span class="text-[9px] font-bold text-white/90 bg-black/20 rounded-full px-1.5 mt-0.5">${rangeLabel(b.mc)}</span>` : `<span class="text-[9px] font-bold text-white/90 bg-black/20 rounded-full px-1.5 mt-0.5 truncate max-w-full">${b.pas.name}</span>`;
-    return `<button onclick="equipItem('${kind}','${b.id}')" class="press relative rounded-2xl tier-${b.tier} py-3 flex flex-col items-center shadow-sm ${eq?'ring-2 ring-slate-900':''}">
-      <span class="emoji text-3xl drop-shadow">${b.emoji}</span>
-      <span class="text-[10px] font-extrabold text-white drop-shadow mt-1 truncate max-w-full px-1">${b.name}</span>
-      <span class="text-[9px] font-bold text-white/90">${tierOf(b.tier).name}</span>${tag}
-      ${eq?'<span class="absolute -top-1.5 -right-1.5 bg-slate-900 text-white text-[9px] font-bold rounded-full px-1.5 py-0.5">E</span>':''}
-      ${n>1?`<span class="absolute -top-1.5 -left-1 bg-white text-slate-700 text-[9px] font-extrabold rounded-full px-1.5 py-0.5 shadow">x${n}</span>`:''}
+    const n = owned(kind, b.id);
+    if (!n) return `<div class="tile locked" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink4)">${ic('lock','w-[22px] h-[22px]')}<span style="font-size:11px;font-weight:700">???</span><span style="font-size:10px;font-weight:700">${tierOf(b.tier).name}</span></div>`;
+    const li = lvInfo(n), eq = eqIds.has(b.id), isSel = (sel.type==='fighter'&&kind==='f'&&state.eq.f===b.id) || (sel.type==='skill'&&kind==='s'&&state.eq.s[sel.idx]===b.id);
+    return `<button onclick="equipItem('${kind}','${b.id}')" class="tile t-${b.tier} press ${eq?'eq':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px">
+      ${emojiArt(b.emoji, 32)}<span style="font-size:11px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px">${b.name}</span>
+      <span class="tc" style="font-size:10px;font-weight:800">Lv.${li.lv}${li.max?' MAX':''}</span>
+      <div class="bar" style="width:62%;height:4px;margin-top:2px"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div>
+      ${eq ? '<span style="position:absolute;top:5px;right:5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 5px">장착</span>' : ''}
     </button>`;
   }).join('');
-  const hint = sel.type === 'fighter' ? '파이터 슬롯' : `스킬 슬롯 ${sel.idx+1}`;
-  return `<div class="space-y-3.5">
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="flex items-center justify-between mb-3">
-        <div class="font-extrabold">장착 슬롯</div>
-        <div class="text-xs font-bold bg-blue-50 text-blue-600 rounded-full px-3 py-1">전투력 ${fmt(myPower())}</div>
-      </div>
-      <div class="text-[11px] font-bold text-slate-400 mb-1.5">파이터</div>
-      <div class="mb-3">${slotBox('f', state.eq.f, sel.type==='fighter', "selectSlot('fighter',0)", '파이터', true, 'f')}</div>
-      <div class="text-[11px] font-bold text-slate-400 mb-1.5">스킬 <span class="text-slate-300">· 선택됨: ${hint}</span></div>
-      <div class="grid grid-cols-3 gap-2">${state.eq.s.map((id,i)=>slotBox('s', id, sel.type==='skill'&&sel.idx===i, `selectSlot('skill',${i})`, '스킬 '+(i+1), false, 's'+i)).join('')}</div>
+  const st = myStyle();
+  return `<div class="space-y-3">
+    <div class="card soft">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">장착</div><span class="chip" style="background:var(--blue-s);color:var(--blue)">전투력 ${fmt(myPower())}</span></div>
+      <div class="sect" style="margin-bottom:8px">파이터</div>
+      ${slot('f', state.eq.f, sel.type==='fighter', "selectSlot('fighter',0)", '파이터 선택', true, 'f')}
+      <div class="sect" style="margin:16px 0 8px">스킬</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${state.eq.s.map((id,i)=>slot('s', id, sel.type==='skill'&&sel.idx===i, `selectSlot('skill',${i})`, '스킬 '+(i+1), false, 's'+i)).join('')}</div>
     </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="text-[11px] font-bold text-slate-400 mb-2">선택한 슬롯 정보</div>${lineupDetail()}
-    </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="text-[11px] font-bold text-slate-400 mb-1">전투 AI 성향 <span class="text-slate-300">· 스킬 구성에 따라 결정</span></div>
-      ${state.eq.f ? styleGauge(myStyle()) : '<div class="text-sm text-slate-400 py-1">파이터를 장착하면 표시돼요.</div>'}
-    </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="flex bg-slate-100 rounded-2xl p-1 mb-4">
-        <button onclick="setInv('f')" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition ${invTab==='f'?'bg-white shadow text-slate-900':'text-slate-400'}">파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length}</button>
-        <button onclick="setInv('s')" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition ${invTab==='s'?'bg-white shadow text-slate-900':'text-slate-400'}">스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</button>
-      </div>
-      <div class="text-[11px] text-slate-400 font-semibold mb-2">도감 · 보유 ${have}/${pool.length}</div>
-      <div class="grid grid-cols-4 gap-2">${grid}</div>
+    <div class="card soft">${lineupDetail()}</div>
+    <div class="card soft"><div class="sect">전투 성향 <span style="font-weight:500;color:var(--ink4)">· 파이터와 스킬 구성으로 결정돼요</span></div>${st ? styleGauge(st) : '<div style="font-size:13px;color:var(--ink3)">파이터를 장착하면 표시돼요.</div>'}</div>
+    <div class="card soft">
+      <div class="seg" style="margin-bottom:14px"><button class="${invTab==='f'?'on':''}" onclick="setInv('f')">파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length}</button><button class="${invTab==='s'?'on':''}" onclick="setInv('s')">스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</button></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${grid}</div>
     </div>
   </div>`;
 }
-function setInv(t) { invTab = t; sel = t === 'f' ? { type:'fighter', idx:0 } : { type:'skill', idx: Math.max(0, state.eq.s.findIndex(x=>!x)) }; render(); }
-function selectSlot(type, idx) {
-  const cur = type === 'fighter' ? state.eq.f : state.eq.s[idx];
-  if (sel.type === type && sel.idx === idx && cur) { if (type === 'fighter') state.eq.f = null; else state.eq.s[idx] = null; save(); applyLineupChange(); }
-  sel = { type, idx }; invTab = type === 'fighter' ? 'f' : 's'; render();
+function setInv(t) { invTab = t; sel = t === 'f' ? { type:'fighter', idx:0 } : { type:'skill', idx:Math.max(0, state.eq.s.findIndex(x => !x)) }; render(); }
+function selectSlot(type, idx) { sel = { type, idx }; invTab = type === 'fighter' ? 'f' : 's'; render(); }
+function unequip() {
+  if (sel.type === 'fighter') state.eq.f = null; else state.eq.s[sel.idx] = null;
+  save(); startBattle(); render();
 }
 function equipItem(kind, id) {
   if (!owned(kind, id)) { toast('아직 보유하지 않은 아이템이에요'); return; }
   if (kind === 'f') { state.eq.f = id; sel = { type:'fighter', idx:0 }; flashSlot = 'f'; }
   else {
-    const idx = sel.type === 'skill' ? sel.idx : Math.max(0, state.eq.s.findIndex(x=>!x));
+    let idx = sel.type === 'skill' ? sel.idx : Math.max(0, state.eq.s.findIndex(x => !x));
     const ex = state.eq.s.indexOf(id); if (ex >= 0) state.eq.s[ex] = null;
     state.eq.s[idx] = id; flashSlot = 's' + idx;
     const nextEmpty = state.eq.s.findIndex(x => !x);
     sel = { type:'skill', idx: nextEmpty >= 0 ? nextEmpty : idx };
   }
-  save(); applyLineupChange(); render();
+  save(); startBattle(); render();
 }
-function applyLineupChange() { startBattle(); }
 
 /* ---- 전투 탭 ---- */
-function viewFight() {
+function viewFight() { return `<div class="space-y-3"><div id="arenaSlot"></div><div id="fightInfo" class="space-y-3">${fightInfoHtml()}</div></div>`; }
+function fightInfoHtml() {
   const s = state.sel, bi = bossInfo(s), bp = powerOf(bi.st, bi.entries), mp = myPower(), ms = myStyle();
-  const ratio = Math.min(100, Math.max(0, Math.round(mp / Math.max(1, mp + bp) * 100)));
-  const kit = bi.entries.map(e => `<span class="emoji text-base">${e.base.emoji}</span>`).join('');
-  const frontier = s === state.stage;
-  const logs = battleLog.length ? battleLog.slice().reverse().map(l => `<div class="flex items-center justify-between py-2 text-sm"><div class="flex items-center gap-2"><span>${l.win?'✅':'❌'}</span><span class="font-bold">STAGE ${l.stage}</span>${l.first?'<span class="text-[10px] font-extrabold text-blue-600 bg-blue-50 rounded-full px-1.5">첫 클리어</span>':''}</div><div class="font-extrabold tabular-nums text-amber-600">+${fmt(l.gold)}</div></div>`).join('') : '<div class="text-sm text-slate-400 py-3 text-center">아직 전투 기록이 없어요</div>';
-  return `<div class="space-y-3.5">
-    <div id="arenaSlot"></div>
-    <div class="bg-white rounded-3xl p-4 card-shadow">
-      <div class="flex items-center justify-between">
-        <button onclick="changeStage(-1)" class="press w-11 h-11 rounded-2xl bg-slate-100 flex items-center justify-center ${s<=1?'opacity-30':''}"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-        <div class="text-center"><div class="text-[11px] font-bold text-slate-400">${frontier?'도전 중인 최고 스테이지':'복습 스테이지'}</div><div class="text-2xl font-extrabold">STAGE ${s}</div><div class="text-[11px] text-slate-400 font-semibold">최고 ${state.stage}</div></div>
-        <button onclick="changeStage(1)" class="press w-11 h-11 rounded-2xl bg-slate-100 flex items-center justify-center ${s>=state.stage?'opacity-30':''}"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+  const fid = state.eq.f, fb = fid ? F(fid) : null, frontier = s === state.stage;
+  const ratio = Math.min(92, Math.max(8, Math.round(mp / Math.max(1, mp + bp) * 100)));
+  const logs = battleLog.length ? battleLog.slice().reverse().map(l => `<div style="display:flex;align-items:center;justify-content:space-between;height:44px;border-top:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:${l.win?'var(--green)':'var(--red)'}"></span><span style="font-size:14px;font-weight:700">STAGE ${l.stage}</span>${l.first?'<span class="chip" style="background:var(--blue-s);color:var(--blue)">첫 클리어</span>':''}</div>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:14px;font-weight:800">${COIN}+${fmt(l.gold)}</span></div>`).join('') : '<div style="padding:18px 0 8px;text-align:center;font-size:13px;color:var(--ink3);border-top:1px solid var(--line)">전투가 끝나면 기록이 쌓여요</div>';
+  const kit = bi.entries.map(e => `<div style="flex:1;background:#f5f6f8;border-radius:14px;padding:10px 4px;text-align:center">${emojiArt(e.base.emoji, 24)}<div style="font-size:11px;font-weight:700;color:var(--ink2);margin-top:5px">${e.base.name}</div></div>`).join('');
+  return `<div class="card soft">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <button onclick="changeStage(-1)" class="press" style="width:42px;height:42px;border-radius:14px;border:0;background:#f2f4f6;display:flex;align-items:center;justify-content:center;color:var(--ink);${s<=1?'opacity:.3':''}">${ic('chevron-left','w-5 h-5')}</button>
+        <div style="text-align:center"><div style="font-size:12px;font-weight:700;color:var(--ink3)">${frontier?'도전 중':'복습 중'} · 최고 ${state.stage}</div><div style="font-size:26px;font-weight:800;letter-spacing:-0.03em;margin-top:1px">STAGE ${s}</div></div>
+        <button onclick="changeStage(1)" class="press" style="width:42px;height:42px;border-radius:14px;border:0;background:#f2f4f6;display:flex;align-items:center;justify-content:center;color:var(--ink);${s>=state.stage?'opacity:.3':''}">${ic('chevron-right','w-5 h-5')}</button>
       </div>
-      <div class="grid grid-cols-2 gap-2 mt-3">
-        <div class="bg-slate-50 rounded-2xl p-2.5 text-center"><div class="text-[10px] font-bold text-slate-400">기여도 보상 (최대)</div><div class="font-extrabold text-sm text-amber-600">🪙 ${fmt(contribMax(s))}</div></div>
-        <div class="bg-slate-50 rounded-2xl p-2.5 text-center"><div class="text-[10px] font-bold text-slate-400">첫 클리어 보상</div><div class="font-extrabold text-sm ${frontier?'text-blue-600':'text-slate-300'}">${frontier?'🪙 '+fmt(clearBonus(s)):'획득 완료'}</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+        <div style="background:#f5f6f8;border-radius:16px;padding:12px 14px"><div style="font-size:11px;font-weight:700;color:var(--ink3)">기여도 보상 (최대)</div><div style="display:flex;align-items:center;gap:4px;font-size:16px;font-weight:800;margin-top:3px">${COIN}${fmt(contribMax(s))}</div></div>
+        <div style="background:#f5f6f8;border-radius:16px;padding:12px 14px"><div style="font-size:11px;font-weight:700;color:var(--ink3)">첫 클리어 보상</div>${frontier?`<div style="display:flex;align-items:center;gap:4px;font-size:16px;font-weight:800;margin-top:3px">${COIN}${fmt(clearBonus(s))}</div>`:'<div style="font-size:16px;font-weight:800;margin-top:3px;color:var(--ink4)">획득 완료</div>'}</div>
       </div>
-      <div class="text-[11px] text-slate-400 mt-2.5 leading-relaxed">보스에게 입힌 피해 비율만큼 기여도 보상을 받아요. 패배해도 지급돼요.</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:12px;line-height:1.55">자동으로 계속 싸워요. 이기면 다음 스테이지, 지면 이전 스테이지로 이동하고, 보스에게 입힌 피해만큼 기여도 보상을 받아요.</div>
     </div>
-    <div class="rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 text-white p-5 shadow-lg">
-      <div class="flex items-center justify-around">
-        <div class="text-center"><div class="emoji text-5xl">${state.eq.f?F(state.eq.f).emoji:'❔'}</div><div class="text-[11px] text-white/60 mt-1 font-bold">${ms?ms.label:'미장착'}</div></div>
-        <div class="text-[11px] font-extrabold text-white/40 tracking-widest">VS</div>
-        <div class="text-center"><div class="emoji text-5xl">${bi.emoji}</div><div class="text-[11px] text-white/60 mt-1 font-bold">${bi.style.label}</div></div>
+    <div class="card soft">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="text-align:center;width:38%"><div class="medal t-n" style="width:64px;height:64px;margin:0 auto;${fb?'':'box-shadow:inset 0 0 0 1.5px #d5dae0'}">${fb?`<span class="emoji" style="font-size:36px">${fb.emoji}</span>`:`<span style="color:var(--ink4);font-size:22px;font-weight:800">?</span>`}</div>
+          <div style="font-size:14px;font-weight:800;margin-top:8px">${fb?fb.name:'미장착'}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">${ms?ms.label:'—'}</div></div>
+        <div style="font-size:11px;font-weight:800;color:var(--ink4);letter-spacing:.1em">VS</div>
+        <div style="text-align:center;width:38%"><div class="medal t-m" style="width:64px;height:64px;margin:0 auto"><span class="emoji" style="font-size:36px">${bi.emoji}</span></div>
+          <div style="font-size:14px;font-weight:800;margin-top:8px">보스 ${s}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">${bi.style.label}</div></div>
       </div>
-      <div class="mt-4 h-2.5 rounded-full bg-rose-500/80 overflow-hidden"><div class="h-full bg-blue-400 rounded-full transition-all" style="width:${ratio}%"></div></div>
-      <div class="flex justify-between text-sm font-extrabold mt-2 tabular-nums"><span class="text-blue-300">내 전투력 ${fmt(mp)}</span><span class="text-rose-300">${fmt(bp)} 보스 전투력</span></div>
-      <div class="flex items-center justify-between mt-3 pt-3 border-t border-white/10"><span class="text-xs font-bold text-white/60">보스 스킬</span><div class="flex gap-1.5">${kit}</div></div>
+      <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:18px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue);transition:width .4s"></div><div style="flex:1;background:var(--red)"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(bp)}</span></div>
+      <div class="sect" style="margin:16px 0 8px">보스 스킬</div>
+      <div style="display:flex;gap:8px">${kit}</div>
     </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="font-extrabold mb-1">최근 전투</div>
-      <div class="divide-y divide-slate-100">${logs}</div>
-    </div>
-  </div>`;
+    <div class="card soft" style="padding-bottom:12px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px">최근 전투</div>${logs}</div>`;
 }
 function changeStage(d) {
   const s = Math.max(1, Math.min(state.stage, state.sel + d));
@@ -603,38 +706,27 @@ function changeStage(d) {
 
 /* ---- 설정 ---- */
 function viewSettings() {
-  const opt = (v, label, desc) => `<button onclick="setLose('${v}')" class="press flex-1 rounded-2xl p-3 text-left border-2 ${state.set.lose===v?'border-blue-500 bg-blue-50':'border-slate-100 bg-white'}"><div class="text-sm font-extrabold ${state.set.lose===v?'text-blue-600':'text-slate-700'}">${label}</div><div class="text-[11px] text-slate-400 mt-0.5">${desc}</div></button>`;
-  return `<div class="space-y-3.5">
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="font-extrabold mb-1">패배 시 자동 진행</div>
-      <div class="text-sm text-slate-500 mb-3">패배 결과창에서 3초 안에 아무것도 누르지 않으면 선택한 동작으로 다음 전투를 시작해요.</div>
-      <div class="flex gap-2">${opt('retry','다시 도전','같은 스테이지 재도전')}${opt('back','이전 스테이지','한 단계 아래에서 진행')}</div>
-    </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="font-extrabold mb-1">내 기록</div>
-      <div class="text-sm text-slate-500">최고 스테이지 ${state.stage} · 파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length} · 스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</div>
-    </div>
-    <div class="bg-white rounded-3xl p-5 card-shadow">
-      <div class="font-extrabold mb-1">데이터 초기화</div>
-      <div class="text-sm text-slate-500 mb-4">골드, 스테이지, 보유 아이템이 모두 처음 상태로 돌아가요.</div>
-      <button onclick="askReset()" class="press w-full rounded-2xl bg-rose-50 text-rose-600 font-bold py-3.5 flex items-center justify-center gap-2"><i data-lucide="trash-2" class="w-5 h-5"></i>전체 데이터 초기화</button>
-    </div>
-    <div class="text-center text-xs text-slate-400 pt-2">Animal Brawl v1.2</div>
+  const row = (l, v) => `<div style="display:flex;justify-content:space-between;align-items:center;height:44px;border-top:1px solid var(--line)"><span style="font-size:14px;color:var(--ink2);font-weight:500">${l}</span><span style="font-size:14px;font-weight:800">${v}</span></div>`;
+  return `<div class="space-y-3">
+    <div class="card soft" style="padding-bottom:8px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px">내 기록</div>
+      ${row('최고 스테이지', 'STAGE ' + state.stage)}${row('파이터 도감', `${Object.keys(state.own.f).length} / ${FIGHTERS.length}`)}${row('스킬 도감', `${Object.keys(state.own.s).length} / ${SKILLS.length}`)}${row('보유 골드', `<span style="display:inline-flex;align-items:center;gap:4px">${COIN}${fmt(state.gold)}</span>`)}</div>
+    <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">자동 전투</div>
+      <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-top:6px">전투는 쉬지 않고 이어져요. 승리하면 다음 스테이지로, 패배하면 이전 스테이지로 자동 이동해요. 결과 화면이 뜨면 3초 안에 다른 선택지를 눌러 직접 고를 수도 있어요.</div></div>
+    <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">데이터 초기화</div>
+      <div style="font-size:13px;color:var(--ink3);line-height:1.6;margin:6px 0 14px">골드, 스테이지, 보유한 동물과 스킬이 모두 처음 상태로 돌아가요.</div>
+      <button class="btn danger" style="width:100%" onclick="askReset()">${ic('trash-2','w-[18px] h-[18px]')}전체 데이터 초기화</button></div>
+    <div style="text-align:center;font-size:12px;color:var(--ink4);padding:6px 0">Animal Brawl v1.3</div>
   </div>`;
 }
-function setLose(v) { state.set.lose = v; save(); render(); }
 function askReset() {
   const m = $('confirmModal'); m.classList.remove('hidden'); m.classList.add('flex');
-  m.innerHTML = `<div class="bg-white rounded-3xl p-6 w-full max-w-[340px] anim-pop text-center">
-    <div class="emoji text-5xl mb-3">⚠️</div><div class="font-extrabold text-lg">정말 초기화할까요?</div>
-    <div class="text-sm text-slate-500 mt-1 mb-5">되돌릴 수 없어요.</div>
-    <div class="grid grid-cols-2 gap-2">
-      <button onclick="closeConfirm()" class="press rounded-2xl bg-slate-100 font-bold py-3">취소</button>
-      <button onclick="doReset()" class="press rounded-2xl bg-rose-500 text-white font-bold py-3">초기화</button>
-    </div></div>`;
+  m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:26px 22px 20px;width:100%;max-width:330px;text-align:center">
+    <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em">정말 초기화할까요?</div>
+    <div style="font-size:14px;color:var(--ink3);margin:8px 0 22px;line-height:1.55">모든 진행 상황이 사라지고<br>되돌릴 수 없어요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn ghost" onclick="closeConfirm()">취소</button><button class="btn" style="background:var(--red);color:#fff" onclick="doReset()">초기화</button></div></div>`;
 }
 function closeConfirm() { const m = $('confirmModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
-function doReset() { state = freshState(); save(); sel = { type:'skill', idx:0 }; invTab = 'f'; battleLog.length = 0; closeConfirm(); toast('초기화되었어요'); startBattle(); render(); }
+function doReset() { state = freshState(); save(); sel = { type:'fighter', idx:0 }; invTab = 'f'; battleLog.length = 0; closeConfirm(); toast('초기화되었어요'); startBattle(); render(); }
 
 /* =====================================================================
    전투 엔진 — 페이지 내장 자동 전투 (고정 월드 720 x 500)
@@ -650,48 +742,78 @@ function angDiff(a,b) { let d = a-b; while (d > Math.PI) d -= TAU; while (d < -M
 function mulberry(seed) { return function() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 let B = null;
 
-/* ---------- 아레나 DOM (한 번만 생성, 전투 탭에 끼워 넣음) ---------- */
+/* ---------- 아레나 DOM (한 번만 생성해서 전투 탭에 끼워 넣음) ---------- */
+const SVG_MAX = '<svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+const SVG_MIN = '<svg viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
 const arenaEl = (() => {
   const d = document.createElement('div');
-  d.innerHTML = `<div class="relative w-full rounded-3xl overflow-hidden bg-slate-900 shadow-lg" style="aspect-ratio:720/500">
-    <canvas id="cv" class="absolute inset-0 w-full h-full block"></canvas>
-    <div class="absolute inset-0 pointer-events-none p-2.5 flex flex-col justify-between">
-      <div class="flex items-start gap-1.5">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-1 mb-0.5"><span id="hMeName" class="text-white text-[11px] font-extrabold truncate"></span><span id="hMeStyle" class="shrink-0 text-[9px] font-bold px-1.5 py-px rounded-full bg-white/15 text-white/85"></span></div>
-          <div class="relative h-2 rounded-full bg-black/40 overflow-hidden ring-1 ring-white/20"><div id="hMeLag" class="absolute inset-y-0 left-0 bg-white/70"></div><div id="hMeBar" class="absolute inset-y-0 left-0"></div></div>
-          <div id="hMeHp" class="text-[9px] text-white/75 mt-0.5 tabular-nums"></div>
+  d.innerHTML = `<div class="arena"><div class="arena-box">
+    <canvas id="cv" style="position:absolute;inset:0;width:100%;height:100%;display:block"></canvas>
+    <div class="hud">
+      <div class="row">
+        <div class="plate" style="--team:#5aa2ff">
+          <div class="avatar"><span class="emoji" id="hMeEm"></span></div>
+          <div class="pinfo">
+            <div class="pname"><span id="hMeName"></span><small id="hMeLv"></small></div>
+            <div class="hpbar"><i id="hMeLag" style="left:0;background:rgba(255,255,255,.75)"></i><i id="hMeBar" style="left:0"></i></div>
+            <div class="hpnum" id="hMeHp"></div>
+          </div>
         </div>
-        <div class="shrink-0 text-center bg-black/40 backdrop-blur rounded-xl px-2.5 py-1 ring-1 ring-white/15"><div class="text-[9px] font-bold text-white/60 leading-none">STAGE</div><div id="hStage" class="text-white text-sm font-extrabold leading-tight">1</div><div id="hTime" class="text-[9px] text-white/70 tabular-nums leading-none">0s</div></div>
-        <div class="flex-1 min-w-0 text-right">
-          <div class="flex items-center justify-end gap-1 mb-0.5"><span id="hEnStyle" class="shrink-0 text-[9px] font-bold px-1.5 py-px rounded-full bg-white/15 text-white/85"></span><span id="hEnName" class="text-white text-[11px] font-extrabold truncate"></span></div>
-          <div class="relative h-2 rounded-full bg-black/40 overflow-hidden ring-1 ring-white/20"><div id="hEnLag" class="absolute inset-y-0 right-0 bg-white/70"></div><div id="hEnBar" class="absolute inset-y-0 right-0 bg-gradient-to-l from-rose-500 to-orange-400"></div></div>
-          <div id="hEnHp" class="text-[9px] text-white/75 mt-0.5 tabular-nums"></div>
+        <div class="pill"><small>STAGE</small><b id="hStage">1</b><small id="hTime">0s</small></div>
+        <div class="plate r" style="--team:#ff6b72">
+          <div class="avatar"><span class="emoji" id="hEnEm"></span></div>
+          <div class="pinfo">
+            <div class="pname"><span id="hEnName"></span><small id="hEnLv"></small></div>
+            <div class="hpbar"><i id="hEnLag" style="right:0;background:rgba(255,255,255,.75)"></i><i id="hEnBar" style="right:0;background:linear-gradient(270deg,#f25461,#ff9a62)"></i></div>
+            <div class="hpnum" id="hEnHp"></div>
+          </div>
         </div>
       </div>
-      <div class="flex items-end justify-between">
-        <div id="hSkills" class="flex gap-1.5"></div>
-        <button id="hSpeed" class="pointer-events-auto press bg-black/45 backdrop-blur ring-1 ring-white/20 text-white text-[11px] font-bold rounded-full px-3 py-1.5">1x</button>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between">
+        <div id="hSkills" style="display:flex;gap:.6em"></div>
+        <div style="display:flex;gap:.6em"><button class="hbtn" id="hSpeed">1x</button><button class="hbtn" id="hFs" aria-label="전체 화면"></button></div>
       </div>
     </div>
-    <div id="hMsg" class="absolute inset-0 hidden flex-col items-center justify-center text-center px-6 bg-slate-900/85 backdrop-blur-sm"></div>
-    <div id="hResult" class="absolute inset-0 hidden items-center justify-center bg-black/55 backdrop-blur-sm px-3"></div>
-  </div>`;
+    <div class="overlay" id="hMsg"></div>
+    <div class="overlay" id="hResult"></div>
+  </div></div>`;
   return d.firstElementChild;
 })();
 const A = id => arenaEl.querySelector('#' + id);
 const cv = A('cv'), ctx = cv.getContext('2d');
-A('hSpeed').onclick = () => { battleSpeed = battleSpeed === 1 ? 2 : 1; A('hSpeed').textContent = battleSpeed + 'x'; if (B) B.speed = battleSpeed; };
+
+A('hSpeed').onclick = () => { battleSpeed = battleSpeed >= 3 ? 1 : battleSpeed + 1; A('hSpeed').textContent = battleSpeed + 'x'; if (B) B.speed = battleSpeed; };
+A('hFs').onclick = () => toggleFs();
+
+/* 전체 화면 */
+function isFs() { return document.fullscreenElement === arenaEl || arenaEl.classList.contains('fs'); }
+function syncFs() { A('hFs').innerHTML = isFs() ? SVG_MIN : SVG_MAX; document.body.style.overflow = arenaEl.classList.contains('fs') ? 'hidden' : ''; }
+async function toggleFs() {
+  if (isFs()) { exitFs(); return; }
+  try {
+    if (!arenaEl.requestFullscreen) throw new Error('unsupported');
+    await arenaEl.requestFullscreen();
+    try { await screen.orientation.lock('landscape'); } catch (e) {}
+  } catch (e) { arenaEl.classList.add('fs'); }
+  syncFs();
+}
+function exitFs() {
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+  try { if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch (e) {}
+  arenaEl.classList.remove('fs'); syncFs();
+}
+document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement) { try { screen.orientation.unlock(); } catch (e) {} } syncFs(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && arenaEl.classList.contains('fs')) exitFs(); });
+syncFs();
 
 function showArenaMsg(show) {
-  const m = A('hMsg');
-  if (!show) { m.classList.add('hidden'); m.classList.remove('flex'); return; }
+  const m = A('hMsg'); m.classList.toggle('on', show);
+  if (!show) return;
   const hasAny = Object.keys(state.own.f).length > 0;
-  m.classList.remove('hidden'); m.classList.add('flex');
-  m.innerHTML = `<div class="emoji text-5xl mb-2">🐾</div>
-    <div class="text-white font-extrabold text-sm">${hasAny ? '파이터를 장착하면 자동 전투가 시작돼요' : '아직 파이터가 없어요'}</div>
-    <div class="text-white/60 text-[11px] mt-1">${hasAny ? '세팅 탭에서 보유한 동물을 장착해보세요' : '영입 탭에서 첫 파이터를 뽑아보세요'}</div>
-    <button onclick="setTab('${hasAny ? 'lineup' : 'gacha'}')" class="pointer-events-auto press mt-3 rounded-full bg-white text-slate-900 text-xs font-bold px-4 py-2">${hasAny ? '세팅으로 이동' : '영입하러 가기'}</button>`;
+  m.innerHTML = `<div style="font-size:clamp(11px,2.3cqw,17px);color:#fff">
+    <div style="font-size:1.35em;font-weight:800;letter-spacing:-0.02em">${hasAny ? '파이터를 장착해 주세요' : '아직 파이터가 없어요'}</div>
+    <div style="margin-top:.5em;color:rgba(255,255,255,.65);font-weight:500">${hasAny ? '장착하면 자동 전투가 바로 시작돼요' : '영입에서 첫 파이터를 뽑아 보세요'}</div>
+    <button onclick="setTab('${hasAny ? 'lineup' : 'gacha'}')" class="press" style="pointer-events:auto;margin-top:1.2em;height:2.8em;padding:0 1.6em;border:0;border-radius:99px;background:#fff;color:#191f28;font-weight:800;font-size:1em">${hasAny ? '세팅으로 이동' : '영입하러 가기'}</button></div>`;
 }
 
 /* ---------- 배경 ---------- */
@@ -748,7 +870,7 @@ function mkUnit(o) {
     style, pokes: style.c < 0.42, plan:{ t:'idle' }, thinkT:rnd(0.1,0.3), strafe:Math.random()<0.5?1:-1, strafeT:rnd(1,2.5),
     retreatT:0, retreatCd:0, thKey:null, thAt:0, thDodge:false, thWalk:true, chip:null, ghostT:0, dead:false, deadT:0, cornered:false };
   u.atkRange = u.pokes ? Math.max(210, style.pref + 20) : u.r + 52;
-  u.dodgeSkill = clamp(0.4 + 0.45*(1-style.aggr) + es/800, 0.25, 0.92) * (o.isBoss ? 0.85 : 1);
+  u.dodgeSkill = clamp(0.4 + 0.45*(1-style.aggr) + es/800, 0.25, 0.92) * (o.isBoss ? 0.5 : 1);
   return u;
 }
 const foe = u => u === B.me ? B.en : B.me;
@@ -792,7 +914,7 @@ function applyHit(src, tgt, raw, o) {
   if (tgt.hiberT > 0) dmg = Math.max(1, Math.round(dmg*0.4));
   const ang = angTo(src, tgt);
   if (tgt.shield > 0) {
-    const ab = Math.min(tgt.shield, dmg); tgt.shield -= ab; dmg -= ab;
+    const ab = Math.min(tgt.shield, dmg); tgt.shield -= ab; dmg = Math.round(dmg - ab);
     addText(tgt.x, tgt.y - tgt.r*1.4, '막음', '150,200,255', 20, 0.7); sparks(tgt.x, tgt.y, 6, '170,210,255', 200, 0.3, ang + Math.PI, 0.8);
     if (tgt.shield <= 0) { tgt.shieldT = 0; ring(tgt.x, tgt.y, tgt.r, tgt.r*2.2, 0.35, '150,200,255', 2); }
     if (dmg <= 0) return 0;
@@ -899,13 +1021,13 @@ function startDash(u, e, mode, stop) {
   else { dir = freeDir(u, ang + Math.PI + u.strafe*0.5, 230*boost); travel = 230*boost; }
   const dur = 0.24;
   u.act = { type:'dash', t:0, dur, id:++B.actId, data:{ vx:Math.cos(dir)*travel/dur, vy:Math.sin(dir)*travel/dur, toward:mode === 'toward' } };
-  u.dashCd = (clamp(4.6 - u.es/100, 2.4, 4.6) + rnd(0,0.9)) * (u.pas === 'eagle' ? 0.6 : 1);
+  u.dashCd = (clamp(4.6 - u.es/100, 2.4, 4.6) + rnd(0,0.9)) * (u.pas === 'eagle' ? 0.6 : 1) * (u.isBoss ? 1.7 : 1);
   chip(u, mode === 'toward' ? '돌진' : '이탈'); puff(u.x, u.y + u.r*0.5, 7, '210,220,210', 14, 0.45, 50);
   return true;
 }
 function startAttack(u, e) {
   const ang = angTo(u, e);
-  let cd = Math.max(0.5, 1.45 - u.es/120) * (u.pokes ? 1.3 : 1);
+  let cd = Math.max(0.5, 1.45 - u.es/120) * (u.pokes ? (u.isBoss ? 1.9 : 1.3) : 1);
   if (u.pas === 'wolf' && e.hp < e.maxHp*0.5) cd *= 0.8;
   u.atkCd = cd;
   const area = u.pokes ? null : { type:'arc', ang, reach:u.r + 52, half:0.95 };
@@ -980,7 +1102,7 @@ function think(u, e) {
   const cornered = wall < u.r + 55 && d < 170; u.cornered = cornered;
   const th = findThreat(u, e);
   if (th) {
-    if (u.thKey !== th.key) { u.thKey = th.key; u.thAt = B.time + rnd(0.07,0.2)*(1.2 - Math.min(0.6, u.es/300)); u.thDodge = Math.random() < u.dodgeSkill; u.thWalk = Math.random() < 0.8; }
+    if (u.thKey !== th.key) { u.thKey = th.key; u.thAt = B.time + rnd(0.07,0.2)*(1.2 - Math.min(0.6, u.es/300))*(u.isBoss ? 1.8 : 1); u.thDodge = Math.random() < u.dodgeSkill; u.thWalk = Math.random() < 0.8; }
     if (u.thDodge) {
       if (B.time < u.thAt) { u.plan = { t:'idle' }; return; }
       const dir = escapeDir(u, e, th);
@@ -1244,7 +1366,7 @@ function updateUnit(u, dt) {
   }
   if (u.hp <= 0) return;
   if (u.act) progressAct(u, e, dt);
-  else if (u.stun <= 0) { u.thinkT -= dt; if (u.thinkT <= 0) { u.thinkT = rnd(0.09, 0.16); think(u, e); } }
+  else if (u.stun <= 0) { u.thinkT -= dt; if (u.thinkT <= 0) { u.thinkT = rnd(0.09, 0.16)*(u.isBoss ? 1.6 : 1); think(u, e); } }
   moveUnit(u, e, dt);
 }
 function updateProjs(h) {
@@ -1544,12 +1666,14 @@ function draw() {
   }
 }
 
+
 /* ---------- HUD / 흐름 ---------- */
-function barColor(r) { return r > 0.5 ? 'linear-gradient(90deg,#34d399,#6ee7b7)' : r > 0.25 ? 'linear-gradient(90deg,#fbbf24,#fcd34d)' : 'linear-gradient(90deg,#f87171,#fb923c)'; }
 function updateHud(raw) {
   const me = B.me, en = B.en, mr = me.hp/me.maxHp, er = en.hp/en.maxHp;
   B.lagMe = B.lagMe > mr ? Math.max(mr, B.lagMe - raw*0.5) : mr; B.lagEn = B.lagEn > er ? Math.max(er, B.lagEn - raw*0.5) : er;
-  A('hMeBar').style.width = (mr*100) + '%'; A('hMeBar').style.background = barColor(mr); A('hMeLag').style.width = (B.lagMe*100) + '%';
+  const mb = A('hMeBar');
+  mb.style.width = (mr*100) + '%'; mb.style.background = mr > 0.5 ? 'linear-gradient(90deg,#2fd08a,#6be3ad)' : mr > 0.25 ? 'linear-gradient(90deg,#f5b73a,#ffd36b)' : 'linear-gradient(90deg,#f25461,#ff8a65)';
+  A('hMeLag').style.width = (B.lagMe*100) + '%';
   A('hEnBar').style.width = (er*100) + '%'; A('hEnLag').style.width = (B.lagEn*100) + '%';
   A('hMeHp').textContent = `${Math.ceil(me.hp)} / ${me.maxHp}`; A('hEnHp').textContent = `${Math.ceil(en.hp)} / ${en.maxHp}`;
   A('hTime').textContent = Math.floor(B.fightT) + 's';
@@ -1557,7 +1681,7 @@ function updateHud(raw) {
     const ov = A('sk'+i), tx = A('skt'+i); if (!ov) return;
     ov.style.background = `conic-gradient(rgba(0,0,0,0.62) ${clamp(s.cd/s.cdMax, 0, 1)*360}deg, transparent 0)`;
     tx.textContent = s.cd > 0 ? Math.ceil(s.cd) : '';
-    ov.parentElement.style.boxShadow = s.cd <= 0 ? `0 0 0 2px rgba(${s.b.color},0.9)` : '0 0 0 1px rgba(255,255,255,0.2)';
+    ov.parentElement.style.boxShadow = s.cd <= 0 ? `0 0 0 .16em rgba(${s.b.color},0.95)` : '0 0 0 1px rgba(255,255,255,0.18)';
   });
 }
 let lastTs = 0;
@@ -1568,25 +1692,25 @@ function loop(ts) {
     if (B.hitstop > 0) { B.hitstop -= raw; scale *= 0.04; }
     if (B.slowmo > 0) { B.slowmo -= raw; scale *= 0.28; }
     B.acc += raw*scale; let n = 0;
-    while (B.acc >= STEP && n < 10) { simulate(STEP); B.acc -= STEP; n++; }
-    if (n >= 10) B.acc = 0;
+    while (B.acc >= STEP && n < 12) { simulate(STEP); B.acc -= STEP; n++; }
+    if (n >= 12) B.acc = 0;
     B.shake *= Math.pow(0.0008, raw); B.punch *= Math.pow(0.003, raw);
     if (B.over) {
       if (!B.resultShown) { B.endT -= raw; if (B.endT <= 0) showResult(); }
       else if (!B.resolved) {
         B.autoT -= raw;
-        const bar = A('rbBar'), sec = A('rbSec');
-        if (bar) bar.style.width = (clamp(1 - B.autoT/3, 0, 1)*100) + '%'; if (sec) sec.textContent = Math.max(1, Math.ceil(B.autoT));
+        const f = A('rbFill'), sec = A('rbSec');
+        if (f) f.style.width = (clamp(1 - B.autoT/3, 0, 1)*100) + '%'; if (sec) sec.textContent = Math.max(1, Math.ceil(B.autoT));
         if (B.autoT <= 0) pickNext('def');
       }
     }
-    if (arenaEl.isConnected && B) { fitCanvas(); if (cv.width > 0) { draw(); updateHud(raw); } }
+    if (B && arenaEl.isConnected) { fitCanvas(); if (cv.width > 0) { draw(); updateHud(raw); } }
   }
   requestAnimationFrame(loop);
 }
 
 function startBattle() {
-  if (!state.eq.f) { B = null; showArenaMsg(true); return; }
+  if (!state.eq.f) { B = null; showArenaMsg(true); A('hResult').classList.remove('on'); return; }
   showArenaMsg(false);
   const fb = F(state.eq.f), entries = skillEntries();
   const stage = clamp(state.sel, 1, state.stage); state.sel = stage;
@@ -1599,56 +1723,49 @@ function startBattle() {
   const en = mkUnit({ side:'en', isBoss:true, emoji:bi.emoji, name:'보스 ' + stage, st:bi.st, fmc:bi.kit.fmc, entries:bi.entries });
   B.me = me; B.en = en;
   me.x = WW*0.18; me.y = WH/2; en.x = WW*0.82; en.y = WH/2; me.face = 0; en.face = Math.PI;
-  const hr = A('hResult'); hr.classList.add('hidden'); hr.classList.remove('flex'); hr.innerHTML = '';
-  A('hStage').textContent = stage; A('hMeName').textContent = me.name; A('hEnName').textContent = en.name;
-  A('hMeStyle').textContent = me.style.label; A('hEnStyle').textContent = en.style.label; A('hSpeed').textContent = battleSpeed + 'x';
-  A('hSkills').innerHTML = me.skills.map((s, i) => `<div class="relative w-9 h-9 rounded-lg bg-black/45 backdrop-blur flex items-center justify-center overflow-hidden"><span class="emoji text-base">${s.b.emoji}</span><div id="sk${i}" class="absolute inset-0"></div><span id="skt${i}" class="absolute inset-0 flex items-center justify-center text-white font-extrabold text-xs"></span></div>`).join('');
+  A('hResult').classList.remove('on'); A('hResult').innerHTML = '';
+  A('hStage').textContent = stage; A('hSpeed').textContent = battleSpeed + 'x';
+  A('hMeEm').textContent = fb.emoji; A('hMeName').textContent = fb.name; A('hMeLv').textContent = 'Lv.' + curLv('f', fb.id);
+  A('hEnEm').textContent = bi.emoji; A('hEnName').textContent = '보스 ' + stage; A('hEnLv').textContent = bi.style.label;
+  A('hSkills').innerHTML = me.skills.map((s, i) => `<div class="sks"><span class="e emoji">${s.b.emoji}</span><div class="cd" id="sk${i}"></div><span class="n" id="skt${i}"></span></div>`).join('');
 }
-function nextOptions() {
-  const s = B.stage;
-  if (B.win) {
-    if (B.firstClear) return { def:{ label:`다음 스테이지 ${s+1}`, stage:s+1 }, alt:{ label:`${s} 반복`, stage:s } };
-    return { def:{ label:`${s} 반복`, stage:s }, alt: s < state.stage ? { label:`다음 스테이지 ${s+1}`, stage:s+1 } : null };
-  }
-  const retry = { label:'다시 도전', stage:s };
-  if (s <= 1) return { def:retry, alt:null };
-  const prev = { label:`이전 스테이지 ${s-1}`, stage:s-1 };
-  return state.set.lose === 'back' ? { def:prev, alt:retry } : { def:retry, alt:prev };
-}
+function nextStageAfter() { return B.win ? Math.min(B.stage + 1, state.stage) : Math.max(1, B.stage - 1); }
 function showResult() {
-  B.resultShown = true; B.autoT = 3; B.opts = nextOptions();
-  const o = B.opts, win = B.win, st = B.stats, hr = A('hResult');
-  const chips = [`<span class="bg-amber-50 text-amber-600 rounded-full px-2 py-0.5">🪙 +${fmt(B.contrib + B.bonus)}</span>`, `<span class="bg-slate-100 text-slate-600 rounded-full px-2 py-0.5">기여도 ${Math.round(B.ratio*100)}%</span>`];
-  if (B.firstClear) chips.push(`<span class="bg-blue-50 text-blue-600 rounded-full px-2 py-0.5">첫 클리어 +${fmt(B.bonus)}</span>`);
-  hr.classList.remove('hidden'); hr.classList.add('flex');
-  hr.innerHTML = `<div class="w-full max-w-[330px] bg-white rounded-2xl p-3.5 text-center anim-pop">
-    <div class="flex items-center justify-center gap-2.5"><span class="emoji text-3xl">${win ? '🏆' : '💀'}</span><div class="text-left"><div class="text-base font-extrabold ${win ? 'text-blue-600' : 'text-rose-500'}">${win ? '승리!' : (B.timeout ? '시간 초과' : '패배')}</div><div class="text-[11px] text-slate-500">STAGE ${B.stage} · 피해 ${fmt(st.dealt)} · 회피 ${st.dodges}회</div></div></div>
-    <div class="mt-2 flex items-center justify-center gap-1 flex-wrap text-[11px] font-bold">${chips.join('')}</div>
-    <div class="grid ${o.alt ? 'grid-cols-2' : 'grid-cols-1'} gap-2 mt-3">
-      <button onclick="pickNext('def')" class="press relative overflow-hidden rounded-xl bg-blue-600 text-white font-bold py-2.5 text-[12px]"><div id="rbBar" class="absolute inset-y-0 left-0 bg-white/25" style="width:0%"></div><span class="relative">${o.def.label} <span id="rbSec" class="opacity-80">3</span></span></button>
-      ${o.alt ? `<button onclick="pickNext('alt')" class="press rounded-xl bg-slate-100 text-slate-700 font-bold py-2.5 text-[12px]">${o.alt.label}</button>` : ''}
+  B.resultShown = true; B.autoT = 3;
+  const s = B.stage, n = nextStageAfter(), win = B.win, st = B.stats;
+  B.opts = { def:n, alt: n !== s ? s : null };
+  const defLabel = win ? `다음 스테이지 ${n}` : (n < s ? `이전 스테이지 ${n}` : '다시 도전');
+  const coin = '<svg viewBox="0 0 20 20" style="width:1.05em;height:1.05em;vertical-align:-.15em"><circle cx="10" cy="10" r="9.2" fill="#f5b53d"/><circle cx="10" cy="10" r="6.4" fill="none" stroke="#b86e00" stroke-opacity=".5" stroke-width="1.3"/></svg>';
+  const row = (l, v) => `<div style="display:flex;justify-content:space-between;padding:.45em 0;border-top:1px solid #eef0f2"><span style="color:#8b95a1;font-weight:500">${l}</span><span style="font-weight:800">${v}</span></div>`;
+  const hr = A('hResult'); hr.classList.add('on');
+  hr.innerHTML = `<div class="rcard a-pop">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:.8em">
+      <div><div style="font-size:.8em;font-weight:700;color:#8b95a1">STAGE ${s}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${win ? '#3182f6' : '#f04452'}">${win ? '승리' : (B.timeout ? '시간 초과' : '패배')}</div></div>
+      <div style="text-align:right"><div style="font-size:.8em;font-weight:700;color:#8b95a1">획득 골드</div><div style="font-size:1.35em;font-weight:800">${coin} +${fmt(B.contrib + B.bonus)}</div></div>
+    </div>
+    ${row('기여도 보상', `${coin} ${fmt(B.contrib)} <span style="color:#8b95a1;font-weight:600">(${Math.round(B.ratio*100)}%)</span>`)}
+    ${B.firstClear ? row('첫 클리어 보상', `${coin} ${fmt(B.bonus)}`) : ''}
+    ${row('가한 피해 / 회피', `${fmt(st.dealt)} / ${st.dodges}회`)}
+    <div style="display:grid;grid-template-columns:${B.opts.alt ? '1.5fr 1fr' : '1fr'};gap:.5em;margin-top:.9em">
+      <button class="rbtn p" onclick="pickNext('def')"><div class="fill" id="rbFill"></div><span style="position:relative">${defLabel} · <span id="rbSec">3</span></span></button>
+      ${B.opts.alt ? `<button class="rbtn g" onclick="pickNext('alt')">반복</button>` : ''}
     </div></div>`;
 }
 function pickNext(which) {
   if (!B || !B.opts || B.resolved) return;
   B.resolved = true;
-  const o = B.opts[which] || B.opts.def;
-  state.sel = clamp(o.stage, 1, state.stage); save();
+  const target = which === 'alt' && B.opts.alt != null ? B.opts.alt : B.opts.def;
+  state.sel = clamp(target, 1, state.stage); save();
   startBattle();
   if (tab === 'fight') render();
 }
 
 /* ===================== 시작 ===================== */
 (function initSplash() {
-  const title = $('splashTitle');
-  title.innerHTML = 'Animal Brawl'.split('').map((ch, i) => ch === ' ' ? '<span style="width:12px"></span>' : `<span style="display:inline-block;opacity:0;animation:letterIn .6s cubic-bezier(.2,1.3,.4,1) ${0.08*i}s both">${ch}</span>`).join('');
-  requestAnimationFrame(() => { $('splashBar').style.width = '100%'; });
-  const minWait = new Promise(r => setTimeout(r, 1700));
-  const fontsReady = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 2500))]);
-  Promise.all([minWait, fontsReady]).then(() => {
-    const sp = $('splash'); sp.classList.add('anim-fadeout');
-    setTimeout(() => sp.remove(), 480);
-  });
+  $('splashTitle').innerHTML = 'Animal Brawl'.split('').map((ch, i) => ch === ' ' ? '<span style="width:11px"></span>' : `<span style="display:inline-block;animation:letterIn .5s cubic-bezier(.2,.9,.3,1) ${0.06*i}s both">${ch}</span>`).join('');
+  const minWait = new Promise(r => setTimeout(r, 2150));
+  const fontsReady = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 3000))]);
+  Promise.all([minWait, fontsReady]).then(() => { const sp = $('splash'); sp.classList.add('a-out'); setTimeout(() => sp.remove(), 480); });
 })();
 render(true);
 startBattle();
