@@ -163,6 +163,19 @@
   .rbtn.g { background:#eef1f4; color:var(--ink2); }
   .rbtn .fill { position:absolute; inset:0 auto 0 0; background:rgba(255,255,255,.28); width:0; }
   #toast { transition:opacity .2s ease, transform .2s ease; }
+  /* 길게 눌러 끌어다 놓기 */
+  [data-dex] { -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
+  [data-dex].lp-hold { transform:scale(1.09) !important; transition:transform .22s cubic-bezier(.2,.9,.3,1) !important; }
+  [data-dex].lp-src { opacity:.38; transform:scale(.96) !important; }
+  body.drag-f [data-drop^="s:"], body.drag-s [data-drop^="f:"] { opacity:.32; }
+  .drop-ok { animation:dropPulse 1.1s ease-in-out infinite; }
+  .drop-hot { transform:scale(1.07) !important; box-shadow:0 0 0 3px var(--blue), 0 0 0 9px rgba(49,130,246,.28) !important; background:var(--blue-s) !important; animation:none !important; }
+  @keyframes dropPulse { 0%,100% { box-shadow:0 0 0 2px var(--blue), 0 0 0 4px rgba(49,130,246,.10); } 50% { box-shadow:0 0 0 2px var(--blue), 0 0 0 9px rgba(49,130,246,.24); } }
+  @keyframes ghostPop { from { transform:scale(1); } to { transform:scale(1.16); } }
+  #dragGhost { position:fixed; left:0; top:0; z-index:99; pointer-events:none; will-change:transform; }
+  #dragGhost > .tile { margin:0; animation:ghostPop .2s cubic-bezier(.2,1.4,.4,1) both; box-shadow:0 20px 32px -10px rgba(25,31,40,.5), inset 0 0 0 2px var(--tm); }
+  #dragHint { position:fixed; left:0; right:0; margin:0 auto; width:max-content; max-width:90%; bottom:92px; z-index:98; padding:11px 18px; border-radius:99px; background:rgba(25,31,40,.92); color:#fff; font-size:14px; font-weight:700; pointer-events:none; white-space:nowrap; animation:slideUp .25s ease backwards; transition:background .15s; }
+  #dragHint.hot { background:var(--blue); }
 </style>
 </head>
 <body>
@@ -260,14 +273,14 @@ const SKILLS = [
   { id:'meteor',     tier:'l', emoji:'☄️', name:'운석',     dmg:204, cd:10, mc:0.20, range:380, shape:'blast', meteor:true, wind:0.9, radius:135, kb:700, color:'255,120,50' },
   { id:'bladedance', tier:'l', emoji:'🗡️', name:'검무',     dmg:90, cd:7, mc:0.95, range:100, shape:'flurry', hits:5, radius:100, wind:0.30, kb:90, color:'220,235,255' },
   { id:'wave',       tier:'l', emoji:'🌊', name:'해일',     dmg:136, cd:8, mc:0.30, range:520, shape:'proj', kind:'wave', wind:0.45, speed:560, pr:36, hw:240, kb:140, fx:'airstun', fxv:1.5, color:'90,170,255' },
-  { id:'timestop',   tier:'l', emoji:'⏳', name:'시간 정지', dmg:0, cd:10, mc:0.30, range:400, shape:'bind', radius:190, wind:0.40, fxv:2.4, color:'255,235,160' },
+  { id:'timestop',   tier:'l', emoji:'⏳', name:'시간 정지', dmg:0, cd:11, mc:0.30, range:400, shape:'bind', radius:190, wind:0.40, fxv:2.7, color:'255,235,160' },
   { id:'sanctuary',  tier:'l', emoji:'✨', name:'성역',     dmg:0, cd:16, mc:0.50, range:0, shape:'zone', self:true, zstyle:'sanct', radius:110, dur:6, tick:0.5, heal:0.086, wind:0.50, color:'255,240,170' },
   // ── 초월 (상향)
-  { id:'nova',      tier:'t', emoji:'🌌', name:'슈퍼노바',    dmg:493, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:0.85, color:'255,230,150' },
-  { id:'moonblade', tier:'t', emoji:'🌙', name:'섀도 스텝',      dmg:71, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
-  { id:'prison',    tier:'t', emoji:'🕳️', name:'보이드 케이지', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:5, tick:0.4, tickDmg:42, pull:320, zslow:true, wind:0.55, color:'150,100,255' },
-  { id:'eclipse',   tier:'t', emoji:'☀️', name:'이클립스',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:10, batk:1.5, bspd:1.4, color:'255,220,120' },
-  { id:'shower',    tier:'t', emoji:'🌠', name:'스타폴',    dmg:119, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
+  { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:247, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
+  { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:52, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
+  { id:'prison',    tier:'t', emoji:'🕳️', name:'보이드 케이지', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:5, tick:0.4, tickDmg:31.5, pull:320, zslow:true, wind:0.55, color:'150,100,255' },
+  { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:10, batk:1.5, bspd:1.4, color:'255,220,120' },
+  { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:65, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
 ];
 SKILLS.forEach(b => { if (!b.self && b.mc <= 0.35 && b.range > 130) b.range = Math.round(b.range*0.8); });
 
@@ -379,8 +392,8 @@ const SKILL_INFO = {
   wave: '전장을 가로지르는 거대한 파도를 일으킨다. 맞은 적은 기절하며 공중으로 떠오른다.',
   timestop: '넓은 범위의 시간을 멈춰 안에 있는 적을 기절시킨다.',
   sanctuary: '자신의 주변에 성역을 펼쳐 안에 있는 동안 체력을 지속 회복한다.',
-  nova: '슈퍼노바를 폭발시켜 넓은 범위에 막대한 피해를 주고 기절시킨다.',
-  moonblade: '적의 등 뒤로 순간이동하며 벤다. 도착 직후 잠시 무적이 된다.',
+  nova: '초신성을 폭발시켜 넓은 범위에 막대한 피해를 주고 기절시킨다.',
+  moonblade: '적의 등 뒤로 순간이동하며 벤다. 도착 직후 2초간 무적이 된다.',
   prison: '보이드 케이지를 열어 안의 적을 끌어당기고 느리게 하며 지속 피해를 준다.',
   eclipse: '10초간 공격력이 1.5배, 이동속도가 40% 오른다.',
   shower: '넓은 범위에 유성 13발을 연달아 떨어뜨린다.',
@@ -426,10 +439,10 @@ const BOSS_KITS = [
   { name:'시간 사냥꾼', min:16, fmc:0.70, skills:['timestop','bladedance','vamp'] },
   { name:'성역 수호자', min:16, fmc:0.50, skills:['sanctuary','wave','poison'] },
   // 5단계 (스테이지 20~)
-  { name:'슈퍼노바 마도사', min:20, fmc:0.20, skills:['nova','snipe','storm'] },
-  { name:'섀도 암살자', min:20, fmc:0.85, skills:['moonblade','bladedance','eclipse'] },
+  { name:'초신성 마도사', min:20, fmc:0.20, skills:['nova','snipe','storm'] },
+  { name:'기습 암살자', min:20, fmc:0.85, skills:['moonblade','bladedance','eclipse'] },
   { name:'보이드 지배자', min:22, fmc:0.45, skills:['prison','meteor','bolt'] },
-  { name:'스타폴 군주',   min:24, fmc:0.30, skills:['shower','wave','hole'] },
+  { name:'유성우 군주',   min:24, fmc:0.30, skills:['shower','wave','hole'] },
 ];
 const BOSS_TIER_DAMP = { n:0.56, r:0.56, e:0.85, m:0.6, l:0.45, t:0.35 };
 const hash32 = n => { let x = (n*2654435761) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; return x >>> 0; };
@@ -720,7 +733,7 @@ function skillParts(b, mult, sl) {
     else p.push(`${b.dur}초간 ${b.tick}초마다 ${v(b.tickDmg)} 지속 피해`);
     if (b.zslow) p.push('둔화'); if (b.pull) p.push('끌어당김');
   } else if (b.shape === 'shower') p.push(`유성 ${b.n}발 · 각 ${v(b.dmg)} 피해`);
-  else if (b.shape === 'flurry') p.push(`${b.hits}연타 · 각 ${v(b.dmg)} 광역 피해`);
+  else if (b.shape === 'flurry') p.push(`${b.hits}연타 · 각 ${v(b.dmg*0.4)} 광역 피해`);
   else if (b.shape === 'buff') { p.push(`${b.dur}초간 공격력 +${Math.round((b.batk-1)*100*(sl||1))}%`); if (b.bspd > 1) p.push(`이동 +${Math.round((b.bspd-1)*100*(sl||1))}%`); if (b.bls) p.push(`${Math.round(b.bls*100*(sl||1))}% 흡혈`); }
   else if (b.shape === 'shield') p.push(`최대 체력 ${Math.round(b.pct*100*Math.min(m,2.2))}% 보호막 (${b.dur}초)`);
   else if (b.shape === 'heal') p.push(`최대 체력 ${Math.round(b.fxv*100*Math.min(m,2.5)*HEAL_MUL)}% 회복`);
@@ -728,7 +741,7 @@ function skillParts(b, mult, sl) {
   else if (b.n > 1) p.push(`${b.n}연발 · 발당 ${v(b.dmg)} 피해`);
   else if (b.dmg) p.push(`피해 ${v(b.dmg)}`);
   if (b.shape === 'rush') p.push('돌진 후 베기');
-  if (b.shape === 'blink') p.push('적의 등 뒤로 순간이동');
+  if (b.shape === 'blink') p.push('적의 등 뒤로 순간이동 · 2초 무적');
   if (b.shape === 'strike' || b.shape === 'blast') p.push('범위 지정');
   if (b.fx === 'lifesteal') p.push(`${Math.round(b.fxv*100)}% 흡혈`);
   if (b.fx === 'freeze') p.push(`${b.fxv}초 둔화`);
@@ -737,6 +750,18 @@ function skillParts(b, mult, sl) {
   if (b.fx === 'airstun') p.push(`넓은 파도 관통 · ${b.fxv}초 기절 · 에어본`);
   if (b.fx === 'pull') p.push(`끌어당김 · ${b.fxv}초 기절`);
   return p;
+}
+/* 피해 계산식: 피해 = 기본 + 공격력 × 계수 (적 방어력만큼 감소) */
+function skillFormula(b, mult) {
+  let d = 0, unit = '';
+  if (b.self || b.shape === 'bind' || b.shape === 'heal' || b.shape === 'shield' || b.shape === 'buff') return '';
+  if (b.shape === 'zone') { if (!b.tickDmg) return ''; d = b.tickDmg; unit = ' · 틱당'; }
+  else if (b.shape === 'shower') { d = b.dmg; unit = ' · 발당'; }
+  else if (b.shape === 'flurry') { d = b.dmg*0.4; unit = ' · 타당'; }
+  else if (b.n > 1) { d = b.dmg; unit = ' · 발당'; }
+  else if (b.dmg) d = b.dmg; else return '';
+  const k = d*mult*rangedMul(b), base = Math.round(k*SKDMG*(1 - SKCOEF)), coef = Math.round(k*SKDMG*SKCOEF/ATK_REF*100);
+  return `<div style="margin-top:8px;background:#fff;border-radius:14px;padding:10px 12px;display:flex;align-items:center;gap:10px"><span style="flex:none;width:30px;height:30px;border-radius:10px;background:#efeaff;display:inline-flex;align-items:center;justify-content:center;font-size:15px">🧮</span><div style="min-width:0"><div style="font-size:11px;font-weight:600;color:var(--ink3)">피해 계산식${unit}</div><div style="font-size:14px;font-weight:800;letter-spacing:-0.02em;line-height:1.35">기본 ${fmt(base)} + 공격력 × ${fmt(coef)}%</div></div></div>`;
 }
 function skillDesc(b, mult) { return skillParts(b, mult).concat([`쿨 ${b.cd}초`]).join(' · '); }
 const scdOf = id => (state.scd && state.scd[id]) || state.startCd || 2;
@@ -757,6 +782,7 @@ function skillInfoHtml(b, lv, id, opts) {
     ${info ? `<div style="font-size:14px;color:var(--ink2);line-height:1.6;font-weight:500">${info}</div>` : ''}
     <div style="margin-top:14px;background:#fff;border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px">${chip('💥', '#ffeceb')}<div style="min-width:0"><div style="font-size:11px;font-weight:600;color:var(--ink3)">효과</div><div style="font-size:16px;font-weight:800;color:#d93a46;letter-spacing:-0.02em;line-height:1.3">${main}</div></div></div>
     ${extra.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${extra.map(x => `<span style="font-size:12px;font-weight:700;color:#5b3fc4;background:#efeaff;border-radius:99px;padding:5px 10px">${x}</span>`).join('')}</div>` : ''}
+    ${skillFormula(b, skMult(b, lv))}
     ${sec('📊', '능력', `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${stat('⏱️', '#e8f3ff', '쿨타임', b.cd + '초', '#1b64da')}${stat('🎯', '#fff4d6', '사거리', b.range ? b.range : '자신', '#b36b00')}${stat(rl === '근접' ? '👊' : rl === '원거리' ? '🏹' : '🌀', '#e9f9f1', '성향', rl, '#0a8f56')}</div>`)}
     ${sec('🎒', '장착 보너스', `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${bcell('❤️', '#ffeceb', 'HP', 'hp', '#d93a46')}${bcell('🗡️', '#fff4d6', '공격', 'atk', '#b36b00')}${bcell('🛡️', '#e8f3ff', '방어', 'def', '#1b64da')}</div>`)}
     ${opts.noCd ? '' : sec('⏳', '시작 쿨타임', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${[1,2,3,4].map(n => `<button class="btn ${scdOf(id) === n ? 'primary' : 'ghost'} sm" style="height:38px;font-size:14px" onclick="setSkillCd('${id}',${n})">${n}초</button>`).join('')}</div><div style="font-size:12px;color:var(--ink3);margin-top:8px;font-weight:500">전투가 시작되고 이 스킬을 처음 쓸 수 있을 때까지의 시간</div>`)}
@@ -988,16 +1014,16 @@ function styleGauge(st) {
     <div style="font-size:12px;color:var(--ink3);margin-top:10px;line-height:1.5">${st.desc}</div>`;
 }
 function slot(kind, id, selected, onclick, label, big, key) {
-  const h = big ? 108 : 92;
-  if (!id) return `<button onclick="${onclick}" class="press ${selected?'a-pulse':''}" style="height:${h}px;width:100%;border-radius:20px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-5 h-5')}<span style="font-size:12px;font-weight:700">${label}</span></button>`;
+  const h = big ? 108 : 92, dk = key === 'f' ? 'f:0' : 's:' + String(key).slice(1);
+  if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press ${selected?'a-pulse':''}" style="height:${h}px;width:100%;border-radius:20px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-5 h-5')}<span style="font-size:12px;font-weight:700">${label}</span></button>`;
   const b = baseOf(kind, id), lv = curLv(kind, id);
-  return `<button onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''} ${flashSlot===key?'a-lvup':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''}" style="height:${h}px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
+  return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''} ${flashSlot===key?'a-lvup':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''}" style="height:${h}px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
     ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="font-size:10px;font-weight:800">Lv.${lv}</span></button>`;
 }
-function slotMini(kind, id, selected, onclick, label) {
-  if (!id) return `<button onclick="${onclick}" class="press" style="height:50px;width:100%;border-radius:14px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;align-items:center;justify-content:center;color:${selected?'var(--blue)':'var(--ink4)'};font-size:11px;font-weight:800">${label}</button>`;
+function slotMini(kind, id, selected, onclick, label, dk) {
+  if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press" style="height:50px;width:100%;border-radius:14px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;align-items:center;justify-content:center;color:${selected?'var(--blue)':'var(--ink4)'};font-size:11px;font-weight:800">${label}</button>`;
   const b = baseOf(kind, id);
-  return `<button onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''}" style="height:50px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">${emojiArt(b.emoji, 22)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span></button>`;
+  return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''}" style="height:50px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">${emojiArt(b.emoji, 22)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span></button>`;
 }
 function viewLineup() {
   const kind = invTab, pool = poolOf(kind).slice().sort((a,b) => TIER_IDX[b.tier] - TIER_IDX[a.tier]);
@@ -1006,12 +1032,11 @@ function viewLineup() {
     const n = owned(kind, b.id);
     if (!n) return `<div class="tile locked" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink4)">${ic('lock','w-[22px] h-[22px]')}<span style="font-size:11px;font-weight:700">???</span><span style="font-size:10px;font-weight:700">${tierOf(b.tier).name}</span></div>`;
     const li = lvInfo(n), lvc = curLv(kind, b.id), up = canUp(kind, b.id), evd = kind === 's' && state.evo[b.id], es = eqSlotOf(b.id), eq = es >= 0;
-    return `<div id="tile-${kind}-${b.id}" class="tile t-${b.tier} press ${eq?'eq':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" role="button" onclick="quickEquip('${kind}','${b.id}')" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;scroll-margin-top:150px">
+    return `<div id="tile-${kind}-${b.id}" class="tile t-${b.tier} press ${eq?'eq':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" role="button" data-dex="${kind}:${b.id}" onclick="tileTap('${kind}','${b.id}')" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;scroll-margin-top:150px">
       ${emojiArt(b.emoji, 32)}<span style="font-size:11px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px">${b.name}</span>
       <span class="tc" style="font-size:10px;font-weight:800">Lv.${lvc}${lvc>=MAXLV?' MAX':''}${evd?' ✦':''}${up?' <span style="color:var(--blue)">▲UP</span>':''}</span>
       <div class="bar" style="width:62%;height:4px;margin-top:2px"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div>
       ${eq ? `<span style="position:absolute;top:5px;left:5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 6px">${kind==='f'?'장착':'슬롯 '+(es+1)}</span>` : ''}
-      <button aria-label="상세 보기" onclick="event.stopPropagation();openDetail('${kind}','${b.id}')" style="position:absolute;top:3px;right:3px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:var(--ink3);font-size:13px;font-weight:800;font-family:serif;font-style:italic;display:flex;align-items:center;justify-content:center">i</button>
     </div>`;
   }).join('');
   const st = myStyle();
@@ -1025,7 +1050,7 @@ function viewLineup() {
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${state.eq.s.map((id,i)=>slot('s', id, sel.type==='skill'&&sel.idx===i, `focusSlot('skill',${i})`, '스킬 '+(i+1), false, 's'+i)).join('')}</div>
     </div>
     <div id="miniBar" style="opacity:0;visibility:hidden;pointer-events:none;position:fixed;top:var(--hdrH,62px);left:50%;transform:translate(-50%,-14px);transition:opacity .22s ease,transform .26s cubic-bezier(.2,.9,.3,1),visibility 0s linear .26s;width:100%;max-width:480px;z-index:15;padding:14px 14px 10px;margin-top:-6px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:0 0 20px 20px;box-shadow:0 10px 24px -14px rgba(25,31,40,.35)">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${slots.map(([t,i,k,id,lb]) => slotMini(k, id, sel.type===t && sel.idx===i, `focusSlot('${t}',${i})`, lb)).join('')}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${slots.map(([t,i,k,id,lb]) => slotMini(k, id, sel.type===t && sel.idx===i, `focusSlot('${t}',${i})`, lb, t === 'fighter' ? 'f:0' : 's:' + i)).join('')}</div>
     </div>
     <div class="card soft" id="dexCard" style="scroll-margin-top:80px">
       <div class="seg" style="margin-bottom:14px"><button class="${invTab==='f'?'on':''}" onclick="setInv('f')">파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length}</button><button class="${invTab==='s'?'on':''}" onclick="setInv('s')">스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</button></div>
@@ -1037,7 +1062,7 @@ function viewLineup() {
 function updMini() {
   const m = $('miniBar'), c = $('eqCard'); if (!m || !c || tab !== 'lineup') return;
   const hb = document.querySelector('header').getBoundingClientRect().bottom;
-  const on = c.getBoundingClientRect().bottom < hb + 6;
+  const cr = c.getBoundingClientRect(), on = cr.bottom < hb + 6 || (Drag.active && cr.top < hb + 6);
   m.style.top = Math.floor(hb) + 'px';
   m.style.opacity = on ? 1 : 0; m.style.visibility = on ? 'visible' : 'hidden'; m.style.pointerEvents = on ? 'auto' : 'none';
   m.style.transform = on ? 'translate(-50%,0)' : 'translate(-50%,-14px)';
@@ -1056,25 +1081,113 @@ function focusSlot(type, idx) {
     el.scrollIntoView({ behavior:'smooth', block: id ? 'center' : 'start' });
     if (id) { el.classList.remove('focus'); void el.offsetWidth; el.classList.add('focus'); setTimeout(() => el.classList.remove('focus'), 1400); }
     setTimeout(updMini, 450);
-    if (id) setTimeout(() => openDetail(kind, id), 420);
   }, 40);
 }
-/* 도감 카드 탭: 즉시 장착 / 장착 중인 스킬은 해제 */
-function quickEquip(kind, id) {
-  if (kind === 'f') {
-    if (state.eq.f === id) { toast('이미 장착 중이에요 · ⓘ로 상세 보기'); return; }
-    state.eq.f = id; flashSlot = 'f'; sel = { type:'fighter', idx:0 };
-    save(); startBattle(); render(); toast('파이터를 장착했어요'); return;
-  }
-  const ex = state.eq.s.indexOf(id);
-  if (ex >= 0) { state.eq.s[ex] = null; sel = { type:'skill', idx:ex }; save(); startBattle(); render(); toast('스킬을 해제했어요'); return; }
-  let idx = sel.type === 'skill' ? sel.idx : state.eq.s.findIndex(x => !x);
-  if (idx < 0) idx = 0;
-  state.eq.s[idx] = id; flashSlot = 's' + idx;
-  const nx = state.eq.s.findIndex(x => !x);
-  sel = { type:'skill', idx: nx >= 0 ? nx : idx };
-  save(); startBattle(); render(); toast(`슬롯 ${idx+1}에 장착했어요`);
+/* 도감 카드: 탭 = 상세 / 길게 누르기 = 들어 올려 장착 칸에 끌어다 놓기 */
+const Drag = { active:false, timer:0, t2:0, holdEl:null, src:null, ghost:null, kind:null, id:null, sx:0, sy:0, x:0, y:0, hot:null, targets:[], touch:false, swallow:false, lastTouch:0 };
+const LP_MS = 360, LP_SLOP = 10;
+function tileTap(kind, id) { if (Drag.swallow) return; openDetail(kind, id); }
+function dragHint(msg, hot) {
+  let h = $('dragHint');
+  if (!h) { h = document.createElement('div'); h.id = 'dragHint'; document.body.appendChild(h); }
+  h.className = hot ? 'hot' : ''; h.textContent = msg;
 }
+function dropTargets() {
+  const mini = $('miniBar'), miniOn = !!mini && mini.style.visibility === 'visible', want = Drag.kind === 'f' ? 'f' : 's';
+  return Array.from(document.querySelectorAll('[data-drop]')).filter(el => el.dataset.drop.charAt(0) === want && (!el.closest('#miniBar') || miniOn));
+}
+function dragSlotName(el) { const [t, i] = el.dataset.drop.split(':'); return t === 'f' ? '파이터 칸' : `스킬 슬롯 ${(+i) + 1}`; }
+function dragHot(gx, gy) {
+  const hb = document.querySelector('header').getBoundingClientRect().bottom;
+  let best = null, bd = 1e9;
+  for (const el of Drag.targets) {
+    const r = el.getBoundingClientRect(), top = Math.max(r.top, hb), pad = 8;
+    if (r.bottom <= top + 4) continue;
+    if (gx < r.left - pad || gx > r.right + pad || gy < top - pad || gy > r.bottom + pad) continue;
+    const d = Math.hypot(gx - (r.left + r.right)/2, gy - (top + r.bottom)/2);
+    if (d < bd) { bd = d; best = el; }
+  }
+  if (best === Drag.hot) return;
+  if (Drag.hot) Drag.hot.classList.remove('drop-hot');
+  Drag.hot = best;
+  if (best) {
+    best.classList.add('drop-hot'); try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
+    const [t, i] = best.dataset.drop.split(':'), occ = t === 'f' ? !!state.eq.f : !!state.eq.s[+i];
+    dragHint(`${dragSlotName(best)}에 놓아서 ${occ ? '교체' : '장착'}`, true);
+  } else dragHint(Drag.kind === 'f' ? '파이터 칸으로 끌어다 놓으세요' : '스킬 칸으로 끌어다 놓으세요', false);
+}
+function dragMove(x, y) {
+  Drag.x = x; Drag.y = y;
+  const gx = x, gy = y - (Drag.touch ? 52 : 0), g = Drag.ghost;
+  if (g) g.style.transform = `translate3d(${gx - g.offsetWidth/2}px, ${gy - g.offsetHeight/2}px, 0)`;
+  dragHot(gx, gy);
+}
+function dragStart() {
+  const el = Drag.holdEl; if (!el || !el.isConnected) return;
+  const [kind, id] = el.dataset.dex.split(':');
+  Drag.active = true; Drag.kind = kind; Drag.id = id; Drag.src = el; Drag.hot = null;
+  el.classList.remove('lp-hold'); el.classList.add('lp-src');
+  const wrap = document.createElement('div'), c = el.cloneNode(true);
+  wrap.id = 'dragGhost'; c.removeAttribute('id'); c.removeAttribute('onclick'); c.removeAttribute('data-dex');
+  c.classList.remove('lp-src', 'lp-hold', 'press', 'focus', 'sel'); c.querySelectorAll('button').forEach(b => b.remove());
+  wrap.style.width = el.offsetWidth + 'px'; c.style.height = el.offsetHeight + 'px'; wrap.appendChild(c); document.body.appendChild(wrap); Drag.ghost = wrap;
+  document.body.classList.add('drag-' + kind);
+  updMini(); Drag.targets = dropTargets(); Drag.targets.forEach(t => t.classList.add('drop-ok'));
+  dragHint(kind === 'f' ? '파이터 칸으로 끌어다 놓으세요' : '스킬 칸으로 끌어다 놓으세요', false);
+  try { navigator.vibrate && navigator.vibrate(14); } catch (e) {}
+  Snd.sfx.ui(); dragMove(Drag.x, Drag.y);
+}
+function dragEnd(cancel) {
+  clearTimeout(Drag.timer); clearTimeout(Drag.t2);
+  if (Drag.holdEl) Drag.holdEl.classList.remove('lp-hold');
+  const was = Drag.active, hot = Drag.hot;
+  if (was) {
+    if (Drag.src) Drag.src.classList.remove('lp-src');
+    if (Drag.ghost) Drag.ghost.remove();
+    document.querySelectorAll('.drop-ok, .drop-hot').forEach(e => e.classList.remove('drop-ok', 'drop-hot'));
+    document.body.classList.remove('drag-f', 'drag-s');
+    const h = $('dragHint'); if (h) h.remove();
+    Drag.swallow = true; setTimeout(() => { Drag.swallow = false; }, 400);
+  }
+  Drag.active = false; Drag.holdEl = null; Drag.src = null; Drag.ghost = null; Drag.hot = null; Drag.targets = [];
+  if (was) { updMini(); if (!cancel && hot) dropEquip(Drag.kind, Drag.id, +hot.dataset.drop.split(':')[1]); }
+}
+function dropEquip(kind, id, idx) {
+  if (kind === 'f') {
+    if (state.eq.f === id) { toast('이미 장착 중인 파이터다'); return; }
+    state.eq.f = id; flashSlot = 'f'; sel = { type:'fighter', idx:0 };
+  } else {
+    const ex = state.eq.s.indexOf(id), prev = state.eq.s[idx];
+    if (ex === idx) return;
+    if (ex >= 0) state.eq.s[ex] = prev || null;
+    state.eq.s[idx] = id; flashSlot = 's' + idx;
+    const nx = state.eq.s.findIndex(x => !x); sel = { type:'skill', idx: nx >= 0 ? nx : idx };
+  }
+  Snd.sfx.shield(); save(); startBattle(); render();
+  toast(kind === 'f' ? '파이터를 장착했다' : `슬롯 ${idx + 1}에 장착했다`);
+}
+function lpBegin(x, y, el, touch) {
+  clearTimeout(Drag.timer); clearTimeout(Drag.t2);
+  Drag.holdEl = el; Drag.sx = Drag.x = x; Drag.sy = Drag.y = y; Drag.touch = touch;
+  Drag.t2 = setTimeout(() => { if (Drag.holdEl === el && !Drag.active) el.classList.add('lp-hold'); }, 130);
+  Drag.timer = setTimeout(dragStart, LP_MS);
+}
+function lpMove(x, y, e) {
+  if (Drag.active) { if (e && e.cancelable) e.preventDefault(); dragMove(x, y); return; }
+  if (!Drag.holdEl) return;
+  if (Math.hypot(x - Drag.sx, y - Drag.sy) > LP_SLOP) { clearTimeout(Drag.timer); clearTimeout(Drag.t2); Drag.holdEl.classList.remove('lp-hold'); Drag.holdEl = null; }
+}
+const lpEnd = cancel => { if (Drag.active || Drag.holdEl) dragEnd(cancel); };
+const dexEl = e => { const t = e.target; return t && t.closest && !t.closest('button') ? t.closest('[data-dex]') : null; };
+document.addEventListener('touchstart', e => { Drag.lastTouch = Date.now(); if (e.touches.length !== 1) { lpEnd(true); return; } const el = dexEl(e); if (el) { const t = e.touches[0]; lpBegin(t.clientX, t.clientY, el, true); } }, { passive:true });
+document.addEventListener('touchmove', e => { const t = e.touches[0]; if (t) lpMove(t.clientX, t.clientY, e); }, { passive:false });
+document.addEventListener('touchend', () => { Drag.lastTouch = Date.now(); lpEnd(false); }, { passive:true });
+document.addEventListener('touchcancel', () => lpEnd(true), { passive:true });
+document.addEventListener('mousedown', e => { if (Date.now() - Drag.lastTouch < 700 || e.button !== 0) return; const el = dexEl(e); if (el) lpBegin(e.clientX, e.clientY, el, false); });
+document.addEventListener('mousemove', e => { if (Date.now() - Drag.lastTouch < 700) return; lpMove(e.clientX, e.clientY, e); });
+document.addEventListener('mouseup', () => { if (Date.now() - Drag.lastTouch < 700) return; lpEnd(false); });
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('[data-dex]')) e.preventDefault(); });
+document.addEventListener('click', e => { if (Drag.swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
 /* 뽑기에서 새로 얻은 카드는 빈 슬롯에 자동 장착 */
 function autoEquip(kind, id) {
   if (kind === 'f') { if (!state.eq.f) { state.eq.f = id; return true; } return false; }
@@ -1822,7 +1935,7 @@ function escapeDir(u, e, th) {
 function startDodge(u, dir) {
   const dur = 0.2, travel = 115;
   u.act = { type:'dodge', t:0, dur, id:++B.actId, data:{ vx:Math.cos(dir)*travel/dur, vy:Math.sin(dir)*travel/dur } };
-  u.dodgeCd = (clamp(2.8 - u.es/220, 1.6, 3) + rnd(0,0.6)) * (u.pas === 'rabbit' ? 0.65 : 1); u.invuln = 0.16;
+  u.dodgeCd = (clamp(2.8 - u.es/220, 1.6, 3) + rnd(0,0.6)) * (u.pas === 'rabbit' ? 0.65 : 1); u.invuln = Math.max(u.invuln, 0.16);
   if (u.pas === 'rabbit') u.boostT = 0.8;
   if (u.side === 'me') B.stats.dodges++;
   chip(u, '회피'); puff(u.x, u.y + u.r*0.5, 5, '200,210,200', 12, 0.4, 40);
@@ -2111,7 +2224,7 @@ function resolveAct(u, e, a) {
       const hit = inArea(area, e), x0 = u.x, y0 = u.y;
       ghost(u); puff(u.x, u.y, 8, '190,210,255', 16, 0.5, 60); ring(u.x, u.y, 6, 44, 0.35, b.color, 2);
       let tx, ty; if (hit) { const aa = angTo(u, e); tx = e.x + Math.cos(aa)*(u.r + e.r + 8); ty = e.y + Math.sin(aa)*(u.r + e.r + 8); } else { tx = area.x; ty = area.y; }
-      u.x = clamp(tx, u.r+8, WW-u.r-8); u.y = clamp(ty, u.r+8, WH-u.r-8); u.vx = u.vy = 0; u.invuln = Math.max(u.invuln, 0.15);
+      u.x = clamp(tx, u.r+8, WW-u.r-8); u.y = clamp(ty, u.r+8, WH-u.r-8); u.vx = u.vy = 0; u.invuln = Math.max(u.invuln, 2); chip(u, '무적');
       glow(u.x, u.y, u.r*2.4, 0.3, b.color); ring(u.x, u.y, 6, 64, 0.4, '255,255,255', 3); sparks(u.x, u.y, 14, '210,225,255', 340, 0.4); ghost(u);
       slash(u.x, u.y, angTo(u, e), u.r + 50, 1.1, b.color, 6);
       fx('trail', x0, y0, 0, 0.42, b.color, { dx:u.x - x0, dy:u.y - y0 });
@@ -2313,7 +2426,7 @@ function tryRevive(u) {
 function checkEnd() {
   const me = B.me, en = B.en;
   if (tryRevive(me) | tryRevive(en)) return;
-  const timeout = B.fightT >= 120;
+  const timeout = false;
   if (en.hp > 0 && me.hp > 0 && !timeout) return;
   B.over = true; B.timeout = timeout && en.hp > 0 && me.hp > 0;
   B.win = !B.timeout && en.hp <= 0 && me.hp > 0 || (!B.timeout && en.hp <= 0 && me.hp <= 0);
@@ -2401,6 +2514,7 @@ function drawUnit(u) {
   ctx.save(); ctx.scale(Math.cos(u.face) > 0 ? -1 : 1, 1);
   drawEmoji(u.emoji, u.r*1.5, 0, 2); ctx.restore();
   if (u.hitFlash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,255,255,${u.hitFlash/0.16*0.55})`; ctx.beginPath(); ctx.arc(0, 0, u.r, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+  if (u.invuln > 0.3) { ctx.strokeStyle = `rgba(255,255,255,${0.55 + 0.3*Math.sin(B.time*14)})`; ctx.lineWidth = 3; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.arc(0, 0, u.r + 5, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   if (u.shield > 0) { ctx.fillStyle = 'rgba(150,200,255,0.16)'; ctx.strokeStyle = `rgba(170,215,255,${0.5 + 0.3*(u.shield/(u.shieldMax||1))})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, u.r + 8, 0, TAU); ctx.fill(); ctx.stroke(); }
   const a = u.act;
   if (a && (a.type === 'cast' || a.type === 'atk' || a.type === 'poke')) {
