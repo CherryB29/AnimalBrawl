@@ -956,10 +956,10 @@ function bannerCard(kind) {
       </div>
       <div style="position:relative;width:128px;height:96px;flex:none">${fan}</div>
     </div>
-    <div style="display:grid;grid-template-columns:0.9fr 1.1fr 1.1fr;gap:6px;margin-top:18px">
-      <button class="btn ghost" style="white-space:nowrap;padding:0 8px;${ok1?'':'opacity:.55'}" onclick="pull('${kind}')">1회<span style="width:4px"></span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost)}</span></button>
-      <button class="btn primary" style="${ok10?'':'opacity:.55'};flex-direction:column;gap:1px;line-height:1.15" onclick="pullMulti('${kind}',10)"><span>10회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*10)}</span></button>
-      <button class="btn" style="background:#191f28;color:#fff;flex-direction:column;gap:1px;line-height:1.15;${state.gold >= cost*100 ? '' : 'opacity:.55'}" onclick="pullMulti('${kind}',100)"><span>100회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*100)}</span></button>
+    <div style="display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr) minmax(0,1.1fr);gap:6px;margin-top:18px">
+      <button class="btn ghost" style="min-width:0;white-space:nowrap;padding:0 4px;flex-direction:column;gap:1px;line-height:1.15;${ok1?'':'opacity:.55'}" onclick="pull('${kind}')"><span>1회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost)}</span></button>
+      <button class="btn primary" style="min-width:0;white-space:nowrap;padding:0 4px;${ok10?'':'opacity:.55'};flex-direction:column;gap:1px;line-height:1.15" onclick="pullMulti('${kind}',10)"><span>10회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*10)}</span></button>
+      <button class="btn" style="min-width:0;white-space:nowrap;padding:0 4px;background:#191f28;color:#fff;flex-direction:column;gap:1px;line-height:1.15;${state.gold >= cost*100 ? '' : 'opacity:.55'}" onclick="pullMulti('${kind}',100)"><span>100회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*100)}</span></button>
     </div>
   </div>`;
 }
