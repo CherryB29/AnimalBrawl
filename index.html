@@ -253,7 +253,7 @@ const SKILLS = [
   { id:'firstaid', tier:'n', emoji:'🩹', name:'응급처치', dmg:0, cd:8, mc:0.50, range:0, shape:'heal', self:true, wind:0.55, fxv:0.10, color:'90,230,150' },
   { id:'stone', tier:'n', emoji:'🪨', name:'돌팔매', dmg:36, cd:2, mc:0.30, range:320, shape:'proj', kind:'rock', wind:0.25, speed:640, pr:9, kb:160, color:'200,190,170' },
   // ── 희귀
-  { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', fxv:3.5, slowM:0.25, color:'130,220,255' },
+  { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', fxv:3.5, slowM:0.45, color:'130,220,255' },
   { id:'vamp',   tier:'r', emoji:'🩸', name:'흡혈',   dmg:61, cd:4, mc:1.00, range:90,  shape:'bite', wind:0.22, kb:200, fx:'lifesteal', fxv:0.5, color:'235,60,80' },
   { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.25, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:12.6, color:'150,230,90' },
   { id:'rush',   tier:'r', emoji:'💨', name:'질풍참', dmg:72, cd:5, mc:0.90, range:300, shape:'rush', wind:0.20, kb:260, color:'200,230,255' },
@@ -373,7 +373,7 @@ const SKILL_INFO = {
   wind: '회전하며 주변의 적을 밀쳐낸다.',
   firstaid: '최대 체력의 일부를 회복한다.',
   stone: '적에게 돌을 빠르게 던진다. 쿨타임이 짧다.',
-  ice: '적에게 얼음창을 발사해 이동속도를 75% 늦춘다.',
+  ice: '적에게 얼음창을 발사해 이동속도를 55% 늦춘다.',
   vamp: '적을 물어 피해를 주고 입힌 피해의 일부만큼 체력을 회복한다.',
   poison: '독을 발사해 적을 중독시킨다. 오래 중독될수록 독이 더 빠르게 번진다.',
   rush: '적을 향해 돌진하며 베어 지나간다.',
@@ -412,7 +412,7 @@ const infoCard = (kind, id) => {
   const t = SKILL_INFO[id]; return t ? `<div style="font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.55;font-weight:500">${t}</div>` : '';
 };
 
-const ENEMY_MELEE = [['오크','👹'],['트롤','🧌'],['악어 전사','🐊'],['전갈','🦂'],['골렘','🗿'],['리자드맨','🦎'],['해골 전사','💀'],['오우거','👺'],['좀비','🧟'],['멧돼지 투사','🐗'],['코뿔소','🦏'],['미노타우로스','🐂'],['게 장군','🦀'],['상어 전사','🦈']];
+const ENEMY_MELEE = [['오크','👹'],['트롤','🧌'],['악어 전사','🐊'],['전갈','🦂'],['골렘','🗿'],['도마뱀','🦎'],['해골 전사','💀'],['오우거','👺'],['좀비','🧟'],['멧돼지 투사','🐗'],['코뿔소','🦏'],['미노타우로스','🐂'],['게 장군','🦀'],['상어 전사','🦈']];
 const ENEMY_RANGED = [['고블린','👺'],['다크엘프','🧝'],['마녀','🧙'],['뱀파이어','🧛'],['유령','👻'],['독거미','🕷️'],['독사','🐍'],['박쥐','🦇'],['외계인','👽'],['로봇','🤖'],['크라켄','🐙'],['요괴','👾'],['정령','🧞']];
 const ENEMY_BIG = [['드래곤','🐉'],['티라노','🦖'],['악마왕','😈'],['리치 킹','☠️'],['대왕 크라켄','🦑'],['히드라','🐲'],['타이탄','🗿'],['불사조','🔥']];
 function enemyFor(stage, ranged) {
@@ -479,7 +479,7 @@ function kitFor(stage) {
   }
   return _kitMemo[stage];
 }
-const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 15000;
+const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
 const SAVE_KEY = 'animal-brawl-save-v2';
 
 
@@ -590,6 +590,8 @@ const Snd = (() => {
     win() { S = 0.85; [[196, 0], [247, 0.0], [294, 0.0], [392, 0.14], [494, 0.14], [587, 0.14], [784, 0.32], [988, 0.32], [1175, 0.32]].forEach(([f, at]) => tone(f, 1.1, { at, vol:0.07, type:'sawtooth', lp:1400, att:0.06 })); metal(1568, 1.4, 0.05, 0.32); thump(80, 40, 0.5, 0.3); S = 1; },
     lose() { S = 0.85; [[196, 0], [185, 0.28], [147, 0.56]].forEach(([f, at]) => tone(f, 1.0, { at, vol:0.09, type:'sawtooth', lp:600, att:0.05 })); thump(70, 30, 0.9, 0.35, 0.5); S = 1; },
     gachaBuild(d) { noise(d, { ft:'bandpass', f:300, fTo:4200, q:0.9, vol:0.2, att:d*0.8 }); tone(120, d, { to:520, type:'sawtooth', vol:0.07, att:d*0.9, lp:900 }); },
+    scope() { tone(900, 0.5, { to:2400, vol:0.06, att:0.3, type:'sine' }); noise(0.5, { ft:'bandpass', f:1800, fTo:4000, q:3, vol:0.05, att:0.3 }); metal(2800, 0.15, 0.05, 0.42); },
+    snipeShot() { noise(0.03, { ft:'highpass', f:1800, vol:0.6 }); thump(160, 45, 0.18, 0.5); noise(0.5, { f:1400, fTo:200, vol:0.2 }); metal(3400, 0.25, 0.05, 0.35); },
     gachaFly() { noise(0.55, { ft:'bandpass', f:500, fTo:3200, q:0.7, vol:0.22, att:0.12 }); },
     gachaPing(idx) { const f = [880, 988, 1175, 1320, 1568, 1760][Math.min(idx || 0, 5)]; metal(f, 1.0, 0.12); tone(f/2, 0.4, { vol:0.06 }); },
     gachaLand() { thump(160, 70, 0.1, 0.18); noise(0.05, { ft:'bandpass', f:1800, q:1.2, vol:0.1 }); },
@@ -608,12 +610,12 @@ const Snd = (() => {
       else if (sh === 'strike') sfx.bolt();
       else if (sh === 'blast') { sfx.whoosh(0.2); thump(70, 120, 0.5, 0.12); }
       else if (sh === 'shower') { for (let i = 0; i < 4; i++) noise(0.4, { ft:'bandpass', f:2400 - i*300, fTo:600, q:1.2, vol:0.09, at:i*0.14, att:0.03 }); }
-      else if (sh === 'proj') { if (b.kind === 'snipe') { noise(0.03, { ft:'highpass', f:1800, vol:0.6 }); thump(160, 45, 0.18, 0.5); noise(0.5, { f:1400, fTo:200, vol:0.2 }); } else if (b.kind === 'ice') sfx.ice(); else if (b.kind === 'fire') sfx.fire(); else if (b.kind === 'wave') sfx.whoosh(0.35); else if (b.kind === 'arrow') { sfx.swoosh(0.18); thump(260, 140, 0.05, 0.1); } else if (b.kind === 'rock') { sfx.swoosh(0.16); thump(200, 100, 0.06, 0.12); } else sfx.swoosh(0.2); }
+      else if (sh === 'proj') { if (b.kind === 'snipe') sfx.scope(); else if (b.kind === 'ice') sfx.ice(); else if (b.kind === 'fire') sfx.fire(); else if (b.kind === 'wave') sfx.whoosh(0.35); else if (b.kind === 'arrow') { sfx.swoosh(0.18); thump(260, 140, 0.05, 0.1); } else if (b.kind === 'rock') { sfx.swoosh(0.16); thump(200, 100, 0.06, 0.12); } else sfx.swoosh(0.2); }
       else if (sh === 'bite' || sh === 'spin' || sh === 'flurry' || sh === 'rush' || sh === 'blink') sfx.slash(0.2);
       else sfx.swoosh(0.18);
     } finally { S = 1; }
   }
-  const CH = [[48, 52, 55, 59], [45, 48, 52, 55], [41, 45, 48, 52], [43, 47, 50, 53]], BPM = 64;
+  const CH = [[48, 52, 55, 59], [45, 48, 52, 55], [41, 45, 48, 52], [43, 47, 50, 53]], BPM = 100;
   function pad(f, t, d) {
     const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800; const g = ac.createGain();
     g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.045, t + d*0.35); g.gain.linearRampToValueAtTime(0.0001, t + d*1.05);
@@ -622,16 +624,24 @@ const Snd = (() => {
   }
   function pluck(f, t) {
     const o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = f;
-    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.05, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.045, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.7);
     o.connect(g); g.connect(bgmG); g.connect(rev); o.start(t); o.stop(t + 1.4);
   }
+  function kick(t) { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12); g.gain.setValueAtTime(0.16, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.2); o.connect(g); g.connect(bgmG); o.start(t); o.stop(t + 0.22); }
+  function hat(t, v, open) { const s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = nb; f.type = 'highpass'; f.frequency.value = 6500; const d = open ? 0.11 : 0.04; g.gain.setValueAtTime(0.05*v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(f); f.connect(g); g.connect(bgmG); s.start(t, Math.random()*0.5, d + 0.02); }
+  function bass(f, t) { const o = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter(); o.type = 'triangle'; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = 420; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.11, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28); o.connect(lp); lp.connect(g); g.connect(bgmG); o.start(t); o.stop(t + 0.3); }
   function playBeat(b, t) {
     const bar = Math.floor(b/8) % 4, pos = b % 8, ch = CH[bar], q = 60/BPM;
-    if (pos === 0) { for (const m of ch) pad(mf(m + 12), t, q*4); pluck(mf(ch[0] - 12), t); }
-    if ([0, 2, 3, 5, 6, 7].includes(pos) && Math.random() < 0.55) pluck(mf(ch[Math.floor(Math.random()*4)] + 24), t);
+    if (pos === 0) { for (const m of ch) pad(mf(m + 12), t, q*4); }
+    // 가벼운 킥·하이햇 + 통통 튀는 베이스, 밝은 아르페지오
+    if (pos === 0 || pos === 4) kick(t);
+    if (pos % 2 === 1) hat(t, pos === 7 ? 0.5 : 0.28);
+    if (pos === 2 || pos === 6) hat(t, 0.45, true);
+    if ([0, 3, 4, 7].includes(pos)) bass(mf(ch[0] - 12 + (pos === 7 ? 7 : 0)), t);
+    const arp = [0, 2, 1, 3, 2, 3, 1, 2][pos]; pluck(mf(ch[arp] + 24), t);
   }
   function sched() { if (!ac || ac.state !== 'running') return; while (nextT < ac.currentTime + 0.6) { playBeat(beat, nextT); nextT += 60/BPM/2; beat++; } }
-  function startBgm() { if (bgmOn || !ok()) return; bgmOn = true; nextT = ac.currentTime + 0.15; beat = 0; timer = setInterval(sched, 150); }
+  function startBgm() { return; if (bgmOn || !ok()) return; bgmOn = true; nextT = ac.currentTime + 0.15; beat = 0; timer = setInterval(sched, 150); }
   document.addEventListener('visibilitychange', () => { if (!ac) return; if (document.hidden) ac.suspend().catch(() => {}); else ac.resume().catch(() => {}); });
   const unlock = () => { init(); if (ok()) { for (const ev of ['pointerdown', 'touchend', 'keydown']) window.removeEventListener(ev, unlock, true); } };
   for (const ev of ['pointerdown', 'touchend', 'keydown']) window.addEventListener(ev, unlock, true);
@@ -657,7 +667,10 @@ function rollTier(min) {
   for (const t of list) { acc += t.p; if (r < acc) return t.k; }
   return list[0].k;
 }
-function rollItem(kind, min) { const tier = rollTier(min), pool = poolOf(kind).filter(x => x.tier === tier); return pool[Math.floor(Math.random()*pool.length)]; }
+let firstPullCap = false;
+const isFirstPull = () => !state.firstPullDone && !Object.keys(state.own.s).length && Object.keys(state.own.f).length <= 1;
+function rollItem(kind, min) { let tier = rollTier(min); if (firstPullCap) { let g = 0; while (TIER_IDX[tier] >= 3 && g++ < 50) tier = rollTier(min); if (TIER_IDX[tier] >= 3) tier = 'e'; }
+  const _t = tier, pool = poolOf(kind).filter(x => x.tier === tier); return pool[Math.floor(Math.random()*pool.length)]; }
 
 /* 업그레이드: 같은 아이템을 모을수록 레벨이 오른다 (Lv n 도달에 필요한 누적 보유 수 = 1 + n(n-1)/2) */
 const MAXLV = Infinity;
@@ -785,8 +798,9 @@ function bossInfo(stage) {
   st.hp = Math.round(st.hp*STAT_K); st.atk = Math.round(st.atk*STAT_K); st.def = Math.round(st.def*STAT_K);
   return { st, emoji:enemyFor(stage, ranged)[1], name:enemyFor(stage, ranged)[0], big:stage % 5 === 0, kit, entries, style, ranged };
 }
-const contribMax = stage => Math.round((80 + stage*35)*1.25);
+const contribMax = stage => 2000;
 const clearBonus = stage => 3000;
+const rangeTag = c => c >= 0.65 ? '근접' : c <= 0.35 ? '원거리' : '균형';
 const rangeLabel = mc => mc >= 0.7 ? '근접' : mc <= 0.3 ? '원거리' : '중거리';
 function skillParts(b, mult, sl, lv) {
   const ar = scFrom(state.eq.f ? fighterStats(F(state.eq.f), 0, true).atk : F('dog').atk*STAT_K);
@@ -925,9 +939,10 @@ function bannerCard(kind) {
       </div>
       <div style="position:relative;width:128px;height:96px;flex:none">${fan}</div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1.25fr;gap:8px;margin-top:18px">
-      <button class="btn ghost" style="${ok1?'':'opacity:.55'}" onclick="pull('${kind}')">1회 <span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost)}</span></button>
-      <button class="btn primary" style="${ok10?'':'opacity:.55'}" onclick="pullMulti('${kind}')">10회 <span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost*10)}</span></button>
+    <div style="display:grid;grid-template-columns:0.9fr 1.1fr 1.1fr;gap:6px;margin-top:18px">
+      <button class="btn ghost" style="white-space:nowrap;padding:0 8px;${ok1?'':'opacity:.55'}" onclick="pull('${kind}')">1회<span style="width:4px"></span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800">${COIN}${fmt(cost)}</span></button>
+      <button class="btn primary" style="${ok10?'':'opacity:.55'};flex-direction:column;gap:1px;line-height:1.15" onclick="pullMulti('${kind}',10)"><span>10회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*10)}</span></button>
+      <button class="btn" style="background:#191f28;color:#fff;flex-direction:column;gap:1px;line-height:1.15;${state.gold >= cost*100 ? '' : 'opacity:.55'}" onclick="pullMulti('${kind}',100)"><span>100회</span><span style="display:inline-flex;align-items:center;gap:3px;font-weight:800;font-size:12px">${COIN}${fmt(cost*100)}</span></button>
     </div>
   </div>`;
 }
@@ -943,7 +958,7 @@ function viewGacha() {
     </div>
   </div>`;
 }
-let pulling = false, autoEq = false;
+let pulling = false, autoEq = false, gachaTok = 0;
 let multiTimers = [];
 /* ---- 뽑기 연출 ---- */
 const GACHA_DUR = { n:0.8, r:1.0, e:1.25, m:1.55, l:1.85, t:2.3 };
@@ -965,32 +980,47 @@ function gcRun(list, el, frames, opt) {
 }
 function gcShine(list, el) { const sh = el.querySelector('.dc-shine'); if (sh) gcRun(list, sh, [{ transform:'translateX(0) skewX(-18deg)', opacity:1 }, { transform:'translateX(430%) skewX(-18deg)', opacity:1 }], { duration:560, easing:'ease-in-out' }); }
 const gcWait = ms => new Promise(r => setTimeout(r, ms));
+function gcShake(amp) { const m = $('gachaModal'); if (!m || !m.animate) return; amp = amp || 6; try { m.animate([{ transform:'translate(0,0)' }, { transform:`translate(${-amp}px,${amp*0.6}px)` }, { transform:`translate(${amp}px,${-amp*0.6}px)` }, { transform:`translate(${-amp*0.5}px,${amp*0.3}px)` }, { transform:'translate(0,0)' }], { duration:300, easing:'ease-out' }); } catch (e) {} }
+/* 등급 색 링 + 파편이 사방으로 튄다 (화면 깜빡임 없음) */
+function gcBurst(tier, x, y, n, size) {
+  const root = document.createElement('div'); root.className = 'dc t-' + tier; root.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:0;height:0;z-index:94;pointer-events:none`;
+  const ring = document.createElement('i'); ring.style.cssText = `position:absolute;left:${-size/2}px;top:${-size/2}px;width:${size}px;height:${size}px;border-radius:50%;border:3px solid var(--tm);box-shadow:0 0 22px var(--t),inset 0 0 18px var(--t)`; root.appendChild(ring);
+  const parts = [];
+  for (let i = 0; i < n; i++) { const d = document.createElement('i'), sz = 4 + Math.random()*6; d.style.cssText = `position:absolute;left:${-sz/2}px;top:${-sz/2}px;width:${sz}px;height:${sz}px;border-radius:${Math.random() < 0.5 ? '50%' : '2px'};background:${Math.random() < 0.5 ? 'var(--tm)' : '#fff'};box-shadow:0 0 8px var(--t)`; root.appendChild(d); parts.push(d); }
+  document.body.appendChild(root);
+  try {
+    ring.animate([{ transform:'scale(.15)', opacity:1 }, { transform:'scale(1.6)', opacity:0 }], { duration:560, easing:'cubic-bezier(.1,.7,.3,1)', fill:'forwards' });
+    parts.forEach(d => { const a = Math.random()*Math.PI*2, r = size*(0.5 + Math.random()*0.9); d.animate([{ transform:'translate(0,0) scale(1)', opacity:1 }, { transform:`translate(${Math.cos(a)*r}px,${Math.sin(a)*r + 26}px) scale(.2) rotate(${Math.random()*360}deg)`, opacity:0 }], { duration:520 + Math.random()*320, easing:'cubic-bezier(.15,.8,.3,1)', fill:'forwards' }); });
+  } catch (e) {}
+  setTimeout(() => root.remove(), 1000);
+}
 /* 한 장이 왼쪽→오른쪽으로 지나가는 동작. 고등급이면 가운데서 위로 한 번 솟는다 */
 async function gcFly(list, el, i, tier, vw, y0, opt) {
-  opt = opt || {}; const idx = TIER_IDX[tier], hi = idx >= 2, cx = vw*0.5;
-  await gcWait(i*(opt.gap || 105));
+  opt = opt || {}; const idx = TIER_IDX[tier], hi = idx >= 2, cx = vw*0.5, dir = i % 2 ? 1 : -1, amp = 46 + (i*17) % 40;
+  await gcWait(i*(opt.gap || 80));
   if (opt.dead && opt.dead()) return;
-  Snd.sfx.gachaFly();
+  if (i % 2 === 0) Snd.sfx.gachaFly();
   if (!hi) {
-    await gcRun(list, el, [{ transform:`translate(-90px,${y0}px) rotate(-12deg)` }, { transform:`translate(${cx}px,${y0 - 18}px) rotate(5deg)`, offset:0.5 }, { transform:`translate(${vw + 90}px,${y0}px) rotate(-8deg)` }], { duration:640, easing:'cubic-bezier(.45,0,.55,1)' });
+    await gcRun(list, el, [{ transform:`translate(-90px,${y0 + dir*amp}px) rotate(-30deg) scale(.9)` }, { transform:`translate(${cx}px,${y0 - dir*amp}px) rotate(${dir*190}deg) scale(1.08)`, offset:0.5 }, { transform:`translate(${vw + 90}px,${y0 + dir*amp*0.6}px) rotate(${dir*380}deg) scale(.9)` }], { duration:520, easing:'cubic-bezier(.4,0,.5,1)' });
     return;
   }
-  await gcRun(list, el, [{ transform:`translate(-90px,${y0}px) rotate(-12deg) scale(1)` }, { transform:`translate(${cx}px,${y0}px) rotate(0deg) scale(1)` }], { duration:380, easing:'cubic-bezier(.3,.7,.4,1)' });
-  Snd.sfx.gachaPing(idx); gcShine(list, el);
-  await gcRun(list, el, [{ transform:`translate(${cx}px,${y0}px) scale(1)` }, { transform:`translate(${cx}px,${y0 - 120}px) scale(1.5)`, offset:0.55 }, { transform:`translate(${cx}px,${y0 - 112}px) scale(1.45)` }], { duration:640, easing:'cubic-bezier(.2,.9,.3,1)' });
-  await gcRun(list, el, [{ transform:`translate(${cx}px,${y0 - 112}px) scale(1.45)` }, { transform:`translate(${vw + 90}px,${y0 - 20}px) scale(1) rotate(-8deg)` }], { duration:420, easing:'cubic-bezier(.5,0,.9,.5)' });
+  await gcRun(list, el, [{ transform:`translate(-90px,${y0}px) rotate(-30deg) scale(.95)` }, { transform:`translate(${cx}px,${y0}px) rotate(0deg) scale(1)` }], { duration:330, easing:'cubic-bezier(.25,.8,.35,1)' });
+  Snd.sfx.gachaPing(idx); gcShine(list, el); gcBurst(tier, cx, y0 - 90, 10 + idx*3, 90 + idx*14); gcShake(4 + idx);
+  await gcRun(list, el, [{ transform:`translate(${cx}px,${y0}px) scale(1) rotate(0deg)` }, { transform:`translate(${cx}px,${y0 - 150}px) scale(1.75) rotate(-6deg)`, offset:0.4 }, { transform:`translate(${cx}px,${y0 - 126}px) scale(1.55) rotate(3deg)`, offset:0.7 }, { transform:`translate(${cx}px,${y0 - 132}px) scale(1.6) rotate(0deg)` }], { duration:620, easing:'cubic-bezier(.2,1.1,.3,1)' });
+  await gcWait(160);
+  await gcRun(list, el, [{ transform:`translate(${cx}px,${y0 - 132}px) scale(1.6) rotate(0deg)` }, { transform:`translate(${vw + 90}px,${y0 - 30}px) scale(1) rotate(24deg)` }], { duration:340, easing:'cubic-bezier(.6,0,.9,.5)' });
 }
 function gachaIntro(m, tk, done) {
-  const idx = TIER_IDX[tk], vw = window.innerWidth, vh = window.innerHeight, list = [];
+  const tok = ++gachaTok, idx = TIER_IDX[tk], vw = window.innerWidth, vh = window.innerHeight, list = [];
   m.innerHTML = '<div style="position:absolute;bottom:34px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.5)">화면을 눌러 건너뛰기</div>';
   const el = gcCard(tk, 100, 138); let fin = false;
-  const end = () => { if (fin) return; fin = true; list.forEach(a => { try { a.cancel(); } catch (e) {} }); el.remove(); Snd.sfx.gachaReveal(idx); done(burstHtml(tk, 8 + idx*3)); };
+  const end = () => { if (fin) return; fin = true; list.forEach(a => { try { a.cancel(); } catch (e) {} }); el.remove(); if (tok !== gachaTok) return; Snd.sfx.gachaReveal(idx); done(burstHtml(tk, 8 + idx*3)); };
   m.onclick = end;
   (async () => {
     const cx = vw*0.5, cy = vh*0.46; Snd.sfx.gachaFly();
     await gcRun(list, el, [{ transform:`translate(-120px,${cy}px) rotate(-14deg)` }, { transform:`translate(${cx}px,${cy}px) rotate(0deg)` }], { duration:460, easing:'cubic-bezier(.2,.8,.3,1)' });
     if (fin) return;
-    if (idx >= 2) { Snd.sfx.gachaPing(idx); gcShine(list, el); await gcRun(list, el, [{ transform:`translate(${cx}px,${cy}px) scale(1)` }, { transform:`translate(${cx}px,${cy - 40}px) scale(1.4)` }], { duration:520, easing:'cubic-bezier(.2,.9,.3,1)' }); await gcWait(260); }
+    if (idx >= 2) { Snd.sfx.gachaPing(idx); gcShine(list, el); gcBurst(tk, cx, cy - 20, 14 + idx*3, 110 + idx*16); gcShake(5 + idx); await gcRun(list, el, [{ transform:`translate(${cx}px,${cy}px) scale(1)` }, { transform:`translate(${cx}px,${cy - 40}px) scale(1.4)` }], { duration:520, easing:'cubic-bezier(.2,.9,.3,1)' }); await gcWait(260); }
     else { await gcRun(list, el, [{ transform:`translate(${cx}px,${cy}px) rotate(0)` }, { transform:`translate(${cx}px,${cy}px) rotate(-5deg)` }, { transform:`translate(${cx}px,${cy}px) rotate(5deg)` }, { transform:`translate(${cx}px,${cy}px) rotate(0)` }], { duration:300 }); }
     end();
   })();
@@ -1000,27 +1030,30 @@ function pull(kind) {
   if (pulling) return;
   const cost = kind === 'f' ? FIGHTER_COST : SKILL_COST;
   if (state.gold < cost) { toast('골드가 부족해요'); return; }
-  state.gold -= cost;
+  state.gold -= cost; firstPullCap = isFirstPull();
   const b = rollItem(kind), had = owned(kind, b.id); state.own[kind][b.id] = had + 1;
   if (had === 0 && autoEquip(kind, b.id)) autoEq = true;
+  firstPullCap = false; state.firstPullDone = true;
   if (state.autoUp) autoUpgradeAll();
   save(); setGold(); showGacha(kind, b, had);
 }
-function pullMulti(kind) {
+function pullMulti(kind, n) {
+  n = n || 10;
   if (pulling) return;
-  const cost = (kind === 'f' ? FIGHTER_COST : SKILL_COST) * 10;
+  const cost = (kind === 'f' ? FIGHTER_COST : SKILL_COST) * n;
   if (state.gold < cost) { toast('골드가 부족해요'); return; }
-  state.gold -= cost;
+  state.gold -= cost; firstPullCap = isFirstPull();
   const results = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < n; i++) {
     let b = rollItem(kind);
-    if (i === 9 && results.every(r => TIER_IDX[r.b.tier] < 1)) b = rollItem(kind, 1);
+    if (i % 10 === 9 && results.slice(-9).every(r => TIER_IDX[r.b.tier] < 1)) b = rollItem(kind, 1);
     const had = owned(kind, b.id); state.own[kind][b.id] = had + 1;
     if (had === 0 && autoEquip(kind, b.id)) autoEq = true;
     results.push({ b, had });
   }
+  firstPullCap = false; state.firstPullDone = true;
   if (state.autoUp) autoUpgradeAll();
-  save(); setGold(); showGachaMulti(results, kind);
+  save(); setGold(); showGachaMulti(results, kind, n);
 }
 function openGachaModal() { const m = $('gachaModal'); m.classList.remove('hidden'); m.classList.add('flex'); return m; }
 function detailHtml(kind, b, lv) {
@@ -1063,69 +1096,82 @@ function showGacha(kind, b, had) {
       </div></div>`;
   });
 }
-function showGachaMulti(results, kind) {
-  pulling = true;
+function showGachaMulti(results, kind, n) {
+  n = n || results.length; pulling = true; const tok = ++gachaTok;
   const m = openGachaModal(), unit = kind === 'f' ? FIGHTER_COST : SKILL_COST;
-  const cards = results.map((r,i) => {
-    const b = r.b, t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3, isNew = r.had === 0, up = !isNew && lvOf(r.had+1) > lvOf(r.had);
+  // 항목 정리: 10회 이하는 한 장씩, 100회는 같은 카드끼리 묶어 보여 준다
+  let entries;
+  if (n <= 10) entries = results.map(r => ({ b:r.b, had:r.had, cnt:1, isNew:r.had === 0, up:r.had > 0 && lvOf(r.had + 1) > lvOf(r.had) }));
+  else {
+    const g = new Map(); for (const r of results) { const e = g.get(r.b.id); if (e) e.cnt++; else g.set(r.b.id, { b:r.b, had:r.had, cnt:1 }); }
+    entries = [...g.values()].map(e => ({ ...e, isNew:e.had === 0, up:e.had > 0 && lvOf(e.had + e.cnt) > lvOf(e.had) }));
+    entries.sort((a, b) => TIER_IDX[b.b.tier] - TIER_IDX[a.b.tier] || b.cnt - a.cnt);
+  }
+  const E = entries.length, cols = n > 10 ? 5 : 5;
+  const cards = entries.map((r, i) => {
+    const b = r.b, t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3;
     return `<div id="mc${i}" class="tile t-${b.tier} ${hi?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" style="opacity:0;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:3px">
       ${emojiArt(b.emoji, 28)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span><span class="tc" style="font-size:9px;font-weight:800">${t.name}</span>
-      ${isNew ? '<span style="position:absolute;top:-6px;left:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">NEW</span>' : up ? '<span style="position:absolute;top:-6px;left:-4px;background:#191f28;color:#ffd45e;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">UP</span>' : ''}
+      ${r.cnt > 1 ? `<span style="position:absolute;bottom:-5px;right:-4px;background:#191f28;color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:1px 7px">×${r.cnt}</span>` : ''}
+      ${r.isNew ? '<span style="position:absolute;top:-6px;left:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">NEW</span>' : r.up ? '<span style="position:absolute;top:-6px;left:-4px;background:#191f28;color:#ffd45e;font-size:9px;font-weight:800;border-radius:99px;padding:1px 6px">UP</span>' : ''}
     </div>`;
   }).join('');
-  const nNew = results.filter(r => r.had === 0).length, nUp = results.filter(r => r.had > 0 && lvOf(r.had+1) > lvOf(r.had)).length;
+  const nNew = entries.filter(r => r.isNew).length, nUp = entries.filter(r => r.up).length;
   const chips = TIERS.map(t => ({ t, n: results.filter(r => r.b.tier === t.k).length })).filter(x => x.n > 0).reverse().map(x => `<span class="chip t-${x.t.k}" style="background:#fff;height:26px;padding:0 11px;font-size:12px">${x.t.name} ${x.n}</span>`).join('');
   m.innerHTML = `<div id="multiWrap" style="width:100%;max-width:400px;margin:24px 0;visibility:hidden">
-      <div style="text-align:center;color:#fff;font-weight:800;font-size:19px;letter-spacing:-0.02em">10회 뽑기 결과</div>
+      <div style="text-align:center;color:#fff;font-weight:800;font-size:19px;letter-spacing:-0.02em">${n}회 뽑기 결과</div>
       <div style="text-align:center;color:rgba(255,255,255,.55);font-size:12px;margin:4px 0 14px;font-weight:500">신규 ${nNew}개 · 레벨업 ${nUp}개</div>
-      <div id="multiGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">${cards}</div>
+      <div id="multiGrid" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:8px">${cards}</div>
       <div id="multiHint" style="text-align:center;margin-top:14px;font-size:12px;font-weight:700;color:rgba(255,255,255,.6)">화면을 눌러 건너뛰기</div>
       <div id="multiSummary" style="opacity:0;margin-top:18px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px">${chips}</div>
       <div id="multiBtns" style="opacity:0;display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:18px">
         <button class="btn" style="background:rgba(255,255,255,.14);color:#fff" onclick="closeGacha()">확인</button>
-        <button class="btn primary" onclick="again('${kind}',true)">10회 더 <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(unit*10)}</span></button>
+        <button class="btn primary" onclick="again('${kind}',${n})">${n}회 더 <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(unit*n)}</span></button>
       </div></div>`;
   multiTimers = [];
   const list = [], els = []; let skipped = false, finished = false;
+  const dead = () => skipped || tok !== gachaTok;
   const finish = () => { if (finished) return; finished = true; const mh = $('multiHint'); if (mh) mh.style.display = 'none'; for (const id of ['multiSummary','multiBtns']) { const el = $(id); if (el) { el.style.opacity = 1; el.classList.add('a-fade'); } } };
-  const showOne = i => { const el = $('mc'+i); if (el && el.style.opacity !== '1') { el.style.opacity = 1; el.classList.add(TIER_IDX[results[i].b.tier] >= 2 ? 'a-hip' : 'a-flip'); } };
-  const skip = () => { if (skipped) return; skipped = true; list.forEach(a => { try { a.cancel(); } catch (e) {} }); els.forEach(e => e.remove()); results.forEach((r, i) => showOne(i)); const w = $('multiWrap'); if (w) w.style.visibility = 'visible'; finish(); };
+  const showOne = i => { const el = $('mc'+i); if (el && el.style.opacity !== '1') { el.style.opacity = 1; el.classList.add(TIER_IDX[entries[i].b.tier] >= 2 ? 'a-hip' : 'a-flip'); } };
+  const skip = () => { if (dead()) return; skipped = true; list.forEach(a => { try { a.cancel(); } catch (e) {} }); els.forEach(e => e.remove()); entries.forEach((r, i) => showOne(i)); const w = $('multiWrap'); if (w) w.style.visibility = 'visible'; finish(); };
   m.onclick = e => { if (e.target.closest && e.target.closest('button')) return; skip(); };
   requestAnimationFrame(() => requestAnimationFrame(async () => {
-    const w = $('multiWrap'); if (!w || skipped) return;
+    const w = $('multiWrap'); if (!w || dead()) return;
     w.style.visibility = 'visible';
-    const vw = window.innerWidth, vh = window.innerHeight, N = results.length;
+    const vw = window.innerWidth, vh = window.innerHeight;
     const cw = Math.min(70, vw*0.16), ch = cw*1.38;
-    results.forEach((r, i) => els.push(gcCard(r.b.tier, cw, ch)));
-    const ys = results.map((_, i) => vh*0.46 + (i % 2 ? 1 : -1)*(6 + (i*13) % 24));
+    // 100회는 낮은 등급부터 지나가 최고 등급이 마지막에 터진다
+    const order = entries.map((_, i) => i); if (n > 10) order.reverse();
+    order.forEach(i => els[i] = gcCard(entries[i].b.tier, cw, ch));
+    const ys = entries.map((_, i) => vh*0.46 + (i % 2 ? 1 : -1)*(6 + (i*13) % 24));
+    const gap = n > 10 ? 55 : 80;
     // 1) 왼쪽 → 오른쪽으로 촤라락 날아간다
-    await Promise.all(results.map((r, i) => gcFly(list, els[i], i, r.b.tier, vw, ys[i], { dead:() => skipped })));
-    if (skipped) return;
-    await gcWait(220);
+    await Promise.all(order.map((ei, k) => gcFly(list, els[ei], k, entries[ei].b.tier, vw, ys[ei], { dead, gap })));
+    if (dead()) return;
+    await gcWait(200);
     // 2) 한 장씩 자리로 돌아와 공개된다
-    for (let i = 0; i < N; i++) {
-      if (skipped) return;
+    const seq = order.slice(); if (n > 10) seq.reverse().reverse();
+    for (const i of seq) {
+      if (dead()) return;
       const cell = $('mc'+i), el = els[i]; if (!cell) continue;
-      const rc = cell.getBoundingClientRect(), tx = rc.left + rc.width/2, ty = rc.top + rc.height/2, sc = rc.width/cw, idx = TIER_IDX[results[i].b.tier];
+      const rc = cell.getBoundingClientRect(), tx = rc.left + rc.width/2, ty = rc.top + rc.height/2, sc = rc.width/cw, idx = TIER_IDX[entries[i].b.tier], tier = entries[i].b.tier;
       Snd.sfx.gachaFly();
-      const dur = 430;
-      gcRun(list, el, [{ transform:`translate(${vw + 80}px,${ys[i] - 30}px) scale(1.1) rotate(10deg)` }, { transform:`translate(${(vw + tx)/2}px,${Math.min(ys[i], ty) - 70}px) scale(1.05) rotate(0deg)`, offset:0.55 }, { transform:`translate(${tx}px,${ty}px) scale(${sc}) rotate(0deg)` }], { duration:dur, easing:'cubic-bezier(.25,.8,.3,1)' }).then(() => {
-        if (skipped) return;
-        el.remove(); showOne(i); Snd.sfx.gachaLand(); if (idx >= 2) Snd.sfx.gachaReveal(idx - 1);
+      gcRun(list, el, [{ transform:`translate(${vw + 80}px,${ys[i] - 30}px) scale(1.1) rotate(25deg)` }, { transform:`translate(${(vw + tx)/2}px,${Math.min(ys[i], ty) - 90}px) scale(1.12) rotate(-8deg)`, offset:0.55 }, { transform:`translate(${tx}px,${ty}px) scale(${sc*1.12}) rotate(0deg)`, offset:0.88 }, { transform:`translate(${tx}px,${ty}px) scale(${sc}) rotate(0deg)` }], { duration:400, easing:'cubic-bezier(.25,.8,.3,1)' }).then(() => {
+        if (dead()) { el.remove(); return; }
+        el.remove(); showOne(i); Snd.sfx.gachaLand(); if (idx >= 2) { Snd.sfx.gachaReveal(idx - 1); gcBurst(tier, tx, ty, 8 + idx*2, rc.width*1.5); if (idx >= 3) gcShake(3 + idx); }
       });
-      await gcWait(idx >= 2 ? 330 : 190);
+      await gcWait(idx >= 2 ? 300 : (n > 10 ? 110 : 170));
     }
-    await gcWait(dur0() + 120); if (skipped) return; finish();
+    await gcWait(520); if (dead()) return; finish();
   }));
-  function dur0() { return 430; }
 }
 function closeGacha() {
-  multiTimers.forEach(clearTimeout); document.querySelectorAll('.dc').forEach(e => e.remove()); $('gachaModal').onclick = null;
+  gachaTok++; multiTimers.forEach(clearTimeout); document.querySelectorAll('.dc').forEach(e => e.remove()); $('gachaModal').onclick = null;
   const m = $('gachaModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = '';
   pulling = false;
   if (autoEq) { autoEq = false; startBattle(); render(); toast('새로 얻은 카드를 빈 슬롯에 자동 장착했어요'); } else render();
 }
-function again(kind, multi) { closeGacha(); multi ? pullMulti(kind) : pull(kind); }
+function again(kind, n) { closeGacha(); n && n > 1 ? pullMulti(kind, n) : pull(kind); }
 
 /* ---- 세팅 ---- */
 function styleGauge(st) {
@@ -1415,7 +1461,7 @@ function fightInfoHtml() {
           <div style="font-size:14px;font-weight:800;margin-top:8px">${fb?fb.name:'미장착'}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">${ms?ms.label:'—'}</div></div>
         <div style="font-size:11px;font-weight:800;color:var(--ink4);letter-spacing:.1em">VS</div>
         <div style="text-align:center;width:38%"><div class="medal t-m" style="width:64px;height:64px;margin:0 auto"><span class="emoji" style="font-size:36px">${bi.emoji}</span></div>
-          <div style="font-size:14px;font-weight:800;margin-top:8px">${bi.name}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">${bi.kit.name} · ${bi.style.label}</div></div>
+          <div style="font-size:14px;font-weight:800;margin-top:8px">${bi.name} · ${rangeTag(bi.style.c)}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">${bi.kit.name} · ${bi.style.label}</div></div>
       </div>
       <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:18px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue);transition:width .4s"></div><div style="flex:1;background:var(--red)"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(bp)}</span></div>
@@ -1439,7 +1485,7 @@ function viewSettings() {
     <div class="card soft"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">자동 업그레이드</div><div style="font-size:13px;color:var(--ink3);margin-top:4px">카드가 모이면 바로 레벨을 올린다</div></div>
       <button onclick="toggleAutoUp()" aria-pressed="${!!state.autoUp}" style="flex:none;width:52px;height:30px;border-radius:99px;border:0;background:${state.autoUp ? 'var(--blue)' : '#d1d6db'};position:relative;transition:background .2s"><span style="position:absolute;top:3px;left:${state.autoUp ? 25 : 3}px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s"></span></button></div></div>
     <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px">사운드</div>
-      ${[['sfx', '효과음'], ['bgm', '배경음악']].map(([k, l]) => `<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--ink2);font-weight:600">${l}</span><span id="vol-${k}" style="font-size:14px;font-weight:800">${state.vol[k]}%</span></div><input class="vol" type="range" min="0" max="100" step="1" value="${state.vol[k]}" style="--p:${state.vol[k]}%" oninput="setVol('${k}',this.value,this)" onchange="saveVol('${k}')"></div>`).join('')}
+      ${[['sfx', '효과음']].map(([k, l]) => `<div style="margin-top:12px"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:var(--ink2);font-weight:600">${l}</span><span id="vol-${k}" style="font-size:14px;font-weight:800">${state.vol[k]}%</span></div><input class="vol" type="range" min="0" max="100" step="1" value="${state.vol[k]}" style="--p:${state.vol[k]}%" oninput="setVol('${k}',this.value,this)" onchange="saveVol('${k}')"></div>`).join('')}
     </div>
     <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:12px">상태 효과 안내</div>${statusGuideHtml()}</div>
     <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">데이터 초기화</div>
@@ -1673,7 +1719,15 @@ function emoSprite(e, px) {
     const c = cv.getContext('2d'); c.scale(dpr, dpr); c.textAlign = 'center'; c.textBaseline = 'middle';
     for (const st of EMO_STACKS) {
       c.clearRect(0, 0, sz, sz); c.font = px + 'px ' + st; c.fillText(e, sz/2, sz/2);
-      if (emoInk(cv)) { ent.cv = cv; ent.sz = sz; return ent; }
+      if (emoInk(cv)) {
+        try { // 글리프마다 어긋난 위치를 먹물 영역 중심으로 보정
+          const W = cv.width, d = c.getImageData ? cv.getContext('2d').getImageData(0, 0, W, W).data : null; let x0 = W, x1 = -1, y0 = W, y1 = -1;
+          for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (d[(y*W + x)*4 + 3] > 24) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+          const ox = (W/2 - (x0 + x1)/2)/dpr, oy = (W/2 - (y0 + y1)/2)/dpr;
+          if (Math.abs(ox) > 1.5 || Math.abs(oy) > 1.5) { c.clearRect(0, 0, sz, sz); c.fillText(e, sz/2 + ox, sz/2 + oy); }
+        } catch (err) {}
+        ent.cv = cv; ent.sz = sz; return ent;
+      }
     }
   }
   const im = emoTwemoji(e);
@@ -2336,7 +2390,7 @@ function resolveAct(u, e, a) {
   const hitE = (r, o2) => { if (e.dead) return; if (e.invuln > 0) missText(e); else { const dm = applyHit(u, e, r, Object.assign({ kb:b.kb, color:b.color }, o2||{})); applyEffects(u, e, sk, dm, area); } };
   switch (b.shape) {
     case 'proj': {
-      if (b.kind === 'snipe') { spawnProj(u, { kind:'snipe', ang:area.ang, speed:b.speed, r:b.pr, raw, color:b.color, kb:b.kb, sk }); shake(3); sparks(u.x + Math.cos(area.ang)*u.r, u.y + Math.sin(area.ang)*u.r, 8, '255,250,230', 300, 0.25, area.ang, 0.3); break; }
+      if (b.kind === 'snipe') { Snd.sfx.snipeShot(); { const mx = u.x + Math.cos(area.ang)*(u.r + 10), my = u.y + Math.sin(area.ang)*(u.r + 10); glow(mx, my, 46, 0.12, '255,240,200', 0.8); ring(mx, my, 4, 36, 0.18, '255,235,190', 3); u.vx -= Math.cos(area.ang)*260; u.vy -= Math.sin(area.ang)*260; for (let i = 0; i < 2; i++) P({ k:'spark', x:u.x, y:u.y, vx:Math.cos(area.ang + Math.PI/2)*rnd(60, 140) + rnd(-20, 20), vy:-rnd(160, 260), g:700, size:3.4, color:'255,205,90', life:0.7, add:false }); B.beams.push({ pts:[{ x:mx, y:my }, { x:mx + Math.cos(area.ang)*(b.range + 40), y:my + Math.sin(area.ang)*(b.range + 40) }], t:0, life:0.12, color:'255,250,225', thin:true }); } spawnProj(u, { kind:'snipe', ang:area.ang, speed:b.speed, r:b.pr, raw, color:b.color, kb:b.kb, sk }); shake(3); sparks(u.x + Math.cos(area.ang)*u.r, u.y + Math.sin(area.ang)*u.r, 8, '255,250,230', 300, 0.25, area.ang, 0.3); break; }
       const dd = dist2(u, e), lead = (dd/b.speed)*0.85, aa = Math.atan2(e.y + e.vy*lead - u.y, e.x + e.vx*lead - u.x), n = b.n || 1;
       const rr = n > 1 ? b.dmg*sk.mult*SC(u)*(u.pas === 'dragon' ? 1.35 : 1)*rangedMul(b) : raw;
       const grp = { n:0, done:false }; for (let i = 0; i < n; i++) { spawnProj(u, { kind:b.kind, ang:aa + (n > 1 ? (i - (n-1)/2)*(b.spread/(n-1)) : 0), speed:b.speed, r:b.pr, raw:rr, color:b.color, kb:b.kb, hw:b.hw, sk }); B.projs[B.projs.length - 1].grp = grp; }
@@ -2482,6 +2536,7 @@ function moveUnit(u, e, dt) {
   else if (u.stun > 0) { const f = Math.exp(-6*dt); u.vx *= f; u.vy *= f; }
   else { const pd = planDir(u, e), sp = speedOf(u)*pd.mul*(u.act ? 0.12 : 1), k = Math.min(1, dt*9); u.vx += (pd.dx*sp - u.vx)*k; u.vy += (pd.dy*sp - u.vy)*k; }
   if (!u.act && u.stun <= 0) { const pk = B.pickups.find(q => q.owner === u); if (pk) { const a = Math.atan2(pk.y - u.y, pk.x - u.x), sp = speedOf(u)*0.7; u.vx += Math.cos(a)*sp*0.25; u.vy += Math.sin(a)*sp*0.25; } }
+  if (!u.act && u.stun <= 0) { const sz = B.zones.find(q => q.owner === u && q.style === 'sanct' && q.t < q.dur - 0.3); if (sz) { const dx = sz.x - u.x, dy = sz.y - u.y, d = Math.hypot(dx, dy); if (d > sz.r*0.45) { const sp = speedOf(u); u.vx += dx/d*sp*0.5*Math.min(1, (d - sz.r*0.45)/40); u.vy += dy/d*sp*0.5*Math.min(1, (d - sz.r*0.45)/40); } } }
   u.x += u.vx*dt; u.y += u.vy*dt;
   const m = u.r + 8; let wallHit = false;
   if (u.x < m) { u.x = m; wallHit = u.vx < -120; u.vx = Math.max(0, u.vx); } if (u.x > WW-m) { u.x = WW-m; wallHit = wallHit || u.vx > 120; u.vx = Math.min(0, u.vx); }
@@ -2691,6 +2746,46 @@ function checkEnd() {
 
 /* ---------- 그리기 ---------- */
 const rgba = (c, a) => `rgba(${c},${a})`;
+function drawScope() {
+  for (const u of [B.me, B.en]) {
+    const a = u.act; if (!a || a.type !== 'cast' || !a.data.sk || a.data.sk.b.kind !== 'snipe') continue;
+    const e = foe(u); if (e.dead) continue;
+    const p = clamp(a.t/a.dur, 0, 1), R = 62*easeOut(Math.min(1, p*3)), mag = 1.7 + 0.5*p, k = cv.width/WW, hostile = u.side !== 'me', col = hostile ? '255,90,90' : '255,255,255';
+    if (R < 6) continue;
+    ctx.save(); ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, TAU); ctx.clip();
+    try { const sw = 2*R/mag*k; ctx.drawImage(cv, (e.x - R/mag)*k, (e.y - R/mag)*k, sw, sw, e.x - R, e.y - R, 2*R, 2*R); } catch (err) {}
+    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(e.x - R, e.y - R, 2*R, 2*R);
+    ctx.restore();
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(10,14,22,0.85)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(e.x, e.y, R, 0, TAU); ctx.stroke();
+    const lock = p > 0.82, cc = lock ? '255,70,70' : col;
+    ctx.strokeStyle = rgba(cc, 0.9); ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(e.x - R, e.y); ctx.lineTo(e.x - 9, e.y); ctx.moveTo(e.x + 9, e.y); ctx.lineTo(e.x + R, e.y); ctx.moveTo(e.x, e.y - R); ctx.lineTo(e.x, e.y - 9); ctx.moveTo(e.x, e.y + 9); ctx.lineTo(e.x, e.y + R); ctx.stroke();
+    for (let i = 1; i <= 3; i++) { ctx.fillStyle = rgba(cc, 0.8); ctx.fillRect(e.x + i*13 - 1, e.y - 1, 2, 2); ctx.fillRect(e.x - i*13 - 1, e.y - 1, 2, 2); ctx.fillRect(e.x - 1, e.y + i*13 - 1, 2, 2); ctx.fillRect(e.x - 1, e.y - i*13 - 1, 2, 2); }
+    ctx.beginPath(); ctx.arc(e.x, e.y, 3, 0, TAU); ctx.stroke();
+    const ro = R*(1.9 - 0.9*p); ctx.strokeStyle = rgba(cc, 0.35 + 0.4*p); ctx.lineWidth = 2; ctx.setLineDash([8, 6]); ctx.lineDashOffset = -B.time*40; ctx.beginPath(); ctx.arc(e.x, e.y, ro, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
+function drawScope() {
+  for (const u of [B.me, B.en]) {
+    const a = u.act; if (!a || a.type !== 'cast' || a.data.sk.b.kind !== 'snipe' || u.dead) continue;
+    const e = foe(u), p = clamp(a.t/a.dur, 0, 1), lock = p > 0.82, al = u.side === 'me' ? 1 : 0.7;
+    const R = 112*(1.7 - 0.7*(1 - Math.pow(1 - p, 3))), col = lock ? '255,70,70' : '255,255,255';
+    ctx.save(); ctx.translate(e.x, e.y);
+    const vg = ctx.createRadialGradient(0, 0, R*0.95, 0, 0, R*3.2); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(0,0,0,${0.5*al*Math.min(1, p*3)})`);
+    ctx.fillStyle = vg; ctx.fillRect(-WW, -WH, WW*2, WH*2);
+    ctx.lineCap = 'round'; ctx.strokeStyle = rgba(col, 0.9*al); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = rgba(col, 0.45*al); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R*0.55, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = rgba(col, 0.85*al); ctx.lineWidth = 2;
+    for (let i = 0; i < 4; i++) { const an = i*Math.PI/2, c = Math.cos(an), s2 = Math.sin(an); ctx.beginPath(); ctx.moveTo(c*R*1.18, s2*R*1.18); ctx.lineTo(c*R*0.62, s2*R*0.62); ctx.stroke(); ctx.beginPath(); ctx.moveTo(c*R*0.3, s2*R*0.3); ctx.lineTo(c*R*0.12, s2*R*0.12); ctx.stroke(); }
+    for (let i = 1; i <= 3; i++) { ctx.beginPath(); ctx.moveTo(i*R*0.1 + R*0.3, -3); ctx.lineTo(i*R*0.1 + R*0.3, 3); ctx.moveTo(-i*R*0.1 - R*0.3, -3); ctx.lineTo(-i*R*0.1 - R*0.3, 3); ctx.stroke(); }
+    ctx.fillStyle = rgba('255,60,60', (0.6 + 0.4*Math.sin(B.time*24))*al); ctx.beginPath(); ctx.arc(0, 0, lock ? 4.5 : 3, 0, TAU); ctx.fill();
+    if (lock) { ctx.strokeStyle = rgba('255,70,70', 0.5*al); ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, R + 5, 0, TAU); ctx.stroke(); }
+    ctx.restore();
+    ctx.save(); ctx.strokeStyle = rgba('255,80,80', 0.22*al*p); ctx.lineWidth = 1.5; ctx.setLineDash([6, 8]); ctx.beginPath(); ctx.moveTo(u.x, u.y); ctx.lineTo(e.x, e.y); ctx.stroke(); ctx.restore();
+  }
+}
 function drawTele(u) {
   const a = u.act; if (!a || !a.data || !a.data.area) return;
   const area = areaOf(u, a), p = clamp(a.t/a.dur, 0, 1), hostile = u.side !== 'me';
@@ -2779,9 +2874,10 @@ function drawUnit(u) {
   const label = Math.ceil(u.hp) + (u.shield > 0 ? ' +' + Math.ceil(u.shield) : '');
   ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(8,14,28,0.85)'; ctx.strokeText(label, u.x, y + bh/2 + 1);
   ctx.fillStyle = u.shield > 0 ? '#eaf6ff' : '#fff'; ctx.fillText(label, u.x, y + bh/2 + 1);
-  { const sts = []; for (const k of ['vuln','weak','silence','blind','root','curse','sunder']) if (u[k] > 0) sts.push(ST_ICON[k]);
-    if (u.bleed) sts.push('🩸' + u.bleed.st); if (u.frost > 0) sts.push('🧊' + u.frost); if (u.poison) sts.push(u.poison.burn ? '🔥' : '☠️'); if (u.thorns > 0) sts.push('🌵'); if (u.evade > 0) sts.push('💨' + u.evade); if (u.hot) sts.push('💚');
-    if (sts.length) { ctx.font = '18px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 1; const sp = 27, x0 = u.x - (sts.length-1)*sp/2; sts.forEach((t, i) => { ctx.fillStyle = 'rgba(8,14,28,0.55)'; ctx.beginPath(); ctx.arc(x0 + i*sp, y + bh + 17, 13, 0, TAU); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(t, x0 + i*sp, y + bh + 18); }); } }
+  { const sts = []; for (const k of ['vuln','weak','silence','blind','root','curse','sunder']) if (u[k] > 0) sts.push([ST_ICON[k], 0]);
+    if (u.bleed) sts.push(['🩸', u.bleed.st]); if (u.frost > 0) sts.push(['🧊', u.frost]); if (u.poison) sts.push([u.poison.burn ? '🔥' : '☠️', 0]); if (u.thorns > 0) sts.push(['🌵', 0]); if (u.evade > 0) sts.push(['💨', u.evade]); if (u.hot) sts.push(['💚', 0]);
+    if (sts.length) { const sp = 27, x0 = u.x - (sts.length-1)*sp/2; sts.forEach(([t, n], i) => { const cx = x0 + i*sp, cy = y + bh + 18; ctx.fillStyle = 'rgba(8,14,28,0.55)'; ctx.beginPath(); ctx.arc(cx, cy, 13, 0, TAU); ctx.fill(); drawEmoji(t, 16, cx, cy);
+      if (n > 1) { ctx.font = '800 11px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,14,28,0.9)'; ctx.strokeText(n, cx + 9, cy + 9); ctx.fillStyle = '#fff'; ctx.fillText(n, cx + 9, cy + 9); } }); } }
   if (u.chip) {
     const c = u.chip, al = c.t < 0.12 ? c.t/0.12 : c.t > c.life-0.25 ? (c.life-c.t)/0.25 : 1;
     ctx.globalAlpha = al; ctx.font = '700 17px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -2850,6 +2946,12 @@ function draw() {
   const sx = (Math.random()-0.5)*B.shake*2*k, sy = (Math.random()-0.5)*B.shake*2*k, z = 1 + B.punch*0.018;
   ctx.save();
   ctx.translate(cv.width/2 + sx, cv.height/2 + sy); ctx.scale(z, z); ctx.translate(-cv.width/2, -cv.height/2);
+  { // 저격 조준 시 조준경 확대
+    let tz = 1, tx = WW/2, ty = WH/2;
+    for (const u of [B.me, B.en]) { const a = u.act; if (a && a.type === 'cast' && a.data.sk.b.kind === 'snipe' && !u.dead) { const e2 = foe(u), pr = clamp(a.t/a.dur, 0, 1); tz = Math.max(tz, 1 + 0.2*(1 - Math.pow(1 - pr, 2))*(u.side === 'me' ? 1 : 0.6)); tx = e2.x; ty = e2.y; } }
+    B.zm = (B.zm || 1) + (tz - (B.zm || 1))*(tz > (B.zm || 1) ? 0.16 : 0.1); B.zfx = (B.zfx == null ? tx : B.zfx + (tx - B.zfx)*0.2); B.zfy = (B.zfy == null ? ty : B.zfy + (ty - B.zfy)*0.2);
+    if (B.zm > 1.002) { const fx0 = B.zfx*k, fy0 = B.zfy*k; ctx.translate(fx0, fy0); ctx.scale(B.zm, B.zm); ctx.translate(-fx0, -fy0); }
+  }
   ctx.drawImage(B.bg, 0, 0, cv.width, cv.height);
   ctx.scale(k, k);
   for (const d of B.decals) {
@@ -2869,6 +2971,8 @@ function draw() {
   }
   for (const u of [B.me, B.en].sort((a,b) => a.y - b.y)) drawUnit(u);
   for (const p of B.projs) drawProj(p);
+  drawScope();
+  drawScope();
   for (const m of B.meteors) {
     const t = clamp(m.t/m.dur, 0, 1), k = m.s || 1, mx = m.x + 160*(1-t), my = m.y - 560*(1-t), R = 34*k;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
@@ -2976,7 +3080,7 @@ function startBattle() {
   A('hResult').classList.remove('on'); A('hResult').innerHTML = '';
   A('hStage').textContent = stage; A('hSpeed').textContent = battleSpeed + 'x';
   A('hMeEm').textContent = fb.emoji; A('hMeName').textContent = fb.name; A('hMeLv').textContent = 'Lv.' + curLv('f', fb.id);
-  A('hEnEm').textContent = bi.emoji; A('hEnName').textContent = bi.name; A('hEnLv').textContent = bi.kit.name;
+  A('hEnEm').textContent = bi.emoji; A('hEnName').textContent = bi.name + ' · ' + rangeTag(bi.style.c); A('hEnLv').textContent = bi.kit.name;
   A('hSkills').innerHTML = me.skills.map((s, i) => `<div class="sks"><span class="e emoji">${s.b.emoji}</span><div class="cd" id="sk${i}"></div><span class="n" id="skt${i}"></span></div>`).join('');
 }
 function nextStageAfter() { return B.win ? Math.min(B.stage + 1, state.stage) : B.stage; }
