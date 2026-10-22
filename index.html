@@ -211,7 +211,7 @@
   </header>
   <main id="view" class="px-4 pb-28"></main>
   <nav class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[480px] z-30" style="background:rgba(255,255,255,.96);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:0 8px max(6px,env(safe-area-inset-bottom));">
-    <div class="grid grid-cols-4" id="navBar"></div>
+    <div class="grid grid-cols-5" id="navBar"></div>
   </nav>
 </div>
 
@@ -220,6 +220,66 @@
 <div id="confirmModal" class="fixed inset-0 z-[85] hidden items-center justify-center px-6" style="background:rgba(8,12,20,.55);"></div>
 <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-24 z-[95] opacity-0 pointer-events-none text-center" style="background:rgba(25,31,40,.92);color:#fff;font-size:14px;font-weight:600;border-radius:14px;padding:11px 18px;max-width:90%;"></div>
 
+<script>
+/* ★ Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹)의 firebaseConfig 값을 여기에 붙여 넣으세요 (ARENA-SETUP.md 참고) */
+window.FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDfeqUmX_KTWc44fJgeJmwR05AiJi7tE9A",
+  authDomain: "animalbrawl.firebaseapp.com",
+  projectId: "animalbrawl",
+  storageBucket: "animalbrawl.firebasestorage.app",
+  messagingSenderId: "515430014547",
+  appId: "1:515430014547:web:2fbede5cc859049c1df0a6"
+};
+</script>
+<script type="module">
+const cfg = window.FIREBASE_CONFIG || {};
+const configured = !!cfg.apiKey && !/^YOUR/.test(cfg.apiKey);
+const API = { configured, ready:false, user:null };
+window.ArenaFB = API;
+const ping = () => window.dispatchEvent(new Event('arenafb'));
+if (!configured) ping();
+else {
+  try {
+    const base = 'https://www.gstatic.com/firebasejs/10.14.1/';
+    const [app, au, fs] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
+    const fapp = app.initializeApp(cfg), fauth = au.getAuth(fapp), db = fs.getFirestore(fapp);
+    const uid = () => fauth.currentUser.uid;
+    const setUser = u => { API.user = u ? { uid:u.uid, anon:u.isAnonymous, email:u.email || '', providers:u.providerData.map(p => p.providerId) } : null; API.ready = !!API.user; API.uid = u ? u.uid : null; };
+    let first = true;
+    await new Promise(res => au.onAuthStateChanged(fauth, async u => {
+      if (!u) { try { await au.signInAnonymously(fauth); } catch (e) { console.warn(e); setUser(null); if (first) { first = false; res(); } else ping(); } return; }
+      setUser(u); if (first) { first = false; res(); } else ping();
+    }));
+    const refresh = () => { setUser(fauth.currentUser); ping(); };
+    const switchTo = async cred => { await au.signInWithCredential(fauth, cred); refresh(); return 'switched'; };
+    API.googleConnect = async () => {
+      const prov = new au.GoogleAuthProvider(), u = fauth.currentUser;
+      try { await au.linkWithPopup(u, prov); refresh(); return 'linked'; }
+      catch (e) {
+        if (e.code === 'auth/credential-already-in-use') { const cred = au.GoogleAuthProvider.credentialFromError(e); if (cred) return switchTo(cred); }
+        throw e;
+      }
+    };
+    API.emailConnect = async (email, pw, mode) => {
+      if (mode === 'login') { await au.signInWithEmailAndPassword(fauth, email, pw); refresh(); return 'switched'; }
+      await au.linkWithCredential(fauth.currentUser, au.EmailAuthProvider.credential(email, pw)); refresh(); return 'linked';
+    };
+    API.resetPassword = email => au.sendPasswordResetEmail(fauth, email);
+    API.logout = async () => { await au.signOut(fauth); /* 리스너가 새 익명 계정을 만든다 */ };
+    API.saveProfile = p => fs.setDoc(fs.doc(db, 'players', uid()), { name:p.name, power:p.power, stage:p.stage, team:p.team, ver:p.ver, updatedAt:fs.serverTimestamp() });
+    API.listOpponents = async sort => {
+      const snap = await fs.getDocs(fs.query(fs.collection(db, 'players'), fs.orderBy(sort === 'stage' ? 'stage' : 'power', 'desc'), fs.limit(40)));
+      const me = uid();
+      return snap.docs.filter(d => d.id !== me).map(d => { const x = d.data(); return { uid:d.id, name:x.name, power:x.power, stage:x.stage, team:x.team }; });
+    };
+    API.myLogs = async () => (await fs.getDocs(fs.query(fs.collection(db, 'players', uid(), 'logs'), fs.orderBy('at', 'desc'), fs.limit(15)))).docs.map(d => d.data());
+    API.logMatch = m => fs.addDoc(fs.collection(db, 'players', m.defenderUid, 'logs'), { attackerUid:uid(), attackerName:String(m.attackerName).slice(0, 12), win:!!m.win, at:fs.serverTimestamp() });
+    API.cloudGet = async () => { const s = await fs.getDoc(fs.doc(db, 'saves', uid())); return s.exists() ? { data:s.data().data, savedAt:s.data().savedAt } : null; };
+    API.cloudPut = (data, savedAt, stage) => fs.setDoc(fs.doc(db, 'saves', uid()), { data, savedAt, stage });
+  } catch (e) { console.warn('Firebase 연결 실패', e); }
+  ping();
+}
+</script>
 <script>
 /* ===================== 데이터 ===================== */
 const TIERS = [
@@ -281,17 +341,17 @@ const SKILLS = [
   { id:'timestop',   tier:'l', emoji:'⏳', name:'시간 정지', dmg:0, cd:11, mc:0.30, range:400, shape:'bind', radius:190, wind:0.40, fxv:2.7, color:'255,235,160' },
   { id:'sanctuary',  tier:'l', emoji:'✨', name:'성역',     dmg:0, cd:12, mc:0.50, range:0, shape:'zone', self:true, zstyle:'sanct', radius:110, dur:6, tick:0.5, heal:0.0731, wind:0.50, color:'255,240,170' },
   // ── 초월 (상향)
-  { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:202, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
-  { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:60, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
-  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:36.2, pull:620, zslow:true, wind:0.55, color:'150,100,255' },
+  { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:242, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
+  { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:72, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
+  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:43.4, pull:620, zslow:true, wind:0.55, color:'150,100,255' },
   { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:7, batk:1.65, bspd:1.4, hot:0.015, color:'255,220,120' },
-  { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:75, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
+  { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:90, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
 ];
 SKILLS.forEach(b => { if (!b.self && b.mc <= 0.35 && b.range > 130) b.range = Math.round(b.range*1.15); });
 
 
 /* ── 진화 (스킬 전용): 등급별 Lv부터 2가지 중 하나를 고름. p = 수치 변경('*1.3' 곱 / '+1' 합 / 숫자 대입), x = 적중 시 추가효과, s = 시전 시 추가효과 */
-const EVO_RESET_COST = { n:1000, r:2000, e:4000, m:8000, l:15000, t:30000 };
+const EVO_RESET_COST = { n:0, r:0, e:0, m:0, l:0, t:0 };
 const EVO = {
   fire:[ {"key":"a","name":"잿더미","x":[{"k":"silence","v":1.5},{"k":"burn","dps":7,"dur":3}],"desc":"명중 시 1.5초간 침묵한다. 화상 피해가 40% 늘어난다."},
          {"key":"b","name":"불똥","x":[{"k":"sparkburst","n":5,"pct":0.8}],"desc":"명중 시 불똥 5개가 튀어 0.5초 뒤 작게 폭발한다. 불똥 하나는 불꽃 피해의 80%를 준다."} ],
@@ -308,7 +368,7 @@ const EVO = {
   vamp:[ {"key":"a","name":"빈혈","x":[{"k":"slow","v":3,"m":0.5},{"k":"stunlow","thr":0.5,"v":1.8}],"desc":"명중 시 3초간 이동속도 50% 감소. 체력 50% 이하의 적은 1.8초간 기절한다."},
          {"key":"b","name":"저주 받은 송곳니","x":[{"k":"curse","v":3,"m":0.15}],"desc":"명중 시 3초간 저주를 건다. 저주받은 적은 받는 회복량이 85% 줄어든다."} ],
   poison:[ {"key":"a","name":"신경독","p":{"pdur":7},"desc":"중독 지속시간이 7초로 늘어난다."},
-         {"key":"b","name":"부식독","x":[{"k":"poisonpct","v":0.0025}],"desc":"중독 피해가 들어갈 때마다 적 최대 체력의 0.25%를 추가로 입힌다."} ],
+         {"key":"b","name":"부식독","x":[{"k":"poisonpct","v":0.0015}],"desc":"중독 피해가 들어갈 때마다 적 최대 체력의 0.15%를 추가로 입힌다."} ],
   rush:[ {"key":"a","name":"가속도","x":[{"k":"refund","t":3.5}],"desc":"명중 시 쿨타임이 3.5초 감소한다."},
          {"key":"b","name":"점멸","tp":1,"x":[{"k":"stun","v":1.5}],"desc":"돌진 대신 순간이동해 벤다. 명중 시 1.5초간 기절시킨다."} ],
   barrier:[ {"key":"a","name":"가시 방벽","s":[{"k":"thorns","pct":4.8,"dur":5}],"desc":"보호막과 함께 5초간 가시를 두른다. 받는 피해의 480%를 공격자에게 반사한다."},
@@ -519,7 +579,7 @@ function load() {
   } catch (e) {}
   return freshState();
 }
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} }
+function save() { if (window.__noSave) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} try { arenaSyncSoon(); } catch (e) {} try { accSyncSoon(); } catch (e) {} }
 
 /* ===================== 사운드 (WebAudio 합성 · 외부 파일 없음) ===================== */
 const Snd = (() => {
@@ -723,6 +783,8 @@ function applyP(b, p) {
   }
   return o;
 }
+/* 몇 번째 진화인지 (1 또는 2, 없으면 0) */
+const evoNumOf = (id, key) => { const i = (EVO[id] || []).findIndex(e => e.key === (key === undefined ? state.evo[id] : key)); return i + 1; };
 const evoOf = id => { const k = state.evo[id]; return k ? (EVO[id] || []).find(e => e.key === k) || null : null; };
 function skillWith(id) { const b = SK(id), e = evoOf(id); return e ? { base:applyP(b, e.p || {}), evo:e } : { base:b, evo:null }; }
 
@@ -744,8 +806,8 @@ function skillBonusOf(id, lv) {
 function equipBonus() { const o = { hp:0, atk:0, def:0 }; for (const id of state.eq.s) if (id) { const x = skillBonusOf(id); o.hp += x.hp; o.atk += x.atk; o.def += x.def; } return o; }
 const bonusText = (x, base) => [['HP', 'hp'], ['공격', 'atk'], ['방어', 'def']].filter(([, k]) => x[k] > 0).map(([l, k]) => base ? `${l} +${Math.max(1, Math.round(base[k]*x[k]))} (${Math.round(x[k]*100)}%)` : `${l} +${Math.round(x[k]*100)}%`).join(' · ');
 const baseStatsForBonus = () => fighterStats(F(state.eq.f || 'dog'), 0, false);
-function fighterStats(b, lv, withEq) {
-  const m = FIGHTER_TIER_MUL[b.tier] * lvMul(lv || curLv('f', b.id), 'f', b.tier), eb = withEq ? equipBonus() : { hp:0, atk:0, def:0 };
+function fighterStats(b, lv, withEq, ebo) {
+  const m = FIGHTER_TIER_MUL[b.tier] * lvMul(lv || curLv('f', b.id), 'f', b.tier), eb = withEq ? (ebo || equipBonus()) : { hp:0, atk:0, def:0 };
   return { hp:Math.round(b.hp*m*STAT_K*(1+eb.hp)), atk:Math.round(b.atk*m*STAT_K*(1+eb.atk)), def:Math.round(b.def*m*STAT_K*(1+eb.def)), spd:Math.round(b.spd*m) };
 }
 const scFromE = atk => SKDMG*(1 + (atk/ATK_REF - 1)*SKCOEF/3);
@@ -912,21 +974,25 @@ const emojiArt = (e, px) => `<span class="emoji" style="font-size:${px}px;line-h
 /* ===================== 렌더링 ===================== */
 const TABS = [
   { id:'gacha', label:'영입', icon:'sparkles' }, { id:'lineup', label:'세팅', icon:'sliders-horizontal' },
-  { id:'fight', label:'전투', icon:'swords' }, { id:'settings', label:'설정', icon:'settings' },
+  { id:'fight', label:'스테이지', icon:'swords' }, { id:'arena', label:'아레나', icon:'trophy' }, { id:'settings', label:'설정', icon:'settings' },
 ];
 function renderNav() {
   $('navBar').innerHTML = TABS.map(t => `<button class="navbtn ${tab===t.id?'on':''}" onclick="setTab('${t.id}')">${ic(t.icon,'w-[22px] h-[22px]').replace('class=', `stroke-width="${tab===t.id?2.4:2}" class=`)}<span>${t.label}</span>${t.id==='lineup' && state.setDot && tab!=='lineup' ? '<i class="ndot"></i>' : ''}</button>`).join('');
 }
-function setTab(t) { tab = t; render(true); window.scrollTo({ top:0 }); }
+function setTab(t) {
+  if (Arn.fight && t !== 'arena') { Arn.fight = false; Arn.opp = null; startBattle(); }
+  tab = t; render(true); window.scrollTo({ top:0 }); if (t === 'arena') arenaEnter();
+}
 function render(animate) {
   if (tab === 'lineup' && state.setDot) { state.setDot = false; save(); }
   setGold(); renderNav();
   try { const h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdrH', h.offsetHeight + 'px'); } catch (e) {}
   const v = $('view');
-  if (tab === 'fight' && mounted) { $('fightInfo').innerHTML = fightInfoHtml(); icons(); return; }
+  const mk = tab === 'fight' ? 'fight' : (tab === 'arena' && Arn.fight) ? 'arena' : null;
+  if (mk && mounted === mk) { $(mk === 'fight' ? 'fightInfo' : 'arenaInfo').innerHTML = mk === 'fight' ? fightInfoHtml() : arenaFightInfoHtml(); icons(); return; }
   if (mounted) { exitFs(); mounted = false; }
-  v.innerHTML = tab === 'gacha' ? viewGacha() : tab === 'lineup' ? viewLineup() : tab === 'fight' ? viewFight() : viewSettings();
-  if (tab === 'fight') { $('arenaSlot').replaceWith(arenaEl); mounted = true; }
+  v.innerHTML = tab === 'gacha' ? viewGacha() : tab === 'lineup' ? viewLineup() : tab === 'fight' ? viewFight() : tab === 'arena' ? viewArena() : viewSettings();
+  if (mk) { $('arenaSlot').replaceWith(arenaEl); mounted = mk; }
   if (animate && v.firstElementChild) v.firstElementChild.classList.add('a-slide');
   flashSlot = null;
   icons();
@@ -1198,7 +1264,7 @@ function slot(kind, id, selected, onclick, label, big, key) {
   if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press ${selected?'a-pulse':''}" style="height:${h}px;width:100%;border-radius:20px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-5 h-5')}<span style="font-size:12px;font-weight:700">${label}</span></button>`;
   const b = baseOf(kind, id), lv = curLv(kind, id);
   return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''} ${flashSlot===key?'a-lvup':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''}" style="height:${h}px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
-    ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="font-size:10px;font-weight:800">Lv.${lv}</span>${evoBang(kind, id)}</button>`;
+    ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:10px;font-weight:800">Lv.${lv}${kind === 's' && state.evo[id] ? ' Ev.' + evoNumOf(id) : ''}</span>${evoBang(kind, id)}</button>`;
 }
 function slotMini(kind, id, selected, onclick, label, dk) {
   if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press" style="height:50px;width:100%;border-radius:14px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;align-items:center;justify-content:center;color:${selected?'var(--blue)':'var(--ink4)'};font-size:11px;font-weight:800">${label}</button>`;
@@ -1214,7 +1280,7 @@ function viewLineup() {
     const li = lvInfo(n), lvc = curLv(kind, b.id), up = canUp(kind, b.id), evd = kind === 's' && state.evo[b.id], es = eqSlotOf(b.id), eq = es >= 0;
     return `<div id="tile-${kind}-${b.id}" class="tile t-${b.tier} press ${eq?'eq':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" role="button" data-dex="${kind}:${b.id}" onclick="tileTap('${kind}','${b.id}')" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;scroll-margin-top:150px">
       ${emojiArt(b.emoji, 32)}<span style="font-size:11px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px">${b.name}</span>
-      <span class="tc" style="font-size:10px;font-weight:800">Lv.${lvc}${lvc>=MAXLV?' MAX':''}${evd?' ✦':''}${up?' <span style="color:var(--blue)">▲UP</span>':''}</span>${evoBang(kind, b.id)}
+      <span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:${(`Lv.${lvc}`.length + (lvc>=MAXLV?4:0) + (evd?5:0) + (up?4:0)) > 11 ? 8.5 : (`Lv.${lvc}`.length + (lvc>=MAXLV?4:0) + (evd?5:0) + (up?4:0)) > 9 ? 9.5 : 10}px;font-weight:800">Lv.${lvc}${lvc>=MAXLV?' MAX':''}${evd?' Ev.' + evoNumOf(b.id):''}${up?' <span style="color:var(--blue)">▲UP</span>':''}</span>${evoBang(kind, b.id)}
       <div class="bar" style="width:62%;height:4px;margin-top:2px"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div>
       ${eq ? `<span style="position:absolute;top:5px;left:5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 6px">${kind==='f'?'장착':'슬롯 '+(es+1)}</span>` : ''}
     </div>`;
@@ -1500,7 +1566,7 @@ function renderDetail() {
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:14px;font-weight:800">✦ ${o.name}</div>${on?'<span class="chip" style="background:var(--blue);color:#fff">적용 중</span>':ev?'':`<button class="btn primary sm" onclick="evolveTo('${id}','${o.key}')">진화</button>`}</div>
         <div style="font-size:12px;color:var(--ink2);margin-top:6px;line-height:1.55">${o.desc}</div></div>`; }).join('')}</div>
       <details style="margin-top:10px"><summary style="font-size:12px;font-weight:700;color:var(--ink3);cursor:pointer;padding:4px 0">상태 효과 설명</summary><div style="margin-top:8px">${statusGuideHtml()}</div></details>
-      ${ev ? `<button class="btn ghost" style="width:100%;margin-top:10px" onclick="resetEvo('${id}')">진화 초기화 · <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(cost)}</span></button>` : ''}</div>`;
+      ${ev ? `<button class="btn ghost" style="width:100%;margin-top:10px" onclick="resetEvo('${id}')">진화 초기화 · 무료</button>` : ''}</div>`;
   }
   const eqIdx = kind === 'f' ? (state.eq.f === id ? 0 : -1) : state.eq.s.indexOf(id);
   let equip;
@@ -1569,6 +1635,7 @@ function changeStage(d) {
 function viewSettings() {
   const row = (l, v) => `<div style="display:flex;justify-content:space-between;align-items:center;height:44px;border-top:1px solid var(--line)"><span style="font-size:14px;color:var(--ink2);font-weight:500">${l}</span><span style="font-size:14px;font-weight:800">${v}</span></div>`;
   return `<div class="space-y-3">
+    ${accCardHtml()}
     <div class="card soft" style="padding-bottom:8px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px">내 기록</div>
       ${row('최고 스테이지', 'STAGE ' + state.stage)}${row('파이터 도감', `${Object.keys(state.own.f).length} / ${FIGHTERS.length}`)}${row('스킬 도감', `${Object.keys(state.own.s).length} / ${SKILLS.length}`)}${row('보유 골드', `<span style="display:inline-flex;align-items:center;gap:4px">${COIN}${fmt(state.gold)}</span>`)}</div>
     <div class="card soft"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">자동 업그레이드</div><div style="font-size:13px;color:var(--ink3);margin-top:4px">카드가 모이면 바로 레벨을 올려요</div></div>
@@ -1597,7 +1664,7 @@ function askReset() {
   const m = $('confirmModal'); m.classList.remove('hidden'); m.classList.add('flex');
   m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:26px 22px 20px;width:100%;max-width:330px;text-align:center">
     <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em">정말 초기화할까요?</div>
-    <div style="font-size:14px;color:var(--ink3);margin:8px 0 22px;line-height:1.55">모든 진행 상황이 사라지고<br>되돌릴 수 없어요.</div>
+    <div style="font-size:14px;color:var(--ink3);margin:8px 0 22px;line-height:1.55">모든 진행 상황이 사라지고<br>되돌릴 수 없어요.${accUser() && !accUser().anon ? '<br>클라우드 기록도 함께 초기화돼요.' : ''}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn ghost" onclick="closeConfirm()">취소</button><button class="btn" style="background:var(--red);color:#fff" onclick="doReset()">초기화</button></div></div>`;
 }
 function closeConfirm() { const m = $('confirmModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
@@ -1634,7 +1701,7 @@ const arenaEl = (() => {
             <div class="hpnum" id="hMeHp"></div>
           </div>
         </div>
-        <div class="pill"><small>STAGE</small><b id="hStage">1</b><small id="hTime">0s</small></div>
+        <div class="pill"><small id="hPillL">STAGE</small><b id="hStage">1</b><small id="hTime">0s</small></div>
         <div class="plate r" style="--team:#ff6b72">
           <div class="avatar"><span class="emoji" id="hEnEm"></span></div>
           <div class="pinfo">
@@ -1740,11 +1807,11 @@ function bgFor(stage) { const key = Math.floor((stage-1)/3) % THEMES.length; con
 /* ---------- 유닛 ---------- */
 function mkUnit(o) {
   const es = Math.min(o.st.spd, 220), style = calcStyle(o.fmc, o.entries);
-  const u = { side:o.side, isBoss:!!o.isBoss, emoji:o.emoji, name:o.name, pas:o.pas || null, maxHp:o.st.hp, hp:o.st.hp, atk:o.st.atk, def:o.st.def, spd:o.st.spd, es,
+  const u = { side:o.side, isBoss:!!o.isBoss, emoji:o.emoji, name:o.name, pas:o.pas || null, maxHp:Math.round(o.st.hp*(o.hpK || 1)), hp:Math.round(o.st.hp*(o.hpK || 1)), hpK:o.hpK || 1, atk:o.st.atk, def:o.st.def, spd:o.st.spd, es,
     r: o.isBoss ? 40 : 28, x:0, y:0, vx:0, vy:0, face:0,
-    skills: o.entries.map(en => { const cd = o.side === 'me' ? (en.base.cd0 != null ? en.base.cd0 : Math.min(en.base.cd, scdOf(en.base.id))) : Math.min(en.base.cd, 2.2) + rnd(0,0.8); return { b:en.base, mult:en.mult, lvs:en.lvs || 1, evo:en.evo || null, lv:en.lv || 0, cd, cdMax:Math.max(cd, 0.1) }; }),
+    skills: o.entries.map(en => { const cd = (o.side === 'me' || o.arena) ? (en.base.cd0 != null ? en.base.cd0 : Math.min(en.base.cd, en.scd || scdOf(en.base.id))) : Math.min(en.base.cd, 2.2) + rnd(0,0.8); return { b:en.base, mult:en.mult, lvs:en.lvs || 1, evo:en.evo || null, lv:en.lv || 0, cd, cdMax:Math.max(cd, 0.1) }; }),
     atkCd:0.6, dashCd:rnd(0.5,2), dodgeCd:rnd(0,1), act:null, hitFlash:0, slow:0, poison:null, stun:0, recover:0, invuln:0,
-    air:0, airMax:1, hgT:0, hgFrom:0, lastHp:o.st.hp, vuln:0, weak:0, silence:0, blind:0, root:0, curse:0, sunder:0, thorns:0, thornsPct:0, evade:0, evadeT:0, bleed:null, frost:0, frostT:0,
+    air:0, airMax:1, hgT:0, hgFrom:0, lastHp:Math.round(o.st.hp*(o.hpK || 1)), vuln:0, weak:0, silence:0, blind:0, root:0, curse:0, sunder:0, thorns:0, thornsPct:0, evade:0, evadeT:0, bleed:null, frost:0, frostT:0,
     shield:0, shieldT:0, buffT:0, buffAtk:1, buffSpd:1, buffLs:0, boostT:0, pounceT:0, counter:false, hiberT:0, hibernated:false, revived:false, raged:false,
     style, pokes: style.c < 0.42, plan:{ t:'idle' }, thinkT:rnd(0.1,0.3), strafe:Math.random()<0.5?1:-1, strafeT:rnd(1,2.5),
     retreatT:0, retreatCd:0, thKey:null, thAt:0, thDodge:false, thWalk:true, chip:null, ghostT:0, dead:false, deadT:0, cornered:false };
@@ -1753,6 +1820,8 @@ function mkUnit(o) {
   return u;
 }
 const HEAL_MUL = 0.7, BOSS_HEAL = 0.84;
+/* 아레나는 체력을 늘리지만, 최대 체력 비례 효과는 원래 체력 기준으로 계산한다 (회복·보호막은 ×ARENA_HEAL, % 피해는 ×1) */
+const ARENA_HP = 20, ARENA_HEAL = 3, baseHp = u => u.maxHp/(u.hpK || 1), healHp = u => baseHp(u)*(u.hpK > 1 ? ARENA_HEAL : 1);
 const rangedMul = b => b.self ? 1 : b.mc <= 0.35 ? 0.92 : b.mc >= 0.7 ? 0.92 : 1;
 const foe = u => u === B.me ? B.en : B.me;
 function atkOf(u) { let m = 1; if (u.buffT > 0) m *= u.buffAtk; if (u.weak > 0) m *= (u.weakM == null ? 0.75 : u.weakM); { const e2 = foe(u); if (e2 && e2.pas === 'lion' && !e2.dead && dist2(u, e2) < 300) m *= 0.88; } if (u.pas === 'dog' && u.hp < u.maxHp*0.3) m *= 1.3; return u.atk*m; }
@@ -2108,6 +2177,7 @@ function trueDmg(src, tgt, amt, col, label) {
 const POISON_SEQ = [1, 1, 0.5, 0.5, 0.5, 0.3, 0.1];
 function applyPoison(tgt, dur, dps) {
   if (tgt.immuneT > 0) return;
+  dps *= 0.7;
   const o = tgt.poison;
   if (o && !o.burn) { o.t = Math.max(o.t, dur); o.dps = Math.max(o.dps, dps); }
   else tgt.poison = { t:dur, dps, tick:POISON_SEQ[0], n:0 };
@@ -2124,7 +2194,7 @@ function fxList(src, tgt, sk, list, dmg) {
       case 'poisonpct': if (tgt.poison && !tgt.poison.burn) tgt.poison.pct = x.v; break;
       case 'stunlow': if (tgt.hp/tgt.maxHp <= x.thr) stunUnit(tgt, x.v); break;
       case 'kill': if (tgt.hp > 0 && tgt.hp/tgt.maxHp <= x.thr) trueDmg(src, tgt, tgt.hp, '255,70,70', '처형'); break;
-      case 'pctmax': trueDmg(src, tgt, tgt.maxHp*x.v, '216,180,254', '붕괴'); break;
+      case 'pctmax': trueDmg(src, tgt, baseHp(tgt)*x.v, '216,180,254', '붕괴'); break;
       case 'cdpush': for (const o of tgt.skills) o.cd += x.t; ring(tgt.x, tgt.y, tgt.r, tgt.r*2, 0.4, '190,170,255', 2); break;
       case 'mark': tgt.markT = x.v; tgt.markSrc = src; tgt.markSk = sk; tgt.markN = 0; ring(tgt.x, tgt.y, tgt.r*1.2, tgt.r*1.8, 0.4, '170,225,255', 3); break;
       case 'knock': { const a = Math.atan2(tgt.y - src.y, tgt.x - src.x); tgt.vx += Math.cos(a)*x.kb; tgt.vy += Math.sin(a)*x.kb; break; }
@@ -2165,10 +2235,10 @@ function selfFx(u, sk, list) {
   for (const x of list) {
     switch (x.k) {
       case 'hot': u.hot = { pct:x.pct*Math.min(sk.mult, 2.5), t:x.dur }; break;
-      case 'shield': u.shield = Math.max(u.shield, u.maxHp*(sk.lv ? shieldPctAt(sk.lv) : x.pct*Math.min(sk.mult, 2.2))); u.shieldT = x.dur; u.shieldMax = u.shield; ring(u.x, u.y, u.r, u.r*2.3, 0.5, sk.b.color, 3); break;
+      case 'shield': u.shield = Math.max(u.shield, healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : x.pct*Math.min(sk.mult, 2.2))); u.shieldT = x.dur; u.shieldMax = u.shield; ring(u.x, u.y, u.r, u.r*2.3, 0.5, sk.b.color, 3); break;
       case 'haste': u.boostT = Math.max(u.boostT, x.dur); break;
       case 'mspd': u.mspd = 1 + x.v; u.mspdT = Math.max(u.mspdT || 0, x.dur); break;
-      case 'healx': heal(u, u.maxHp*x.pct/HEAL_MUL); break;
+      case 'healx': heal(u, healHp(u)*x.pct/HEAL_MUL); break;
       case 'dr': u.dr = x.pct; u.drT = x.dur; break;
       case 'immune': u.immuneT = x.dur; break;
       case 'twilight': u.twiT = x.dur; break;
@@ -2176,7 +2246,7 @@ function selfFx(u, sk, list) {
       case 'aurora': auroraFx(u); break;
       case 'casing': { const a = rnd(0, TAU), d = rnd(70, 110); B.pickups.push({ x:clamp(u.x + Math.cos(a)*d, 24, WW - 24), y:clamp(u.y + Math.sin(a)*d, 24, WH - 24), owner:u, sk, t:0, life:7 }); break; }
       case 'invuln': u.invuln = Math.max(u.invuln, x.t); if (u.invuln > 0.3) chip(u, '무적'); break;
-      case 'heal': heal(u, u.maxHp*x.pct*(sk.lvs || 1)); break;
+      case 'heal': heal(u, healHp(u)*x.pct*(sk.lvs || 1)); break;
       case 'atk': if (u.buffT <= 0) { u.buffAtk = x.mult; u.buffSpd = 1; u.buffLs = 0; u.buffColor = sk.b.color; u.buffT = x.dur; } break;
       case 'thorns': u.thorns = Math.max(u.thorns, x.dur); u.thornsPct = x.pct; break;
       case 'evade': u.evade = Math.max(u.evade, x.n); u.evadeT = Math.max(u.evadeT, x.dur); break;
@@ -2464,12 +2534,12 @@ function resolveAct(u, e, a) {
     const area = { type:'arc', x:u.x, y:u.y, ang:d.ang, reach:u.r + 52, half:0.95 };
     slash(u.x, u.y, d.ang, u.r + 40, 0.95, u.side === 'me' ? '190,220,255' : '255,190,170', 5);
     u.vx += Math.cos(d.ang)*200; u.vy += Math.sin(d.ang)*200;
-    if (inArea(area, e)) { if (e.invuln > 0) missText(e); else applyHit(u, e, atkOf(u)*(u.side === 'me' ? 3.5 : 1), { kb:260, basic:true }); }
+    if (inArea(area, e)) { if (e.invuln > 0) missText(e); else applyHit(u, e, atkOf(u)*(u.isBoss ? 1 : 3.5), { kb:260, basic:true }); }
     return;
   }
   if (a.type === 'poke') {
     const sp = 560, dd = dist2(u, e), lead = (dd/sp)*0.8, aa = Math.atan2(e.y + e.vy*lead - u.y, e.x + e.vx*lead - u.x);
-    spawnProj(u, { kind:'poke', ang:aa, speed:sp, r:8, raw:atkOf(u)*0.85*(u.side === 'me' ? 2.5 : 0.7), color:u.side === 'me' ? '150,200,255' : '255,150,140', kb:120, sk:null });
+    spawnProj(u, { kind:'poke', ang:aa, speed:sp, r:8, raw:atkOf(u)*0.85*(u.isBoss ? 0.7 : 2.5), color:u.side === 'me' ? '150,200,255' : '255,150,140', kb:120, sk:null });
     return;
   }
   if (a.type !== 'cast') return;
@@ -2510,12 +2580,12 @@ function resolveAct(u, e, a) {
       if (inArea(area, e)) hitE(raw);
       break; }
     case 'heal': {
-      heal(u, sk.lv ? u.maxHp*healPctAt(sk.lv)/HEAL_MUL : u.maxHp*b.fxv*Math.min(sk.mult, 2.5));
+      heal(u, sk.lv ? healHp(u)*healPctAt(sk.lv)/HEAL_MUL : healHp(u)*b.fxv*Math.min(sk.mult, 2.5));
       ring(u.x, u.y + u.r*0.4, 8, u.r*2.4, 0.7, b.color, 3); ring(u.x, u.y + u.r*0.4, 4, u.r*1.6, 0.5, '210,255,230', 2, 0.08); glow(u.x, u.y, u.r*2, 0.5, b.color);
       for (let i = 0; i < 12; i++) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y + rnd(-u.r*0.5,u.r), vy:-rnd(40,110), vx:rnd(-12,12), size:rnd(4,6), color:b.color, life:rnd(0.6,1.1), drag:0.6 });
       break; }
     case 'shield': {
-      u.shield = u.maxHp*(sk.lv ? shieldPctAt(sk.lv) : b.pct*Math.min(sk.mult, 2.2)); u.shieldT = b.dur; u.shieldMax = u.shield;
+      u.shield = healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : b.pct*Math.min(sk.mult, 2.2)); u.shieldT = b.dur; u.shieldMax = u.shield;
       ring(u.x, u.y, u.r, u.r*2.3, 0.5, b.color, 3); glow(u.x, u.y, u.r*2, 0.4, b.color);
       break; }
     case 'buff': {
@@ -2659,9 +2729,9 @@ function updateUnit(u, dt) {
   }
   if (u.buffT > 0) { u.buffT -= dt; if (Math.random() < dt*12) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.5, vy:-rnd(60,140), size:1.8, color:u.buffColor || '255,200,120', life:0.5 }); if (u.buffT <= 0) { u.buffAtk = 1; u.buffSpd = 1; u.buffLs = 0; u.buffFx = null; } }
   if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
-  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, u.maxHp*0.0627*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
-  if (u.pas === 'panda') regen(u, u.maxHp*0.00765*dt/HEAL_MUL);
-  if (u.hot) { u.hot.t -= dt; regen(u, u.maxHp*u.hot.pct*dt); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
+  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, healHp(u)*0.0627*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
+  if (u.pas === 'panda') regen(u, healHp(u)*0.00765*dt/HEAL_MUL);
+  if (u.hot) { u.hot.t -= dt; regen(u, healHp(u)*u.hot.pct*dt); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
   if (u.pas === 'dog' && !u.raged && u.hp < u.maxHp*0.3) { u.raged = true; chip(u, '분노'); }
   if (u.poison) {
     u.poison.t -= dt; u.poison.tick -= dt;
@@ -2670,7 +2740,7 @@ function updateUnit(u, dt) {
       const po = u.poison; let iv = 0.5;
       if (!po.burn) { po.n = (po.n || 0) + 1; iv = POISON_SEQ[Math.min(po.n, POISON_SEQ.length - 1)]; }
       po.tick += iv; let dm = Math.max(1, Math.round(po.dps*0.5));
-      if (po.pct) dm += Math.round(u.maxHp*po.pct);
+      if (po.pct) dm += Math.round(baseHp(u)*po.pct);
       u.hp = Math.max(0, u.hp - dm); if (e.side === 'me') B.stats.dealt += dm; else B.stats.taken += dm;
       if (po.burn || iv >= 0.3 || po.n % 3 === 0) addText(u.x, u.y - u.r*1.4, '-' + dm, po.burn ? '255,150,70' : '170,240,110', 20, 0.7);
     }
@@ -2728,7 +2798,7 @@ function updateZones(h) {
       const zev = z.sk && z.sk.evo;
       if (zev && zev.zo && !z.owner.dead && dist2(z.owner, z) < z.r + z.owner.r*0.3) selfFx(z.owner, z.sk, zev.zo);
       if (z.heal) {
-        if (dist2(z.owner, z) < z.r + z.owner.r*0.3 && !z.owner.dead) heal(z.owner, z.owner.maxHp*z.heal*z.tick);
+        if (dist2(z.owner, z) < z.r + z.owner.r*0.3 && !z.owner.dead) heal(z.owner, healHp(z.owner)*z.heal*z.tick);
         if (zev && zev.z && !e.dead && Math.hypot(e.x-z.x, e.y-z.y) < z.r + e.r*0.4) fxList(z.owner, e, z.sk, zev.z, 0);
       }
       else if (!e.dead) {
@@ -2820,6 +2890,7 @@ function checkEnd() {
   }
   me.act = null; en.act = null; me.plan = { t:'idle' }; en.plan = { t:'idle' };
   B.endT = B.timeout ? 0.6 : 1.6;
+  if (B.arena) { arenaReport(B.win); return; }
   // 보상 정산
   const ratio = B.win ? 1 : clamp(B.stats.dealt / en.maxHp, 0, 1);
   B.contrib = Math.round(ratio * contribMax(B.stage)); B.ratio = ratio;
@@ -2948,7 +3019,7 @@ function drawUnit(u) {
   ctx.restore();
   if (u.dead) return;
   ctx.save();
-  const w = u.r*2 + 46, bh = 20, x = u.x - w/2, y = u.y - u.r - 38, ratio = clamp(u.hp/u.maxHp, 0, 1), me = u.side === 'me';
+  const w = u.r*2 + 46, bh = 20, x = clamp(u.x - w/2, 8, WW - w - 8), y = u.y - u.r - 38, ratio = clamp(u.hp/u.maxHp, 0, 1), me = u.side === 'me', hx = x + w/2;
   ctx.fillStyle = 'rgba(8,14,28,0.62)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 2.5, y - 2.5, w + 5, bh + 5, 9) : ctx.rect(x - 2.5, y - 2.5, w + 5, bh + 5); ctx.fill();
   const g = ctx.createLinearGradient(0, y, 0, y + bh);
   if (me) { g.addColorStop(0, '#74b6ff'); g.addColorStop(1, '#2f7df0'); } else { g.addColorStop(0, '#ff8a8f'); g.addColorStop(1, '#e5424f'); }
@@ -2961,18 +3032,18 @@ function drawUnit(u) {
   }
   ctx.font = '800 16px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
   const label = Math.ceil(u.hp) + (u.shield > 0 ? ' +' + Math.ceil(u.shield) : '');
-  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(8,14,28,0.85)'; ctx.strokeText(label, u.x, y + bh/2 + 1);
-  ctx.fillStyle = u.shield > 0 ? '#eaf6ff' : '#fff'; ctx.fillText(label, u.x, y + bh/2 + 1);
+  ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(8,14,28,0.85)'; ctx.strokeText(label, hx, y + bh/2 + 1);
+  ctx.fillStyle = u.shield > 0 ? '#eaf6ff' : '#fff'; ctx.fillText(label, hx, y + bh/2 + 1);
   { const sts = []; for (const k of ['vuln','weak','silence','blind','root','curse','sunder']) if (u[k] > 0) sts.push([ST_ICON[k], 0]);
     if (u.bleed) sts.push(['🩸', u.bleed.st]); if (u.frost > 0) sts.push(['🧊', u.frost]); if (u.poison) sts.push([u.poison.burn ? '🔥' : '☠️', 0]); if (u.thorns > 0) sts.push(['🌵', 0]); if (u.evade > 0) sts.push(['💨', u.evade]); if (u.hot) sts.push(['💚', 0]);
-    if (sts.length) { const sp = 27, x0 = u.x - (sts.length-1)*sp/2; sts.forEach(([t, n], i) => { const cx = x0 + i*sp, cy = y + bh + 18; ctx.fillStyle = 'rgba(8,14,28,0.55)'; ctx.beginPath(); ctx.arc(cx, cy, 13, 0, TAU); ctx.fill(); drawEmoji(t, 16, cx, cy);
+    if (sts.length) { const sp = 27, per = Math.max(1, Math.min(sts.length, Math.floor((w + 20)/sp))); sts.forEach(([t, n], i) => { const r = Math.floor(i/per), inRow = Math.min(per, sts.length - r*per), cx = clamp(hx + (i%per - (inRow-1)/2)*sp, 16, WW - 16), cy = y + bh + 18 + r*28; ctx.fillStyle = 'rgba(8,14,28,0.55)'; ctx.beginPath(); ctx.arc(cx, cy, 13, 0, TAU); ctx.fill(); drawEmoji(t, 16, cx, cy);
       if (n > 1) { ctx.font = '800 11px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,14,28,0.9)'; ctx.strokeText(n, cx + 9, cy + 9); ctx.fillStyle = '#fff'; ctx.fillText(n, cx + 9, cy + 9); } }); } }
   if (u.chip) {
     const c = u.chip, al = c.t < 0.12 ? c.t/0.12 : c.t > c.life-0.25 ? (c.life-c.t)/0.25 : 1;
     ctx.globalAlpha = al; ctx.font = '700 17px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    const tw = ctx.measureText(c.text).width + 20, cy = y - 24 - (1-al)*5;
-    ctx.fillStyle = 'rgba(15,23,42,0.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(u.x - tw/2, cy - 13, tw, 26, 13) : ctx.rect(u.x - tw/2, cy - 13, tw, 26); ctx.fill();
-    ctx.strokeStyle = rgba(team, 0.7); ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.fillText(c.text, u.x, cy + 1);
+    const tw = ctx.measureText(c.text).width + 20, cy = y - 24 - (1-al)*5, ccx = clamp(hx, tw/2 + 6, WW - tw/2 - 6);
+    ctx.fillStyle = 'rgba(15,23,42,0.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(ccx - tw/2, cy - 13, tw, 26, 13) : ctx.rect(ccx - tw/2, cy - 13, tw, 26); ctx.fill();
+    ctx.strokeStyle = rgba(team, 0.7); ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.fillText(c.text, ccx, cy + 1);
   }
   ctx.restore();
 }
@@ -3095,8 +3166,8 @@ function draw() {
   if (B.introT > 0) {
     const t = 1.0 - B.introT, a = t < 0.2 ? t/0.2 : B.introT < 0.3 ? B.introT/0.3 : 1;
     ctx.save(); ctx.globalAlpha = clamp(a, 0, 1); ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.fillRect(0, WH*0.4, WW, WH*0.2);
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '800 46px Pretendard, sans-serif'; ctx.fillText('STAGE ' + B.stage, WW/2, WH*0.47);
-    ctx.font = '600 20px Pretendard, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillText(B.bossStyleLabel + ' 보스', WW/2, WH*0.54); ctx.restore();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '800 46px Pretendard, sans-serif'; ctx.fillText(B.arena ? '친선전' : 'STAGE ' + B.stage, WW/2, WH*0.47);
+    ctx.font = '600 20px Pretendard, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillText(B.arena ? B.arena.name : B.bossStyleLabel + ' 보스', WW/2, WH*0.54); ctx.restore();
   }
 }
 
@@ -3155,26 +3226,29 @@ function startBattle() {
   if (!state.eq.f) { B = null; showArenaMsg(true); A('hResult').classList.remove('on'); return; }
   showArenaMsg(false);
   const fb = F(state.eq.f), entries = skillEntries();
-  const stage = clamp(state.sel, 1, state.stage); state.sel = stage;
-  const bi = bossInfo(stage);
+  const ao = Arn.fight ? Arn.opp : null;
+  const stage = ao ? 1 : clamp(state.sel, 1, state.stage); if (!ao) state.sel = stage;
+  const bi = ao ? { style:calcStyle(ao.fb.mc, ao.entries), emoji:ao.fb.emoji, name:ao.name } : bossInfo(stage);
   B = { projs:[], parts:[], rings:[], slashes:[], beams:[], decals:[], ghosts:[], texts:[], zones:[], warns:[], meteors:[], timers:[], fxs:[],
     time:0, fightT:0, introT:1.0, over:false, win:false, timeout:false, speed:battleSpeed, acc:0, actId:0,
-    mines:[], pickups:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage, lagMe:1, lagEn:1,
+    mines:[], pickups:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage, arena:ao, lagMe:1, lagEn:1,
     stats:{ dealt:0, taken:0, dodges:0 }, bossStyleLabel:bi.style.label, bg:bgFor(stage), contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
-  const me = mkUnit({ side:'me', emoji:fb.emoji, name:fb.name, st:fighterStats(fb, 0, true), fmc:fb.mc, entries, pas:fb.pas.id });
-  const en = mkUnit({ side:'en', isBoss:true, emoji:bi.emoji, name:bi.name, st:bi.st, fmc:bi.kit.fmc, entries:bi.entries });
+  const me = mkUnit({ side:'me', hpK:ao ? ARENA_HP : 1, emoji:fb.emoji, name:fb.name, st:fighterStats(fb, 0, true), fmc:fb.mc, entries, pas:fb.pas.id });
+  const en = ao ? mkUnit({ side:'en', arena:true, hpK:ARENA_HP, emoji:ao.fb.emoji, name:ao.name, st:ao.st, fmc:ao.fb.mc, entries:ao.entries, pas:ao.fb.pas.id })
+    : mkUnit({ side:'en', isBoss:true, emoji:bi.emoji, name:bi.name, st:bi.st, fmc:bi.kit.fmc, entries:bi.entries });
   B.me = me; B.en = en;
   if (WW < WH) { me.x = WW/2; me.y = WH*0.8; en.x = WW/2; en.y = WH*0.2; me.face = -Math.PI/2; en.face = Math.PI/2; }
   else { me.x = WW*0.18; me.y = WH/2; en.x = WW*0.82; en.y = WH/2; me.face = 0; en.face = Math.PI; }
   A('hResult').classList.remove('on'); A('hResult').innerHTML = '';
-  A('hStage').textContent = stage; A('hSpeed').textContent = battleSpeed + 'x';
+  A('hPillL').textContent = ao ? '친선전' : 'STAGE'; A('hStage').textContent = ao ? 'VS' : stage; A('hSpeed').textContent = battleSpeed + 'x';
   A('hMeEm').textContent = fb.emoji; A('hMeName').textContent = fb.name; A('hMeLv').textContent = 'Lv.' + curLv('f', fb.id);
-  A('hEnEm').textContent = bi.emoji; A('hEnName').textContent = bi.name + ' · ' + rangeTag(bi.style.c); A('hEnLv').textContent = '';
+  A('hEnEm').textContent = bi.emoji; A('hEnName').textContent = ao ? ao.name : bi.name + ' · ' + rangeTag(bi.style.c); A('hEnLv').textContent = ao ? 'Lv.' + ao.team.f.lv : '';
   A('hSkills').innerHTML = me.skills.map((s, i) => `<div class="sks"><span class="e emoji">${s.b.emoji}</span><div class="cd" id="sk${i}"></div><span class="n" id="skt${i}"></span></div>`).join('');
 }
 function nextStageAfter() { return B.win ? Math.min(B.stage + 1, state.stage) : B.stage; }
 function showResult() {
   B.resultShown = true; B.autoT = 3;
+  if (B.arena) { showArenaResult(); return; }
   const s = B.stage, n = nextStageAfter(), win = B.win, st = B.stats;
   B.rep = repeatStage === s;
   B.opts = B.rep ? { def:{ to:s, rep:true }, alt: n !== s ? { to:n, rep:false } : null } : { def:{ to:n, rep:false }, alt: n !== s ? { to:s, rep:true } : null };
@@ -3203,6 +3277,335 @@ function pickNext(which) {
   state.sel = clamp(o.to, 1, state.stage); save();
   startBattle();
   if (tab === 'fight') render();
+}
+
+/* ===================== 아레나 (친선전 · Firebase) ===================== */
+const SNAP_VER = 1;
+const Arn = { fight:false, view:'list', sort:'power', cur:null, opp:null, opps:[], loading:false, logs:[], sync:'idle', editNick:false, err:'' };
+const FBok = () => !!(window.ArenaFB && window.ArenaFB.ready);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+/* Firebase 미설정 상태에서 흐름을 시험하기 위한 연습 상대 */
+const SAMPLE_OPPS = [
+  { name:'연습봇 곰', stage:12, f:{ id:'bear', lv:6 }, s:[{ id:'smash', lv:10, evo:'a', scd:2 }, { id:'barrier', lv:6, evo:null, scd:1 }, { id:'bomb', lv:5, evo:'a', scd:3 }] },
+  { name:'연습봇 토끼', stage:25, f:{ id:'rabbit', lv:10 }, s:[{ id:'ice', lv:8, evo:'b', scd:1 }, { id:'poison', lv:7, evo:'a', scd:2 }, { id:'volley', lv:5, evo:null, scd:3 }] },
+  { name:'연습봇 늑대', stage:8, f:{ id:'wolf', lv:8 }, s:[{ id:'rush', lv:8, evo:'b', scd:2 }, { id:'vamp', lv:7, evo:'a', scd:1 }, { id:'bolt', lv:5, evo:'a', scd:3 }] },
+  { name:'연습봇 용', stage:40, f:{ id:'dragon', lv:3 }, s:[{ id:'meteor', lv:3, evo:'a', scd:3 }, { id:'hole', lv:4, evo:'b', scd:2 }, { id:'snipe', lv:4, evo:'a', scd:1 }] },
+];
+/* 내 현재 세팅 스냅샷 (레벨·진화·시작 쿨타임 포함) — 이게 곧 내 수비 팀 */
+function myTeamSnapshot() {
+  if (!state.eq.f) return null;
+  return { v:SNAP_VER, f:{ id:state.eq.f, lv:curLv('f', state.eq.f) }, s:state.eq.s.map(id => id ? { id, lv:curLv('s', id), evo:state.evo[id] || null, scd:scdOf(id) } : null) };
+}
+/* 서버에서 받은 데이터는 믿지 않고 검증·정리한다 */
+function sanitizeTeam(t) {
+  try {
+    if (!t || !t.f || !F(t.f.id)) return null;
+    const lvc = v => Math.max(1, Math.min(MAXLV, Math.floor(+v) || 1)), seen = new Set(), s = [];
+    for (const x of (Array.isArray(t.s) ? t.s : []).slice(0, 3)) {
+      if (!x || !SK(x.id) || seen.has(x.id)) { s.push(null); continue; }
+      seen.add(x.id); const b = SK(x.id), lv = lvc(x.lv);
+      const evo = x.evo && lv >= EVO_LV[b.tier] && (EVO[x.id] || []).some(e => e.key === x.evo) ? x.evo : null;
+      s.push({ id:x.id, lv, evo, scd:[1, 2, 3, 4].includes(+x.scd) ? +x.scd : 2 });
+    }
+    while (s.length < 3) s.push(null);
+    return { v:SNAP_VER, f:{ id:t.f.id, lv:lvc(t.f.lv) }, s };
+  } catch (e) { return null; }
+}
+function teamEntries(team) {
+  return team.s.filter(Boolean).map(x => {
+    const b = SK(x.id), e = x.evo ? (EVO[x.id] || []).find(q => q.key === x.evo) || null : null;
+    return { base:e ? applyP(b, e.p || {}) : b, evo:e, mult:skMult(b, x.lv), lvs:(x.id === 'rage' || x.id === 'bloodlust') ? lvSoftB(x.lv) : skSoft(b, x.lv), lv:x.lv, scd:x.scd, id:x.id };
+  });
+}
+function teamBonus(team) { const o = { hp:0, atk:0, def:0 }; for (const x of team.s) if (x) { const b = skillBonusOf(x.id, x.lv); o.hp += b.hp; o.atk += b.atk; o.def += b.def; } return o; }
+function arenaPrep(p) {
+  const team = sanitizeTeam(p.team); if (!team) return null;
+  const fb = F(team.f.id), entries = teamEntries(team), st = fighterStats(fb, team.f.lv, true, teamBonus(team));
+  return { uid:p.uid, name:String(p.name || '이름 없음').slice(0, 12), stage:Math.max(1, Math.min(9999, Math.floor(+p.stage) || 1)), team, fb, st, entries, power:powerOf(st, entries), sample:!!p.sample };
+}
+const arenaSorted = list => list.slice().sort((a, b) => Arn.sort === 'stage' ? (b.stage - a.stage || b.power - a.power) : (b.power - a.power || b.stage - a.stage));
+/* ---- 내 수비 팀 자동 등록 (세팅이 바뀌면 잠시 뒤 서버에 반영) ---- */
+let arnTimer = 0, arnKey = '';
+const arenaRenderIf = () => { if (tab === 'arena' && !Arn.fight) render(); };
+function arenaSyncSoon(now) { clearTimeout(arnTimer); arnTimer = setTimeout(arenaSync, now ? 50 : 2500); }
+async function arenaSync() {
+  if (!FBok() || !state.nick || !state.eq.f) return;
+  const snap = myTeamSnapshot(), key = state.nick + '|' + state.stage + JSON.stringify(snap);
+  if (key === arnKey) { if (Arn.sync !== 'ok') { Arn.sync = 'ok'; arenaRenderIf(); } return; }
+  Arn.sync = 'syncing'; arenaRenderIf();
+  try { await window.ArenaFB.saveProfile({ name:state.nick, power:myPower(), stage:state.stage, team:snap, ver:SNAP_VER }); arnKey = key; Arn.sync = 'ok'; }
+  catch (e) { Arn.sync = 'error'; }
+  arenaRenderIf();
+}
+async function arenaRefresh() {
+  if (Arn.loading || !window.ArenaFB) return;
+  Arn.loading = true; Arn.err = ''; arenaRenderIf();
+  try {
+    let list = [];
+    if (FBok()) list = await window.ArenaFB.listOpponents(Arn.sort);
+    else if (!window.ArenaFB.configured) list = SAMPLE_OPPS.map(o => ({ uid:'sample:' + o.name, name:o.name, stage:o.stage, team:{ f:o.f, s:o.s }, sample:true }));
+    Arn.opps = arenaSorted(list.map(arenaPrep).filter(Boolean)).slice(0, 40);
+  } catch (e) { Arn.err = '플레이어 목록을 불러오지 못했어요'; }
+  Arn.loading = false; arenaRenderIf();
+}
+async function arenaLoadLogs() { if (!FBok()) return; try { Arn.logs = await window.ArenaFB.myLogs(); arenaRenderIf(); } catch (e) {} }
+function arenaEnter() { if (!state.arenaTut) setTimeout(() => { if (tab === 'arena' && !state.arenaTut) showArenaTut(); }, 300); arenaSyncSoon(true); if (window.ArenaFB) { if (!Arn.opps.length) arenaRefresh(); arenaLoadLogs(); } }
+window.addEventListener('arenafb', () => { const au = accUser(), id = au ? au.uid : null; if (Acc.uid !== id) { Acc.uid = id; arnKey = ''; Arn.opps = []; Arn.logs = []; Arn.sync = 'idle'; Acc.synced = false; Acc.checkedUid = null; } accCheckCloud(); accRefresh(); arenaSyncSoon(true); if (tab === 'arena') { arenaRefresh(); arenaLoadLogs(); } else arenaRenderIf(); });
+setTimeout(() => { if (!window.ArenaFB) { window.ArenaFB = { configured:true, ready:false }; arenaRenderIf(); } }, 8000);
+function arenaSort(k) { if (Arn.sort === k) return; Arn.sort = k; Arn.opps = arenaSorted(Arn.opps); if (FBok()) arenaRefresh(); else render(); }
+function arenaOpen(i) { const o = Arn.opps[i]; if (!o) return; Arn.cur = o; Arn.view = 'detail'; render(true); window.scrollTo({ top:0 }); }
+function arenaClose() { Arn.view = 'list'; Arn.cur = null; render(true); window.scrollTo({ top:0 }); }
+function arenaChallenge() {
+  const o = Arn.cur; if (!o) return;
+  if (!state.eq.f) { toast('파이터를 먼저 장착해 주세요'); return; }
+  Arn.opp = o; Arn.fight = true; startBattle(); render(true); window.scrollTo({ top:0 });
+}
+function arenaBack() { Arn.fight = false; Arn.opp = null; startBattle(); render(true); }
+function arenaRematch() { startBattle(); }
+function arenaReport(win) {
+  if (B.reported) return; B.reported = true;
+  if (FBok() && Arn.opp && !Arn.opp.sample) window.ArenaFB.logMatch({ defenderUid:Arn.opp.uid, attackerName:state.nick || '이름 없음', win:!!win }).catch(() => {});
+}
+function showArenaResult() {
+  B.resolved = true;
+  const win = B.win, st = B.stats, o = B.arena, hr = A('hResult'); hr.classList.add('on');
+  const row = (l, v) => `<div style="display:flex;justify-content:space-between;padding:.45em 0;border-top:1px solid #eef0f2"><span style="color:#8b95a1;font-weight:500">${l}</span><span style="font-weight:800">${v}</span></div>`;
+  hr.innerHTML = `<div class="rcard a-pop">
+    <div style="margin-bottom:.8em"><div style="font-size:.8em;font-weight:700;color:#8b95a1">친선전 · ${esc(o.name)}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${win ? '#3182f6' : '#f04452'}">${win ? '승리' : '패배'}</div></div>
+    ${row('가한 피해 / 회피', `${fmt(st.dealt)} / ${st.dodges}회`)}${row('받은 피해', fmt(st.taken))}
+    <div style="font-size:.8em;color:#8b95a1;margin-top:.7em;font-weight:500">친선전이라 보상은 없어요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:.5em;margin-top:.9em"><button class="rbtn g" onclick="arenaBack()">돌아가기</button><button class="rbtn p" onclick="arenaRematch()">다시 도전</button></div></div>`;
+}
+const skIcons = list => list.map(x => { const n = x.evo ? evoNumOf(x.id, x.evo) : 0;
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;width:40px;flex:none"><span class="emoji" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:#fff;box-shadow:inset 0 0 0 1.5px ${n ? 'var(--blue)' : '#e1e5ea'};font-size:19px">${SK(x.id).emoji}</span><span style="font-size:10px;line-height:1;font-weight:800;white-space:nowrap;color:${n ? 'var(--blue)' : 'var(--ink4)'}">${n ? 'Ev.' + n : '-'}</span></span>`; }).join('');
+function arenaStatRows(my, th) {
+  return [['체력', fmt(my.hp*ARENA_HP), fmt(th.hp*ARENA_HP)], ['공격력', fmt(my.atk), fmt(th.atk)], ['방어력', defPct(my.def).toFixed(1) + '%', defPct(th.def).toFixed(1) + '%']].map(([l, a, b], i) => `<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:36px;${i ? 'border-top:1px solid var(--line)' : ''}"><span style="font-size:14px;font-weight:800;color:var(--blue)">${a}</span><span style="font-size:11px;font-weight:700;color:var(--ink3)">${l}</span><span style="font-size:14px;font-weight:800;color:var(--red);text-align:right">${b}</span></div>`).join('');
+}
+function arenaFightInfoHtml() {
+  const o = Arn.opp; if (!o || !state.eq.f) return '';
+  const fb = F(state.eq.f), my = fighterStats(fb, 0, true), mp = myPower(), ms = myStyle(), os = calcStyle(o.fb.mc, o.entries);
+  const mine = state.eq.s.filter(Boolean).map(id => ({ id, evo:state.evo[id] })), theirs = o.team.s.filter(Boolean);
+  const ratio = Math.min(92, Math.max(8, Math.round(mp/Math.max(1, mp + o.power)*100)));
+  const col = (b, name, lv, sks, label, tier) => `<div style="text-align:center;width:40%"><div class="medal t-${tier}" style="width:64px;height:64px;margin:0 auto"><span class="emoji" style="font-size:36px">${b.emoji}</span></div><div style="font-size:14px;font-weight:800;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</div><div style="font-size:11px;color:var(--ink3);font-weight:600;margin-top:1px">Lv.${lv} · ${label}</div><div style="display:flex;justify-content:center;gap:4px;margin-top:8px">${skIcons(sks)}</div></div>`;
+  return `<div class="card soft">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">${col(fb, esc(state.nick || '나'), curLv('f', fb.id), mine, ms ? ms.label : '', fb.tier)}<div style="font-size:11px;font-weight:800;color:var(--ink4);letter-spacing:.1em;padding-top:26px">VS</div>${col(o.fb, esc(o.name), o.team.f.lv, theirs, os.label, o.fb.tier)}</div>
+    <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:18px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue);transition:width .4s"></div><div style="flex:1;background:var(--red)"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(o.power)}</span></div>
+    <div style="margin-top:12px;background:#f5f6f8;border-radius:14px;padding:4px 14px">${arenaStatRows(my, o.st)}</div>
+    <div style="font-size:12px;color:var(--ink3);margin-top:12px;font-weight:500;text-align:center">친선전 · 상대의 레벨, 진화, 시작 쿨타임이 그대로 반영돼요<br>아레나에서는 체력 ${ARENA_HP}배 · 회복/보호막 ${ARENA_HEAL}배가 적용돼요</div></div>`;
+}
+function viewArena() {
+  if (Arn.fight) return `<div class="space-y-3"><div id="arenaSlot"></div><div id="arenaInfo" class="space-y-3">${arenaFightInfoHtml()}</div></div>`;
+  return Arn.view === 'detail' && Arn.cur ? viewArenaDetail() : viewArenaList();
+}
+function arenaHeadHtml() {
+  const fb = state.eq.f ? F(state.eq.f) : null, mp = myPower();
+  const mine = state.eq.s.filter(Boolean).map(id => ({ id, evo:state.evo[id] }));
+  const cfg = window.ArenaFB ? window.ArenaFB.configured : null;
+  const chipTxt = !window.ArenaFB ? '연결 중' : !cfg ? '테스트 모드' : !FBok() ? '연결 실패' : !state.nick ? '닉네임 필요' : !fb ? '파이터 필요' : Arn.sync === 'syncing' ? '등록 중…' : Arn.sync === 'error' ? '등록 실패' : '수비 팀 등록됨';
+  const bad = chipTxt === '연결 실패' || chipTxt === '등록 실패';
+  const nickBox = !state.nick ? `<button class="btn primary" style="width:100%;margin-top:14px" onclick="setTab('settings')">설정에서 닉네임 정하기</button>` : '';
+  const me = fb ? `<div class="t-${fb.tier}" style="display:flex;align-items:center;gap:12px;margin-top:14px"><div class="medal" style="width:56px;height:56px;flex:none"><span class="emoji" style="font-size:32px">${fb.emoji}</span></div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:16px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${state.nick ? esc(state.nick) : '닉네임 없음'}</span>${state.nick ? `<button onclick="setTab('settings')" class="press" style="border:0;background:#f2f4f6;color:var(--ink3);font-size:11px;font-weight:700;border-radius:8px;padding:3px 8px">변경</button>` : ''}</div><div style="display:flex;gap:4px;margin-top:6px">${skIcons(mine)}</div></div><div style="text-align:right"><div style="font-size:11px;font-weight:700;color:var(--ink3)">전투력</div><div style="font-size:18px;font-weight:800;color:var(--blue)">${fmt(mp)}</div><div style="font-size:11px;font-weight:700;color:var(--ink3);margin-top:2px">최고 STAGE ${state.stage}</div></div></div>`
+    : `<div style="margin-top:14px;font-size:13px;color:var(--ink3);font-weight:600">파이터를 장착해야 참가할 수 있어요.</div><button class="btn primary" style="width:100%;margin-top:10px" onclick="setTab('lineup')">세팅으로 이동</button>`;
+  const notice = !window.ArenaFB ? 'Firebase에 연결하는 중이에요…' : !cfg ? 'Firebase 설정 전이라 연습 상대가 표시돼요. (ARENA-SETUP.md 참고)' : !FBok() ? 'Firebase에 연결하지 못했어요. 설정과 네트워크를 확인해 주세요.' : '';
+  return `<div class="card soft"><div style="display:flex;align-items:center;justify-content:space-between"><div><div style="font-size:19px;font-weight:800;letter-spacing:-0.03em">아레나</div><div style="font-size:13px;color:var(--ink3);font-weight:500;margin-top:3px">다른 사람의 현재 세팅과 겨루는 친선전</div></div><span class="chip" style="${bad ? 'background:var(--red-s);color:var(--red)' : 'background:var(--blue-s);color:var(--blue)'}">${chipTxt}</span></div>${me}${nickBox}</div>
+    ${notice ? `<div class="card soft" style="padding:14px 18px;font-size:13px;color:var(--ink2);font-weight:600;line-height:1.5">${notice}</div>` : ''}`;
+}
+function arenaHelpHtml() {
+  const li = t => `<div style="display:flex;gap:8px;margin-top:8px;font-size:13px;line-height:1.6;color:var(--ink2);font-weight:500"><span style="color:var(--blue);font-weight:800">•</span><span>${t}</span></div>`;
+  return li('친선전이라 승패에 따른 보상은 없어요. 상대는 그 사람의 <b>현재 세팅</b>(레벨, 진화, 시작 쿨타임 포함)으로 싸워요.')
+    + li(`아레나에서는 양쪽 모두 <b>체력이 ${ARENA_HP}배</b>가 돼요. 전투가 너무 빨리 끝나지 않게 하기 위해서예요.`)
+    + li(`<b>회복량과 보호막은 ${ARENA_HEAL}배</b>로 적용돼요. 체력이 ${ARENA_HP}배가 된 만큼 오르지 않고, 최대 체력 비례 효과는 원래 체력을 기준으로 계산해요.`)
+    + li('중독의 최대 체력 비례 피해처럼 체력이 많을수록 세지는 피해는 원래 체력 기준 그대로예요.')
+    + li('내 세팅을 바꾸면 몇 초 뒤 자동으로 내 수비 팀에도 반영돼요. 닉네임은 설정 탭에서 정해요.')
+    + li('목록은 전투력순이 기본이고, 위쪽 필터로 최고 스테이지순으로 바꿀 수 있어요.');
+}
+function showArenaTut() {
+  if ($('arenaTut')) return;
+  const pages = [
+    { em:'🏟️', t:'아레나', d:'다른 플레이어의 현재 세팅과 겨루는 <b>친선전</b>이에요. 보상은 없고, 내 조합을 시험해 볼 수 있어요.' },
+    { em:'🧑‍🤝‍🧑', t:'플레이어 목록', d:'플레이어를 누르면 파이터, 스킬, 진화, 시작 쿨타임을 자세히 볼 수 있어요. 목록은 전투력순이고, 필터로 최고 스테이지순으로 바꿀 수 있어요.' },
+    { em:'🛡️', t:'내 수비 팀', d:'내 현재 세팅이 자동으로 수비 팀으로 등록돼요. 다른 사람이 도전하면 설정을 바꾸는 즉시 달라져요. 닉네임은 설정 탭에서 정해요.' },
+    { em:'❤️', t:'아레나 전투 규칙', d:`양쪽 체력이 <b>${ARENA_HP}배</b>가 되고, 회복량과 보호막은 <b>${ARENA_HEAL}배</b>가 돼요. 전투가 길어지니 3배속을 활용해 보세요.` },
+  ];
+  let i = 0; const el = document.createElement('div'); el.id = 'arenaTut';
+  el.style.cssText = 'position:fixed;inset:0;z-index:95;background:rgba(8,12,20,.78);display:flex;align-items:center;justify-content:center;padding:24px';
+  const draw = () => { const pg = pages[i];
+    el.innerHTML = `<div class="a-pop" style="width:100%;max-width:340px;background:#fff;border-radius:28px;padding:26px 22px 20px;text-align:center">
+      <div style="width:68px;height:68px;margin:0 auto;border-radius:22px;background:#e8f3ff;display:flex;align-items:center;justify-content:center;font-size:34px">${pg.em}</div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em;margin-top:14px">${pg.t}</div>
+      <div style="font-size:13px;color:var(--ink2);margin-top:12px;line-height:1.6;font-weight:500">${pg.d}</div>
+      <div style="display:flex;justify-content:center;gap:6px;margin-top:16px">${pages.map((_, k) => `<i style="width:${k === i ? 18 : 6}px;height:6px;border-radius:99px;background:${k === i ? 'var(--blue)' : '#d9dde2'}"></i>`).join('')}</div>
+      <button class="btn primary" style="width:100%;margin-top:16px" id="arenaTutBtn">${i < pages.length - 1 ? '다음' : '시작하기'}</button></div>`;
+    el.querySelector('#arenaTutBtn').onclick = () => { if (i < pages.length - 1) { i++; draw(); } else { el.remove(); state.arenaTut = true; save(); } };
+  };
+  draw(); document.body.appendChild(el);
+}
+function viewArenaList() {
+  const mp = myPower();
+  const seg = (k, l) => `<button onclick="arenaSort('${k}')" class="press" style="flex:1;height:34px;border:0;border-radius:11px;font-size:13px;font-weight:800;background:${Arn.sort === k ? '#fff' : 'transparent'};color:${Arn.sort === k ? 'var(--ink)' : 'var(--ink3)'};${Arn.sort === k ? 'box-shadow:0 1px 4px rgba(25,31,40,.12)' : ''}">${l}</button>`;
+  const rows = Arn.opps.map((o, i) => { const pc = o.power > mp ? 'var(--red)' : 'var(--green)', sks = o.team.s.filter(Boolean), rk = [['#fff4d1', '#f2cf63', '#c98a00'], ['#dde2e9', '#a3adba', '#4e5968'], ['#fdeadb', '#eebd96', '#b8672a']][i], rbg = rk ? `background:${rk[0]};box-shadow:inset 0 0 0 1.5px ${rk[1]};` : i < 10 ? 'background:#f7f9fc;' : '';
+    return `<button onclick="arenaOpen(${i})" class="card soft press" style="width:100%;text-align:left;border:0;padding:14px 16px;display:flex;align-items:center;gap:12px;${rbg}"><span style="width:22px;flex:none;text-align:center;font-size:14px;font-weight:800;color:${rk ? rk[2] : 'var(--ink4)'}">${i + 1}</span><div class="medal t-${o.fb.tier}" style="width:48px;height:48px;flex:none"><span class="emoji" style="font-size:28px">${o.fb.emoji}</span></div>
+      <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span><span class="chip t-${o.fb.tier}" style="height:20px;padding:0 7px;font-size:10px;flex:none">Lv.${o.team.f.lv}</span></div>
+      <div style="display:flex;gap:4px;margin-top:6px">${skIcons(sks)}</div></div>
+      <div style="text-align:right;flex:none"><div style="font-size:15px;font-weight:800;color:${Arn.sort === 'power' ? pc : 'var(--ink)'}">${fmt(o.power)}</div><div style="font-size:11px;font-weight:700;color:var(--ink3);margin-top:2px">STAGE ${o.stage}</div></div></button>`; }).join('');
+  const logs = Arn.logs.length ? Arn.logs.map(l => `<div style="display:flex;align-items:center;justify-content:space-between;height:44px;border-top:1px solid var(--line)"><span style="font-size:14px;font-weight:700">${esc(l.attackerName)}</span><span class="chip" style="${l.win ? 'background:var(--red-s);color:var(--red)' : 'background:#e9f9f1;color:var(--green)'}">${l.win ? '방어 실패' : '방어 성공'}</span></div>`).join('') : '<div style="padding:18px 0 8px;text-align:center;font-size:13px;color:var(--ink3);border-top:1px solid var(--line)">아직 도전 기록이 없어요</div>';
+  return `<div class="space-y-3">${arenaHeadHtml()}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">플레이어</div><button class="btn ghost sm" onclick="arenaRefresh()">${Arn.loading ? '불러오는 중…' : '새로고침'}</button></div>
+    <div style="display:flex;gap:4px;padding:4px;border-radius:15px;background:#eceff2">${seg('power', '전투력순')}${seg('stage', '최고 스테이지순')}</div>
+    ${rows || `<div class="card soft" style="text-align:center;font-size:13px;color:var(--ink3);padding:26px 20px">${Arn.err || (Arn.loading ? '불러오는 중이에요' : '아직 등록된 플레이어가 없어요')}</div>`}
+    <div class="card soft" style="padding-bottom:12px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px">내 팀 도전 기록</div>${logs}</div>
+    <div class="card soft"><details><summary style="font-size:17px;font-weight:800;letter-spacing:-0.02em;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between">아레나 도움말<span style="font-size:12px;color:var(--ink3);font-weight:700">펼치기</span></summary><div style="margin-top:12px">${arenaHelpHtml()}</div></details></div>
+  </div>`;
+}
+function viewArenaDetail() {
+  const o = Arn.cur, fbm = state.eq.f ? F(state.eq.f) : null, my = fbm ? fighterStats(fbm, 0, true) : null, mp = myPower();
+  const os = calcStyle(o.fb.mc, o.entries), ratio = Math.min(92, Math.max(8, Math.round(mp/Math.max(1, mp + o.power)*100)));
+  const sks = o.entries.map(en => { const b = SK(en.id), t = tierOf(b.tier);
+    return `<div class="t-${b.tier}" style="display:flex;align-items:center;gap:12px;height:60px;border-top:1px solid var(--line)"><span class="emoji" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:13px;background:#f2f4f6;font-size:22px;flex:none">${b.emoji}</span>
+      <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px;min-width:0"><span style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span><span class="chip" style="flex:none;height:19px;padding:0 7px;font-size:10px">${t.name}</span></div><div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${en.evo ? 'Ev.' + evoNumOf(en.id, en.evo.key) + ' · ' + esc(en.evo.name) : '진화 없음'}</div></div>
+      <div style="text-align:right;flex:none"><div style="font-size:13px;font-weight:800">Lv.${en.lv}</div><div style="font-size:11px;color:var(--ink3);font-weight:700;margin-top:2px">시작 쿨 ${en.scd}초</div></div></div>`; }).join('');
+  return `<div class="space-y-3">
+    <div><button onclick="arenaClose()" aria-label="목록으로" class="press" style="width:44px;height:44px;border-radius:16px;border:0;background:#fff;box-shadow:0 1px 6px rgba(25,31,40,.14);display:flex;align-items:center;justify-content:center;color:var(--ink)">${ic('arrow-left', 'w-5 h-5')}</button></div>
+    <div class="card soft t-${o.fb.tier}"><div style="display:flex;align-items:center;gap:14px"><div class="medal" style="width:72px;height:72px;flex:none"><span class="emoji" style="font-size:42px">${o.fb.emoji}</span></div>
+      <div style="flex:1;min-width:0"><div style="font-size:19px;font-weight:800;letter-spacing:-0.03em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</div><div style="font-size:13px;color:var(--ink3);font-weight:600;margin-top:3px">${o.fb.name} Lv.${o.team.f.lv} · ${os.label}</div><div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px">최고 STAGE ${o.stage}</div></div>
+      <div style="text-align:right"><div style="font-size:11px;font-weight:700;color:var(--ink3)">전투력</div><div style="font-size:20px;font-weight:800;color:var(--red)">${fmt(o.power)}</div></div></div>
+      <div style="margin-top:14px;font-size:12px;color:var(--ink2);font-weight:600;line-height:1.5"><b>${esc(o.fb.pas.name)}</b> · ${esc(o.fb.pas.desc)}</div></div>
+    <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em;margin-bottom:8px">장착 스킬</div>${sks || '<div style="font-size:13px;color:var(--ink3);padding:8px 0">장착한 스킬이 없어요</div>'}</div>
+    <div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">나와 비교</div>
+      <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:14px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue)"></div><div style="flex:1;background:var(--red)"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(o.power)}</span></div>
+      ${my ? `<div style="margin-top:12px;background:#f5f6f8;border-radius:14px;padding:4px 14px">${arenaStatRows(my, o.st)}</div>` : ''}</div>
+    <button class="btn primary" style="width:100%;height:54px;font-size:16px" ${fbm ? '' : 'disabled'} onclick="arenaChallenge()">친선전 도전</button>
+  </div>`;
+}
+
+/* ===================== 계정 · 클라우드 저장 ===================== */
+const Acc = { busy:false, form:false, mode:'signup', email:'', pw:'', msg:'', info:'', synced:false, checking:false, checkedUid:null, last:0, pending:null, uid:null };
+let accT = 0;
+const accUser = () => (window.ArenaFB && window.ArenaFB.user) || null;
+function accErr(e) {
+  const c = (e && e.code) || '';
+  const m = { 'auth/email-already-in-use':'이미 가입된 이메일이에요. "로그인"으로 바꿔 주세요.', 'auth/weak-password':'비밀번호는 6자 이상이어야 해요.', 'auth/invalid-email':'이메일 형식이 올바르지 않아요.',
+    'auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않아요.', 'auth/wrong-password':'이메일 또는 비밀번호가 맞지 않아요.', 'auth/user-not-found':'이메일 또는 비밀번호가 맞지 않아요.',
+    'auth/missing-password':'비밀번호를 입력해 주세요.', 'auth/too-many-requests':'시도가 너무 많아요. 잠시 뒤에 다시 해 주세요.', 'auth/network-request-failed':'네트워크 연결을 확인해 주세요.',
+    'auth/popup-blocked':'팝업이 차단됐어요. 팝업을 허용해 주세요.', 'auth/operation-not-allowed':'Firebase 콘솔에서 이 로그인 방식을 켜야 해요.', 'auth/unauthorized-domain':'Firebase 승인된 도메인에 이 주소를 추가해야 해요.',
+    'auth/popup-closed-by-user':'', 'auth/cancelled-popup-request':'' };
+  return c in m ? m[c] : '실패했어요 (' + (c || (e && e.message) || '알 수 없음') + ')';
+}
+function accRefresh() { const a = document.getElementById('accCard'); if (a && tab === 'settings') { a.outerHTML = accCardHtml(); icons(); } }
+const accInp = 'width:100%;height:46px;border-radius:14px;border:0;background:#f2f4f6;padding:0 14px;font-size:15px;font-weight:700;font-family:inherit;outline:none;-webkit-user-select:text;user-select:text;box-sizing:border-box';
+function accCardHtml() {
+  const fb = window.ArenaFB, u = accUser(), muted = t => `<div style="font-size:13px;color:var(--ink3);line-height:1.6;margin-top:10px;font-weight:500">${t}</div>`;
+  let body;
+  if (!fb) body = muted('Firebase에 연결하는 중이에요…');
+  else if (!fb.configured) body = muted('Firebase 설정 전이라 계정 기능을 쓸 수 없어요. (ARENA-SETUP.md 참고)');
+  else if (!fb.ready || !u) body = muted('Firebase에 연결하지 못했어요. 설정과 네트워크를 확인해 주세요.');
+  else if (u.anon) {
+    body = `${muted('게스트로 플레이 중이에요. 계정을 연동하면 기록이 클라우드에 저장돼서 기기를 바꿔도 이어서 할 수 있어요. 지금까지의 기록은 그대로 유지돼요.')}
+      <button class="btn" ${Acc.busy ? 'disabled' : ''} style="width:100%;margin-top:14px;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px #d5dae0" onclick="accGoogle()"><svg viewBox="0 0 48 48" style="width:18px;height:18px"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.7-2 5-4.3 6.5v5.4h6.9c4-3.7 6.7-9.2 6.7-15.9z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-6.9-5.4c-2 1.3-4.5 2.1-7.6 2.1-5.8 0-10.8-3.9-12.5-9.2H4.4v5.6C8 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.5 28.2c-.5-1.3-.7-2.7-.7-4.2s.3-2.9.7-4.2v-5.6H4.4C2.9 17.1 2 20.4 2 24s.9 6.9 2.4 9.8l7.1-5.6z"/><path fill="#EA4335" d="M24 10.6c3.3 0 6.2 1.1 8.5 3.3l6.4-6.4C34.9 3.9 29.9 2 24 2 15.4 2 8 6.9 4.4 14.2l7.1 5.6c1.7-5.3 6.7-9.2 12.5-9.2z"/></svg>Google로 연동 / 로그인</button>
+      <button class="btn ghost" ${Acc.busy ? 'disabled' : ''} style="width:100%;margin-top:8px" onclick="accToggleForm()">${ic('mail', 'w-[18px] h-[18px]')}이메일로 연동 / 로그인</button>
+      ${Acc.form ? `<div style="margin-top:12px;display:grid;gap:8px">
+        <div style="display:flex;gap:4px;padding:4px;border-radius:14px;background:#eceff2">${[['signup', '새로 연동'], ['login', '기존 계정 로그인']].map(([k, l]) => `<button onclick="accMode('${k}')" class="press" style="flex:1;height:32px;border:0;border-radius:10px;font-size:12px;font-weight:800;background:${Acc.mode === k ? '#fff' : 'transparent'};color:${Acc.mode === k ? 'var(--ink)' : 'var(--ink3)'}">${l}</button>`).join('')}</div>
+        <input id="accEmail" type="email" autocomplete="email" placeholder="이메일" value="${esc(Acc.email)}" oninput="Acc.email=this.value" style="${accInp}">
+        <input id="accPw" type="password" autocomplete="${Acc.mode === 'signup' ? 'new-password' : 'current-password'}" placeholder="비밀번호 (6자 이상)" value="${esc(Acc.pw)}" oninput="Acc.pw=this.value" style="${accInp}">
+        <button class="btn primary" ${Acc.busy ? 'disabled' : ''} onclick="accEmail()">${Acc.mode === 'signup' ? '이메일로 연동하기' : '로그인'}</button>
+        ${Acc.mode === 'login' ? `<button onclick="accReset()" class="press" style="border:0;background:none;color:var(--ink3);font-size:12px;font-weight:700;padding:4px">비밀번호를 잊었어요</button>` : ''}
+      </div>` : ''}`;
+  } else {
+    const prov = u.providers.includes('google.com') ? 'Google' : '이메일';
+    body = `<div style="display:flex;align-items:center;gap:10px;margin-top:12px;background:#f5f6f8;border-radius:16px;padding:12px 14px"><span class="chip" style="background:var(--blue-s);color:var(--blue);flex:none">${prov}</span><span style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email || '연동됨')}</span></div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:10px;font-weight:600">${Acc.synced ? '클라우드에 저장됨' + (Acc.last ? ' · ' + new Date(Acc.last).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' }) : '') : '클라우드 확인 중…'} · 변경하면 자동으로 저장돼요</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button class="btn ghost" ${Acc.synced && !Acc.busy ? '' : 'disabled'} onclick="accSaveNow()">지금 저장</button><button class="btn danger" ${Acc.busy ? 'disabled' : ''} onclick="askLogout()">로그아웃</button></div>`;
+  }
+  const nick = `<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)"><div style="font-size:14px;font-weight:800;margin-bottom:8px">닉네임 <span style="font-size:12px;color:var(--ink3);font-weight:600">아레나에 표시돼요</span></div>
+    <div style="display:flex;gap:8px"><input id="nickIn" maxlength="10" value="${esc(state.nick || '')}" placeholder="닉네임 (최대 10자)" style="${accInp};flex:1;min-width:0;width:auto"><button class="btn primary" onclick="setNick()">저장</button></div></div>`;
+  return `<div class="card soft" id="accCard"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">계정</div>${body}${Acc.msg ? `<div style="font-size:13px;color:var(--red);font-weight:700;margin-top:10px;line-height:1.5">${Acc.msg}</div>` : ''}${Acc.info ? `<div style="font-size:13px;color:var(--green);font-weight:700;margin-top:10px;line-height:1.5">${Acc.info}</div>` : ''}${nick}</div>`;
+}
+function setNick() {
+  const el = $('nickIn'); if (!el) return;
+  const v = el.value.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 10);
+  if (!v) { toast('닉네임을 입력해 주세요'); return; }
+  state.nick = v; save(); arenaSyncSoon(true); toast('닉네임을 저장했어요');
+}
+function accToggleForm() { Acc.form = !Acc.form; Acc.msg = ''; Acc.info = ''; accRefresh(); }
+function accMode(k) { Acc.mode = k; Acc.msg = ''; Acc.info = ''; accRefresh(); }
+async function accRun(fn) {
+  if (Acc.busy) return; Acc.busy = true; Acc.msg = ''; Acc.info = ''; accRefresh();
+  try { const r = await fn(); await accCheckCloud(true); if (r === 'linked') Acc.info = '계정이 연동됐어요. 기록이 클라우드에 저장돼요.'; }
+  catch (e) { Acc.msg = accErr(e); }
+  Acc.busy = false; accRefresh();
+}
+function accGoogle() { accRun(() => window.ArenaFB.googleConnect()); }
+function accEmail() {
+  const email = (Acc.email || '').trim(), pw = Acc.pw || '';
+  if (!email || !pw) { Acc.msg = '이메일과 비밀번호를 입력해 주세요.'; accRefresh(); return; }
+  accRun(() => window.ArenaFB.emailConnect(email, pw, Acc.mode));
+}
+async function accReset() {
+  const email = (Acc.email || '').trim(); if (!email) { Acc.msg = '이메일을 먼저 입력해 주세요.'; accRefresh(); return; }
+  try { await window.ArenaFB.resetPassword(email); Acc.msg = ''; Acc.info = '비밀번호 재설정 메일을 보냈어요.'; } catch (e) { Acc.msg = accErr(e); } accRefresh();
+}
+/* 현재 진행 상황을 클라우드에 올린다 */
+async function accUpload() {
+  const u = accUser(); if (!u || u.anon) return;
+  const d = Object.assign({}, state); delete d.cloudUid; delete d.cloudAt;
+  const savedAt = Date.now();
+  await window.ArenaFB.cloudPut(JSON.stringify(d), savedAt, state.stage | 0);
+  state.cloudUid = u.uid; state.cloudAt = savedAt; try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+  Acc.synced = true; Acc.last = savedAt; accRefresh();
+}
+function accSyncSoon() { if (!Acc.synced || window.__noSave) return; clearTimeout(accT); accT = setTimeout(() => accUpload().catch(() => {}), 4000); }
+async function accSaveNow() { try { clearTimeout(accT); await accUpload(); toast('클라우드에 저장했어요'); } catch (e) { toast('저장하지 못했어요'); } }
+document.addEventListener('visibilitychange', () => { if (document.hidden && Acc.synced && !window.__noSave) { clearTimeout(accT); accUpload().catch(() => {}); } });
+/* 로그인 직후/앱 시작 시: 클라우드와 이 기기의 기록을 비교한다 */
+async function accCheckCloud(force) {
+  const u = accUser(); if (!u || u.anon || Acc.checking) return;
+  if (Acc.checkedUid === u.uid && !force) return;
+  Acc.checking = true;
+  try {
+    const c = await window.ArenaFB.cloudGet();
+    if (!c) await accUpload();
+    else if (state.cloudUid === u.uid && (state.cloudAt || 0) >= c.savedAt) await accUpload();
+    else accPrompt(c);
+    Acc.checkedUid = u.uid;
+  } catch (e) { Acc.msg = '클라우드 기록을 확인하지 못했어요.'; }
+  Acc.checking = false; accRefresh();
+}
+function accSummary(d) {
+  try { const s = typeof d === 'string' ? JSON.parse(d) : d; return { stage:s.stage | 0, gold:s.gold | 0, f:Object.keys(s.own.f).length, s:Object.keys(s.own.s).length, nick:s.nick || '' }; } catch (e) { return null; }
+}
+function accPrompt(c) {
+  Acc.pending = c;
+  const a = accSummary(c.data), b = accSummary(state), col = (t, x, hl) => `<div style="flex:1;min-width:0;background:${hl ? 'var(--blue-s)' : '#f5f6f8'};border-radius:18px;padding:14px 12px;text-align:left"><div style="font-size:12px;font-weight:800;color:${hl ? 'var(--blue)' : 'var(--ink3)'}">${t}</div>${x ? `<div style="font-size:13px;font-weight:800;margin-top:8px;line-height:1.7">STAGE ${x.stage}<br><span style="font-weight:600;color:var(--ink2)">골드 ${fmt(x.gold)}<br>파이터 ${x.f} · 스킬 ${x.s}</span></div>` : '<div style="font-size:13px;margin-top:8px">읽을 수 없음</div>'}</div>`;
+  const m = $('confirmModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:26px 20px 18px;width:100%;max-width:350px;text-align:center">
+    <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em">어떤 기록을 사용할까요?</div>
+    <div style="font-size:13px;color:var(--ink3);margin:8px 0 16px;line-height:1.55">이 계정에 저장된 기록이 있어요.<br>선택하지 않은 쪽은 덮어써져요.</div>
+    <div style="display:flex;gap:8px">${col('클라우드 기록', a, true)}${col('이 기기 기록', b, false)}</div>
+    <div style="display:grid;gap:8px;margin-top:16px"><button class="btn primary" onclick="accUseCloud()">클라우드 기록 사용</button><button class="btn ghost" onclick="accUseLocal()">이 기기 기록으로 덮어쓰기</button></div>
+    <button onclick="accCancelPrompt()" class="press" style="border:0;background:none;color:var(--ink3);font-size:12px;font-weight:700;margin-top:10px;padding:6px">취소 (로그아웃)</button></div>`;
+}
+function accUseCloud() {
+  const c = Acc.pending, u = accUser(); if (!c || !u) return;
+  try {
+    const s = JSON.parse(c.data); s.cloudUid = u.uid; s.cloudAt = c.savedAt;
+    window.__noSave = true; clearTimeout(accT); clearTimeout(arnTimer);
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s)); location.reload();
+  } catch (e) { window.__noSave = false; toast('기록을 불러오지 못했어요'); }
+}
+async function accUseLocal() { closeConfirm(); Acc.pending = null; try { await accUpload(); toast('이 기기 기록을 클라우드에 저장했어요'); } catch (e) { Acc.msg = '저장하지 못했어요.'; accRefresh(); } }
+async function accCancelPrompt() { closeConfirm(); Acc.pending = null; await accDoLogout(); }
+function askLogout() {
+  const m = $('confirmModal'); m.classList.remove('hidden'); m.classList.add('flex');
+  m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:26px 22px 20px;width:100%;max-width:330px;text-align:center">
+    <div style="font-size:20px;font-weight:800;letter-spacing:-0.03em">로그아웃할까요?</div>
+    <div style="font-size:14px;color:var(--ink3);margin:8px 0 22px;line-height:1.55">클라우드 기록은 그대로 남아요.<br>이 기기의 기록도 지워지지 않아요.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn ghost" onclick="closeConfirm()">취소</button><button class="btn danger" onclick="closeConfirm();accDoLogout()">로그아웃</button></div></div>`;
+}
+async function accDoLogout() {
+  try { clearTimeout(accT); if (Acc.synced) await accUpload().catch(() => {}); await window.ArenaFB.logout(); } catch (e) { toast('로그아웃하지 못했어요'); return; }
+  Acc.synced = false; Acc.checkedUid = null; Acc.msg = ''; Acc.info = ''; toast('로그아웃했어요'); render();
 }
 
 /* ===================== 시작 ===================== */
