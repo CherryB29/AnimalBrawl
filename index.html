@@ -240,9 +240,9 @@ const FIGHTERS = [
   { id:'fox',     tier:'r', emoji:'🦊', name:'여우',     hp:128, atk:21, def:4, spd:115, mc:0.50, pas:{ id:'fox',     name:'교활한 반격',  desc:'공격을 회피하면 다음 공격 피해 +50%' } },
   { id:'frog',    tier:'r', emoji:'🐸', name:'개구리',   hp:115, atk:19, def:4, spd:105, mc:0.30, pas:{ id:'frog',    name:'끈적한 피부',  desc:'공격 시 20% 확률로 적을 1.5초간 30% 둔화' } },
   { id:'wolf',    tier:'e', emoji:'🐺', name:'늑대',     hp:125, atk:21, def:4, spd:112, mc:0.65, pas:{ id:'wolf',    name:'사냥 본능',    desc:'적 체력 50% 이하에서 공격 속도 +25%, 이동속도 +10%' } },
-  { id:'panda',   tier:'e', emoji:'🐼', name:'판다',     hp:150, atk:18, def:6, spd:85,  mc:0.75, pas:{ id:'panda',   name:'대나무 갑옷',  desc:'받는 피해 -12%, 초당 최대 체력 1.5% 회복' } },
+  { id:'panda',   tier:'e', emoji:'🐼', name:'판다',     hp:150, atk:18, def:5, spd:85,  mc:0.75, pas:{ id:'panda',   name:'대나무 갑옷',  desc:'받는 피해 -12%, 초당 최대 체력 0.8% 회복' } },
   { id:'tiger',   tier:'m', emoji:'🐯', name:'호랑이',   hp:130, atk:22, def:4, spd:108, mc:0.85, pas:{ id:'tiger',   name:'맹수의 습격',  desc:'돌진 직후 1.5초 안의 첫 타격 피해 +100%, 적중 시 4초 출혈' } },
-  { id:'bear',    tier:'m', emoji:'🐻', name:'곰',       hp:160, atk:18, def:6, spd:80,  mc:0.90, pas:{ id:'bear',    name:'겨울잠',       desc:'체력 40% 이하 첫 진입 시 4초간 기절하며 받는 피해 -70%, 초당 12.8% 회복, 겨울잠이 끝나면 5초간 공격력 +40%' } },
+  { id:'bear',    tier:'m', emoji:'🐻', name:'곰',       hp:160, atk:18, def:4.5, spd:80,  mc:0.90, pas:{ id:'bear',    name:'겨울잠',       desc:'체력 40% 이하 첫 진입 시 4초간 기절하며 받는 피해 -70%, 초당 4.5% 회복, 겨울잠이 끝나면 5초간 공격력 +40%' } },
   { id:'lion',    tier:'l', emoji:'🦁', name:'사자',     hp:135, atk:21, def:5, spd:100,  mc:0.80, pas:{ id:'lion',    name:'왕의 위엄',    desc:'주변(약 300) 적의 이동속도 -25%, 공격력 -12%' } },
   { id:'eagle',   tier:'l', emoji:'🦅', name:'독수리',   hp:115, atk:22, def:4, spd:125, mc:0.35, pas:{ id:'eagle',   name:'급강하',       desc:'돌진 쿨타임 -40%·거리 +25%, 돌진 중 0.3초 무적, 도착 시 강한 충격 피해' } },
   { id:'dragon',  tier:'t', emoji:'🐲', name:'용',       hp:125, atk:21, def:4, spd:105, mc:0.50, pas:{ id:'dragon',  name:'용의 심장',    desc:'스킬 피해 +35%, 스킬 쿨타임 -25%' } },
@@ -254,12 +254,12 @@ const SKILLS = [
   { id:'fire',  tier:'n', emoji:'🔥', name:'불꽃',   dmg:54, cd:4,   mc:0.20, range:330, shape:'proj', kind:'fire', wind:0.38, speed:430, pr:13, kb:220, color:'255,140,50' },
   { id:'smash', tier:'n', emoji:'👊', name:'강타',   dmg:46, cd:3,   mc:1.00, range:90,  shape:'bite', vis:'fist', wind:0.26, kb:380, fx:'stun', fxv:0.7, color:'255,220,150' },
   { id:'wind',  tier:'n', emoji:'🌪️', name:'회오리', dmg:40, cd:2,   mc:0.95, range:95,  shape:'spin', wind:0.30, radius:88, kb:420, color:'170,230,230' },
-  { id:'firstaid', tier:'n', emoji:'🩹', name:'응급처치', dmg:0, cd:8, mc:0.50, range:0, shape:'heal', self:true, wind:0.55, fxv:0.10, color:'90,230,150' },
+  { id:'firstaid', tier:'n', emoji:'🩹', name:'응급처치', dmg:0, cd:8, mc:0.50, range:0, shape:'heal', self:true, wind:0.55, fxv:0.09, color:'90,230,150' },
   { id:'stone', tier:'n', emoji:'🪨', name:'돌팔매', dmg:36, cd:2, mc:0.30, range:320, shape:'proj', kind:'rock', wind:0.25, speed:640, pr:9, kb:160, color:'200,190,170' },
   // ── 희귀
   { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', fxv:3.5, slowM:0.45, color:'130,220,255' },
   { id:'vamp',   tier:'r', emoji:'🩸', name:'흡혈',   dmg:61, cd:4, mc:1.00, range:90,  shape:'bite', wind:0.22, kb:200, fx:'lifesteal', fxv:0.5, color:'235,60,80' },
-  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.25, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:10.71, pdur:5, color:'150,230,90' },
+  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.25, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.43, pdur:5, color:'150,230,90' },
   { id:'rush',   tier:'r', emoji:'💨', name:'질풍참', dmg:72, cd:5, mc:0.90, range:300, shape:'rush', wind:0.20, kb:260, color:'200,230,255' },
   { id:'barrier',tier:'r', emoji:'🛡️', name:'보호막', dmg:0,  cd:10, mc:0.50, range:0, shape:'shield', self:true, wind:0.35, pct:0.14, dur:4, color:'150,200,255' },
   // ── 영웅 (상향)
@@ -279,13 +279,13 @@ const SKILLS = [
   { id:'bladedance', tier:'l', emoji:'🗡️', name:'검무',     dmg:111, cd:6, mc:0.95, range:100, shape:'flurry', hits:5, radius:100, wind:0.30, kb:90, color:'220,235,255' },
   { id:'wave',       tier:'l', emoji:'🌊', name:'해일',     dmg:136, cd:8, mc:0.30, range:520, shape:'proj', kind:'wave', wind:0.45, speed:560, pr:36, hw:240, kb:140, fx:'airstun', fxv:1.5, color:'90,170,255' },
   { id:'timestop',   tier:'l', emoji:'⏳', name:'시간 정지', dmg:0, cd:11, mc:0.30, range:400, shape:'bind', radius:190, wind:0.40, fxv:2.7, color:'255,235,160' },
-  { id:'sanctuary',  tier:'l', emoji:'✨', name:'성역',     dmg:0, cd:12, mc:0.50, range:0, shape:'zone', self:true, zstyle:'sanct', radius:110, dur:6, tick:0.5, heal:0.086, wind:0.50, color:'255,240,170' },
+  { id:'sanctuary',  tier:'l', emoji:'✨', name:'성역',     dmg:0, cd:12, mc:0.50, range:0, shape:'zone', self:true, zstyle:'sanct', radius:110, dur:6, tick:0.5, heal:0.0731, wind:0.50, color:'255,240,170' },
   // ── 초월 (상향)
-  { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:176, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
-  { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:52, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
-  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:31.5, pull:528, zslow:true, wind:0.55, color:'150,100,255' },
+  { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:202, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
+  { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:60, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
+  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:36.2, pull:528, zslow:true, wind:0.55, color:'150,100,255' },
   { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:7, batk:1.65, bspd:1.4, color:'255,220,120' },
-  { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:65, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
+  { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:75, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
 ];
 SKILLS.forEach(b => { if (!b.self && b.mc <= 0.35 && b.range > 130) b.range = Math.round(b.range*0.8); });
 
@@ -308,10 +308,10 @@ const EVO = {
   vamp:[ {"key":"a","name":"빈혈","x":[{"k":"slow","v":3,"m":0.5},{"k":"stunlow","thr":0.5,"v":1.8}],"desc":"명중 시 3초간 이동속도 50% 감소. 체력 50% 이하의 적은 1.8초간 기절한다."},
          {"key":"b","name":"저주 받은 송곳니","x":[{"k":"curse","v":3,"m":0.15}],"desc":"명중 시 3초간 저주를 건다. 저주받은 적은 받는 회복량이 85% 줄어든다."} ],
   poison:[ {"key":"a","name":"신경독","p":{"pdur":7},"desc":"중독 지속시간이 7초로 늘어난다."},
-         {"key":"b","name":"부식독","x":[{"k":"poisonpct","v":0.0015}],"desc":"중독 피해가 들어갈 때마다 적 최대 체력의 0.15%를 추가로 입힌다."} ],
+         {"key":"b","name":"부식독","x":[{"k":"poisonpct","v":0.0025}],"desc":"중독 피해가 들어갈 때마다 적 최대 체력의 0.25%를 추가로 입힌다."} ],
   rush:[ {"key":"a","name":"가속도","x":[{"k":"refund","t":3.5}],"desc":"명중 시 쿨타임이 3.5초 감소한다."},
          {"key":"b","name":"점멸","tp":1,"x":[{"k":"stun","v":1.5}],"desc":"돌진 대신 순간이동해 벤다. 명중 시 1.5초간 기절시킨다."} ],
-  barrier:[ {"key":"a","name":"가시 방벽","s":[{"k":"thorns","pct":1.2,"dur":5}],"desc":"보호막과 함께 5초간 가시를 두른다. 받는 피해의 120%를 공격자에게 반사한다."},
+  barrier:[ {"key":"a","name":"가시 방벽","s":[{"k":"thorns","pct":4.8,"dur":5}],"desc":"보호막과 함께 5초간 가시를 두른다. 받는 피해의 480%를 공격자에게 반사한다."},
          {"key":"b","name":"수호자","s":[{"k":"invuln","t":2}],"desc":"보호막을 펼친 직후 2초간 무적이 된다."} ],
   bolt:[ {"key":"a","name":"피뢰침","x":[{"k":"vuln","v":5,"m":1.4},{"k":"stun","v":1}],"desc":"명중 시 5초간 받는 피해가 40% 늘어나고 1초간 기절한다."},
          {"key":"b","name":"연쇄 번개","x":[{"k":"chain","pct":0.6,"delay":0.4},{"k":"chain","pct":0.6,"delay":0.8}],"desc":"번개가 내리친 뒤 0.4초, 0.8초 후에 번개가 한 번씩 더 떨어진다. 각각 피해의 60%를 방어 무시로 입힌다."} ],
@@ -322,13 +322,13 @@ const EVO = {
   swamp:[ {"key":"a","name":"독기 늪","z":[{"k":"curse","v":1.2,"m":0}],"desc":"영역 안의 적은 회복할 수 없다."},
          {"key":"b","name":"구속","p":{"cd":"+2"},"zf":{"trap":1},"desc":"영역 안에 들어온 적은 밖으로 나갈 수 없다. 쿨타임이 2초 늘어난다."} ],
   rage:[ {"key":"a","name":"위협의 포효","roar":1,"f":[{"k":"slow","v":5,"m":0.6},{"k":"weak","v":5,"m":0.65}],"desc":"시전 시 포효한다. 주변 적의 이동속도가 5초간 40%, 공격력이 35% 줄어든다."},
-         {"key":"b","name":"가시갑옷","s":[{"k":"thorns","pct":2,"dur":6}],"desc":"지속 시간 동안 받은 피해의 200%를 공격자에게 반사한다."} ],
+         {"key":"b","name":"가시갑옷","s":[{"k":"thorns","pct":8,"dur":6}],"desc":"지속 시간 동안 받은 피해의 800%를 공격자에게 반사한다."} ],
   inferno:[ {"key":"a","name":"불의 가호","zo":[{"k":"dr","pct":0.5,"dur":1.2}],"desc":"영역 안에 있는 동안 받는 피해가 50% 줄어든다."},
          {"key":"b","name":"유황 연기","p":{"tickDmg":"*0.8"},"z":[{"k":"blind","v":1.2},{"k":"curse","v":1.2}],"zf":{"stay":{"t":3,"fx":[{"k":"stun","v":2}]}},"desc":"영역 안의 적을 실명·저주 상태로 만든다. 3초 이상 머무르면 2초간 기절한다. 지속 피해 -20%."} ],
   hole:[ {"key":"a","name":"사건의 지평선","p":{"cd":"*1.15"},"x":[{"k":"pctmax","v":0.06},{"k":"silence","v":2.8}],"desc":"명중 시 적 최대 체력의 6%를 추가로 입히고 2.8초간 침묵시킨다. 쿨타임 +15%."},
          {"key":"b","name":"상대론","x":[{"k":"cdpush","t":4}],"s":[{"k":"mspd","v":0.2,"dur":5}],"desc":"명중 시 적의 남은 스킬 쿨타임이 4초 늘어난다. 시전 시 5초간 이동속도 +20%."} ],
   snipe:[ {"key":"a","name":"헤드샷","x":[{"k":"kill","thr":0.1}],"desc":"체력 10% 이하의 적을 즉시 처형한다."},
-         {"key":"b","name":"퀵드로우","s":[{"k":"casing"}],"desc":"시전 시 탄피가 떨어진다. 탄피를 주우면 저격 쿨타임이 초기화된다."} ],
+         {"key":"b","name":"퀵드로우","p":{"dmg":"*0.9"},"s":[{"k":"casing"}],"desc":"시전 시 탄피가 떨어진다. 탄피를 주우면 저격 쿨타임이 초기화된다. 저격 피해 -10%."} ],
   storm:[ {"key":"a","name":"피뢰침","zf":{"track":1},"z":[{"k":"slow","v":0.8,"m":0.8}],"desc":"먹구름이 적을 천천히 따라간다. 영역 안의 적은 이동속도가 20% 줄어든다."},
          {"key":"b","name":"감전 폭풍","zs":[{"k":"stun","v":0.6}],"desc":"폭풍에 맞은 적이 0.6초간 기절한다. 같은 적에게는 1.2초에 한 번만 걸린다."} ],
   bloodlust:[ {"key":"a","name":"사냥의 표식","f":[{"k":"vuln","v":8,"m":1.25}],"desc":"시전 시 주변의 적이 8초간 받는 피해가 25% 늘어난다."},
@@ -693,7 +693,7 @@ function lvInfo(n) {
   const base = needTotal(lv);
   return { lv, cur:n - base, need:needTotal(lv+1) - base, max:false };
 }
-const FIGHTER_TIER_MUL = { n:1.0, r:1.2, e:1.4, m:1.55, l:1.7, t:2.54 };
+const FIGHTER_TIER_MUL = { n:1.0, r:1.2, e:1.4, m:1.55, l:1.7, t:2.79 };
 const FIGHTER_LV_STEP = 0.14;
 const SKILL_LV_STEP = { n:0.25, r:0.22, e:0.15, m:0.12, l:0.1, t:0.1 };
 const lvStepOf = (kind, tier) => kind === 'f' ? FIGHTER_LV_STEP : SKILL_LV_STEP[tier];
@@ -706,7 +706,7 @@ const lvSoft = lv => 1 + 0.18*(1 - Math.exp(-(Math.max(1, lv) - 1)/18));
 const lvSoftB = lv => 1 + 0.26*(1 - Math.exp(-(Math.max(1, lv) - 1)/18));
 /* 응급처치 7.5%→50%, 보호막 15%→55% (완만하게 상승) */
 const lvCurve = (lo, hi, lv) => lo + (hi - lo)*(1 - Math.exp(-(Math.max(1, lv||1) - 1)/22));
-const healPctAt = lv => lvCurve(0.075, 0.50, lv), shieldPctAt = lv => lvCurve(0.15, 0.55, lv);
+const healPctAt = lv => 0.9*lvCurve(0.075, 0.50, lv), shieldPctAt = lv => lvCurve(0.15, 0.55, lv);
 const EVO_LV = { n:10, r:7, e:5, m:4, l:3, t:2 };
 const curLv = (kind, id) => Math.min(Math.max(1, state.lv[kind][id] || 1), Math.max(1, lvOf(owned(kind, id))));
 const canUp = (kind, id) => curLv(kind, id) < MAXLV && lvOf(owned(kind, id)) > curLv(kind, id);
@@ -813,7 +813,7 @@ function bossInfo(stage) {
   st.hp = Math.round(st.hp*STAT_K); st.atk = Math.round(st.atk*STAT_K); st.def = Math.round(st.def*STAT_K);
   return { st, emoji:enemyFor(stage, ranged)[1], name:enemyFor(stage, ranged)[0], big:stage % 5 === 0, kit, entries, style, ranged };
 }
-const contribMax = stage => 1500;
+const contribMax = stage => 1000;
 const clearBonus = stage => 2500;
 const rangeTag = c => c >= 0.65 ? '근접' : c <= 0.35 ? '원거리' : '균형';
 const rangeLabel = mc => mc >= 0.7 ? '근접' : mc <= 0.3 ? '원거리' : '중거리';
@@ -1531,7 +1531,7 @@ function renderDetail() {
 function viewFight() { return `<div class="space-y-3"><div id="arenaSlot"></div><div id="fightInfo" class="space-y-3">${fightInfoHtml()}</div></div>`; }
 function fightInfoHtml() {
   const s = state.sel, bi = bossInfo(s), bp = powerOf(bi.st, bi.entries), mp = myPower(), ms = myStyle();
-  const fid = state.eq.f, fb = fid ? F(fid) : null, frontier = s === state.stage;
+  const fid = state.eq.f, fb = fid ? F(fid) : null, frontier = s === state.stage, my = fb ? fighterStats(fb, 0, true) : null, es = bi.st;
   const ratio = Math.min(92, Math.max(8, Math.round(mp / Math.max(1, mp + bp) * 100)));
   const logs = battleLog.length ? battleLog.slice().reverse().map(l => `<div style="display:flex;align-items:center;justify-content:space-between;height:44px;border-top:1px solid var(--line)">
       <div style="display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:${l.win?'var(--green)':'var(--red)'}"></span><span style="font-size:14px;font-weight:700">STAGE ${l.stage}</span>${l.first?'<span class="chip" style="background:var(--blue-s);color:var(--blue)">첫 클리어</span>':''}</div>
@@ -1558,6 +1558,7 @@ function fightInfoHtml() {
       </div>
       <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:18px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue);transition:width .4s"></div><div style="flex:1;background:var(--red)"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(bp)}</span></div>
+      <div style="margin-top:12px;background:#f5f6f8;border-radius:14px;padding:4px 14px">${[['체력', my ? fmt(my.hp) : '-', fmt(es.hp)], ['공격력', my ? fmt(my.atk) : '-', fmt(es.atk)], ['방어력', my ? defPct(my.def).toFixed(1) + '%' : '-', defPct(es.def).toFixed(1) + '%']].map(([l, a, b], i) => `<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:36px;${i ? 'border-top:1px solid var(--line)' : ''}"><span style="font-size:14px;font-weight:800;color:var(--blue)">${a}</span><span style="font-size:11px;font-weight:700;color:var(--ink3)">${l}</span><span style="font-size:14px;font-weight:800;color:var(--red);text-align:right">${b}</span></div>`).join('')}</div>
       <div class="sect" style="margin:16px 0 8px">보스 스킬</div>
       <div style="display:flex;gap:8px">${kit}</div>
     </div>
@@ -2327,7 +2328,7 @@ function pickSkill(u, e, d, will, eRec) {
       else if (b.shape === 'buff') { if (u.buffT > 0 || d > 520) continue; sc = 110; }
       else continue;
     } else {
-      sc = skillValue(u, e, s);
+      sc = skillValue(u, e, s); if (e.stun > 0.3) sc *= 1.35;
       if (b.fx === 'poison' && e.poison) sc *= 0.2;
       if (b.fx === 'freeze' && e.slow > 0.5) sc *= 0.4;
       if (b.fx === 'lifesteal' && hpR < 0.6) sc *= 1.4;
@@ -2362,7 +2363,7 @@ function think(u, e) {
     }
   }
   const lowThr = u.isBoss ? 0.12 : 0.26 + 0.14*(1 - S.aggr);
-  if (u.retreatT <= 0 && hpR < lowThr && u.retreatCd <= 0 && !cornered && hpR < ehpR + 0.15) { u.retreatT = rnd(1.6,2.6); u.retreatCd = 7; chip(u, '퇴각'); }
+  if (u.retreatT <= 0 && hpR < lowThr && u.retreatCd <= 0 && !cornered && hpR < ehpR + 0.15 && !(e.stun > 0.6 && hpR > 0.12)) { u.retreatT = rnd(1.6,2.6); u.retreatCd = 7; chip(u, '퇴각'); }
   if (u.retreatT > 0) {
     if (cornered) u.retreatT = 0;
     else {
@@ -2376,7 +2377,7 @@ function think(u, e) {
     }
   }
   const eRec = e.recover > 0 || e.stun > 0;
-  let will = S.aggr + (eRec ? 0.3 : 0) + (hpR - ehpR)*0.35 - (eWind ? 0.08 : 0) + Math.min(0.3, B.fightT/90*0.3) + (cornered ? 0.4 : 0);
+  let will = S.aggr + (eRec ? 0.3 : 0) + (e.stun > 0.3 ? 0.45 : 0) + (hpR - ehpR)*0.35 - (eWind ? 0.08 : 0) + Math.min(0.3, B.fightT/90*0.3) + (cornered ? 0.4 : 0);
   if (hpR < 0.3) will -= 0.3;
   const sk = pickSkill(u, e, d, will, eRec);
   if (sk) {
@@ -2629,7 +2630,7 @@ function moveUnit(u, e, dt) {
   else if (u.stun > 0) { const f = Math.exp(-6*dt); u.vx *= f; u.vy *= f; }
   else { const pd = planDir(u, e), sp = speedOf(u)*pd.mul*(u.act ? 0.12 : 1), k = Math.min(1, dt*9); u.vx += (pd.dx*sp - u.vx)*k; u.vy += (pd.dy*sp - u.vy)*k; }
   if (!u.act && u.stun <= 0) { const pk = B.pickups.find(q => q.owner === u); if (pk) { const a = Math.atan2(pk.y - u.y, pk.x - u.x), sp = speedOf(u)*0.7; u.vx += Math.cos(a)*sp*0.25; u.vy += Math.sin(a)*sp*0.25; } }
-  if (!u.act && u.stun <= 0) { const sz = B.zones.find(q => q.owner === u && q.style === 'sanct' && q.t < q.dur - 0.3); if (sz) { const dx = sz.x - u.x, dy = sz.y - u.y, d = Math.hypot(dx, dy); if (d > sz.r*0.45) { const sp = speedOf(u); u.vx += dx/d*sp*0.5*Math.min(1, (d - sz.r*0.45)/40); u.vy += dy/d*sp*0.5*Math.min(1, (d - sz.r*0.45)/40); } } }
+  if (!u.act && u.stun <= 0) { const sz = B.zones.find(q => q.owner === u && q.style === 'sanct' && q.t < q.dur - 0.3); if (sz) { const dx = sz.x - u.x, dy = sz.y - u.y, d = Math.hypot(dx, dy); if (d > sz.r*0.7) { const sp = speedOf(u); u.vx += dx/d*sp*0.18*Math.min(1, (d - sz.r*0.7)/40); u.vy += dy/d*sp*0.18*Math.min(1, (d - sz.r*0.7)/40); } } }
   u.x += u.vx*dt; u.y += u.vy*dt;
   const m = u.r + 8; let wallHit = false;
   if (u.x < m) { u.x = m; wallHit = u.vx < -120; u.vx = Math.max(0, u.vx); } if (u.x > WW-m) { u.x = WW-m; wallHit = wallHit || u.vx > 120; u.vx = Math.min(0, u.vx); }
@@ -2663,8 +2664,8 @@ function updateUnit(u, dt) {
   }
   if (u.buffT > 0) { u.buffT -= dt; if (Math.random() < dt*12) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.5, vy:-rnd(60,140), size:1.8, color:u.buffColor || '255,200,120', life:0.5 }); if (u.buffT <= 0) { u.buffAtk = 1; u.buffSpd = 1; u.buffLs = 0; u.buffFx = null; } }
   if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
-  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, u.maxHp*0.128*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
-  if (u.pas === 'panda') regen(u, u.maxHp*0.0153*dt/HEAL_MUL);
+  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, u.maxHp*0.0448*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
+  if (u.pas === 'panda') regen(u, u.maxHp*0.00765*dt/HEAL_MUL);
   if (u.hot) { u.hot.t -= dt; regen(u, u.maxHp*u.hot.pct*dt); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
   if (u.pas === 'dog' && !u.raged && u.hp < u.maxHp*0.3) { u.raged = true; chip(u, '분노'); }
   if (u.poison) {
