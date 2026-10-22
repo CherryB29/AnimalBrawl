@@ -242,7 +242,7 @@ const FIGHTERS = [
   { id:'wolf',    tier:'e', emoji:'🐺', name:'늑대',     hp:125, atk:21, def:4, spd:112, mc:0.65, pas:{ id:'wolf',    name:'사냥 본능',    desc:'적 체력 50% 이하에서 공격 속도 +25%, 이동속도 +10%' } },
   { id:'panda',   tier:'e', emoji:'🐼', name:'판다',     hp:150, atk:18, def:5, spd:85,  mc:0.75, pas:{ id:'panda',   name:'대나무 갑옷',  desc:'받는 피해 -12%, 초당 최대 체력 0.8% 회복' } },
   { id:'tiger',   tier:'m', emoji:'🐯', name:'호랑이',   hp:130, atk:22, def:4, spd:108, mc:0.85, pas:{ id:'tiger',   name:'맹수의 습격',  desc:'돌진 직후 1.5초 안의 첫 타격 피해 +100%, 적중 시 4초 출혈' } },
-  { id:'bear',    tier:'m', emoji:'🐻', name:'곰',       hp:160, atk:18, def:4.5, spd:80,  mc:0.90, pas:{ id:'bear',    name:'겨울잠',       desc:'체력 40% 이하 첫 진입 시 4초간 기절하며 받는 피해 -70%, 초당 4.5% 회복, 겨울잠이 끝나면 5초간 공격력 +40%' } },
+  { id:'bear',    tier:'m', emoji:'🐻', name:'곰',       hp:160, atk:18, def:4.5, spd:80,  mc:0.90, pas:{ id:'bear',    name:'겨울잠',       desc:'체력 40% 이하 첫 진입 시 4초간 기절하며 받는 피해 -70%, 초당 6.3% 회복, 겨울잠이 끝나면 5초간 공격력 +40%' } },
   { id:'lion',    tier:'l', emoji:'🦁', name:'사자',     hp:135, atk:21, def:5, spd:100,  mc:0.80, pas:{ id:'lion',    name:'왕의 위엄',    desc:'주변(약 300) 적의 이동속도 -25%, 공격력 -12%' } },
   { id:'eagle',   tier:'l', emoji:'🦅', name:'독수리',   hp:115, atk:22, def:4, spd:125, mc:0.35, pas:{ id:'eagle',   name:'급강하',       desc:'돌진 쿨타임 -40%·거리 +25%, 돌진 중 0.3초 무적, 도착 시 강한 충격 피해' } },
   { id:'dragon',  tier:'t', emoji:'🐲', name:'용',       hp:125, atk:21, def:4, spd:105, mc:0.50, pas:{ id:'dragon',  name:'용의 심장',    desc:'스킬 피해 +35%, 스킬 쿨타임 -25%' } },
@@ -1082,17 +1082,17 @@ function revealCard(kind, b, had) {
   const n = had + 1, li = lvInfo(n), isNew = had === 0, up = !isNew && lvOf(n) > lvOf(had), t = tierOf(b.tier), hi = TIER_IDX[b.tier] >= 3;
   const badge = isNew ? `<span class="chip" style="position:absolute;top:14px;right:14px;background:var(--red);color:#fff">NEW</span>` : up ? `<span class="chip a-lvup" style="position:absolute;top:14px;right:14px;background:#191f28;color:#ffd45e">업그레이드 가능</span>` : `<span class="chip neutral" style="position:absolute;top:14px;right:14px">중복 +1</span>`;
   const prog = li.max ? 'MAX' : `다음 레벨까지 ${li.cur}/${li.need}`;
-  return `<div class="t-${b.tier} a-pop" style="width:100%;max-width:330px;margin:24px 0">
+  return `<div class="t-${b.tier} a-pop" style="width:100%;max-width:300px;margin:14px 0">
     <div class="${b.tier==='t'?'holo':''}" style="position:relative;border-radius:30px;background:#fff;box-shadow:0 0 0 2px var(--tm),0 34px 60px -24px var(--t);overflow:hidden">
-      <div style="position:relative;height:178px;background:linear-gradient(180deg,var(--ts),#fff);display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <div style="position:relative;height:128px;background:linear-gradient(180deg,var(--ts),#fff);display:flex;align-items:center;justify-content:center;overflow:hidden">
         ${hi ? '<div class="rays"></div>' : ''}
-        <div class="medal" style="width:122px;height:122px"><span class="emoji" style="font-size:70px">${b.emoji}</span></div>
+        <div class="medal" style="width:90px;height:90px"><span class="emoji" style="font-size:52px">${b.emoji}</span></div>
         <span class="chip" style="position:absolute;top:14px;left:14px">${t.name}</span>${badge}
       </div>
-      <div style="padding:16px 22px 22px;text-align:center">
+      <div style="padding:12px 18px 18px;text-align:center">
         <div style="font-size:25px;font-weight:800;letter-spacing:-0.03em">${b.name}</div>
         <div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px">${kind==='f'?'파이터':'스킬'} · Lv.${li.lv}</div>
-        ${detailHtml(kind, b, li.lv)}
+        <div style="max-height:max(130px,calc(100dvh - 400px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;text-align:left">${detailHtml(kind, b, li.lv)}</div>
         <div style="margin-top:14px;text-align:left"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px"><span>Lv.${li.lv}</span><span>${prog}</span></div><div class="bar"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div></div>
       </div>
     </div></div>`;
@@ -1102,7 +1102,7 @@ function showGacha(kind, b, had) {
   const m = openGachaModal();
   gachaIntro(m, b.tier, fx => {
     const unit = kind === 'f' ? FIGHTER_COST : SKILL_COST;
-    m.innerHTML = fx + `<div style="width:100%;max-width:330px;display:flex;flex-direction:column;align-items:center">${revealCard(kind, b, had)}
+    m.innerHTML = fx + `<div style="width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center">${revealCard(kind, b, had)}
       <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:8px;width:100%;margin-bottom:24px">
         <button class="btn" style="background:rgba(255,255,255,.14);color:#fff" onclick="closeGacha()">확인</button>
         <button class="btn primary" onclick="again('${kind}',false)">한 번 더 <span style="display:inline-flex;align-items:center;gap:3px">${COIN}${fmt(unit)}</span></button>
@@ -1281,7 +1281,7 @@ function dragHot(gx, gy) {
   const hb = document.querySelector('header').getBoundingClientRect().bottom;
   let best = null, bd = 1e9;
   for (const el of Drag.targets) {
-    const r = el.getBoundingClientRect(), top = Math.max(r.top, hb), pad = 8;
+    const r = el.getBoundingClientRect(), top = Math.max(r.top, hb), pad = 14;
     if (r.bottom <= top + 4) continue;
     if (gx < r.left - pad || gx > r.right + pad || gy < top - pad || gy > r.bottom + pad) continue;
     const d = Math.hypot(gx - (r.left + r.right)/2, gy - (top + r.bottom)/2);
@@ -1300,7 +1300,7 @@ function dragMove(x, y) {
   Drag.x = x; Drag.y = y;
   const gx = x, gy = y - (Drag.touch ? 52 : 0), g = Drag.ghost;
   if (g) g.style.transform = `translate3d(${gx - g.offsetWidth/2}px, ${gy - g.offsetHeight/2}px, 0)`;
-  dragHot(gx, gy);
+  dragHot(x, y);
 }
 function dragStart() {
   const el = Drag.holdEl; if (!el || !el.isConnected) return;
@@ -2132,8 +2132,8 @@ function fxList(src, tgt, sk, list, dmg) {
       case 'sparkburst': {
         const n = x.n || 5, col = '255,170,70', raw = dmg*x.pct;
         for (let i = 0; i < n; i++) {
-          const a = TAU*i/n + rnd(0, 0.6), d = rnd(78, 140), px = tgt.x + Math.cos(a)*d, py = tgt.y + Math.sin(a)*d;
-          P({ k:'glow', x:tgt.x, y:tgt.y, vx:Math.cos(a)*d*3, vy:Math.sin(a)*d*3, size:7, color:col, life:0.5, drag:5 });
+          const a = TAU*i/n + rnd(0, 0.6), d = i < 2 ? rnd(18, 40) : rnd(40, 85), px = tgt.x + Math.cos(a)*d, py = tgt.y + Math.sin(a)*d;
+          P({ k:'glow', x:tgt.x, y:tgt.y, vx:Math.cos(a)*d*5.4, vy:Math.sin(a)*d*5.4, size:7, color:col, life:0.5, drag:5 });
           B.timers.push({ t:0.5, fn:() => { if (src.dead) return; ring(px, py, 4, 50, 0.3, col, 3); glow(px, py, 50, 0.25, col); sparks(px, py, 6, '255,200,110', 240, 0.3); const e2 = foe(src); if (!e2.dead && e2.invuln <= 0 && Math.hypot(e2.x - px, e2.y - py) < 56 + e2.r*0.6) applyHit(src, e2, raw, { quiet:true, zone:true, color:col }); } });
         }
         break; }
@@ -2659,7 +2659,7 @@ function updateUnit(u, dt) {
   }
   if (u.buffT > 0) { u.buffT -= dt; if (Math.random() < dt*12) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.5, vy:-rnd(60,140), size:1.8, color:u.buffColor || '255,200,120', life:0.5 }); if (u.buffT <= 0) { u.buffAtk = 1; u.buffSpd = 1; u.buffLs = 0; u.buffFx = null; } }
   if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
-  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, u.maxHp*0.0448*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
+  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, u.maxHp*0.0627*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
   if (u.pas === 'panda') regen(u, u.maxHp*0.00765*dt/HEAL_MUL);
   if (u.hot) { u.hot.t -= dt; regen(u, u.maxHp*u.hot.pct*dt); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
   if (u.pas === 'dog' && !u.raged && u.hp < u.maxHp*0.3) { u.raged = true; chip(u, '분노'); }
