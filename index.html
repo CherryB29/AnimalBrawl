@@ -204,7 +204,7 @@
       </div>
       <h1 style="font-size:19px;font-weight:800;letter-spacing:-0.03em;">Animal Brawl</h1>
     </div>
-    <div class="flex items-center gap-1.5 press" onclick="devSetGold()" style="cursor:pointer;background:#fff;border-radius:99px;padding:7px 14px 7px 10px;box-shadow:0 1px 0 rgba(25,31,40,.03),0 6px 16px -10px rgba(25,31,40,.2);">
+    <div class="flex items-center gap-1.5" style="background:#fff;border-radius:99px;padding:7px 14px 7px 10px;box-shadow:0 1px 0 rgba(25,31,40,.03),0 6px 16px -10px rgba(25,31,40,.2);">
       <span id="coinIcon"></span>
       <span id="goldText" style="font-weight:800;font-size:15px;" class="tabular-nums">0</span>
     </div>
@@ -257,16 +257,16 @@ const SKILLS = [
   { id:'firstaid', tier:'n', emoji:'🩹', name:'응급처치', dmg:0, cd:8, mc:0.50, range:0, shape:'heal', self:true, wind:0.55, fxv:0.09, color:'90,230,150' },
   { id:'stone', tier:'n', emoji:'🪨', name:'돌팔매', dmg:36, cd:2, mc:0.30, range:320, shape:'proj', kind:'rock', wind:0.25, speed:640, pr:9, kb:160, color:'200,190,170' },
   // ── 희귀
-  { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', fxv:3.5, slowM:0.45, color:'130,220,255' },
+  { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', stun:0.6, fxv:3.5, slowM:0.45, color:'130,220,255' },
   { id:'vamp',   tier:'r', emoji:'🩸', name:'흡혈',   dmg:61, cd:4, mc:1.00, range:90,  shape:'bite', wind:0.22, kb:200, fx:'lifesteal', fxv:0.5, color:'235,60,80' },
-  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.25, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.43, pdur:5, color:'150,230,90' },
+  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.18, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.43, pdur:5, color:'150,230,90' },
   { id:'rush',   tier:'r', emoji:'💨', name:'질풍참', dmg:72, cd:5, mc:0.90, range:300, shape:'rush', wind:0.20, kb:260, color:'200,230,255' },
   { id:'barrier',tier:'r', emoji:'🛡️', name:'보호막', dmg:0,  cd:10, mc:0.50, range:0, shape:'shield', self:true, wind:0.35, pct:0.14, dur:4, color:'150,200,255' },
   // ── 영웅 (상향)
   { id:'bolt',   tier:'e', emoji:'⚡', name:'번개',   dmg:82, cd:6, mc:0.10, range:360, shape:'strike', wind:0.48, radius:42, kb:140, color:'170,200,255' },
   { id:'bomb',   tier:'e', emoji:'💥', name:'폭발',   dmg:110, cd:7, mc:0.75, range:170, shape:'blast', wind:0.70, radius:82, kb:480, color:'255,120,60' },
   { id:'volley', tier:'e', emoji:'🏹', name:'화살비', dmg:33, cd:7, mc:0.15, range:340, shape:'proj', kind:'arrow', n:6, spread:0.6, wind:0.40, speed:620, pr:7, kb:80, cm:0.76, color:'235,230,180' },
-  { id:'swamp',  tier:'e', emoji:'🕸️', name:'끈끈이 늪', dmg:0, cd:6, mc:0.40, range:260, shape:'zone', zstyle:'swamp', radius:95, dur:4.5, tick:0.5, tickDmg:12, zslow:true, slowM:0.1, wind:0.45, color:'200,175,110' },
+  { id:'swamp',  tier:'e', emoji:'🕸️', name:'끈끈이 늪', dmg:0, cd:6, mc:0.30, range:260, shape:'zone', zstyle:'swamp', radius:95, dur:4.5, tick:0.5, tickDmg:13, zslow:true, slowM:0.1, wind:0.45, color:'200,175,110' },
   { id:'rage',   tier:'e', emoji:'😡', name:'광폭화', dmg:0,  cd:9, mc:0.75, range:0, shape:'buff', self:true, wind:0.30, dur:6, batk:1.55, bspd:1.25, color:'255,100,90' },
   // ── 신화 (상향)
   { id:'inferno',   tier:'m', emoji:'🌋', name:'불바다',  dmg:0, cd:8, mc:0.45, range:250, shape:'zone', zstyle:'fire', radius:125, dur:10, tick:0.4, tickDmg:26, wind:0.50, color:'255,110,40' },
@@ -283,11 +283,11 @@ const SKILLS = [
   // ── 초월 (상향)
   { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:202, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
   { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:60, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
-  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:36.2, pull:528, zslow:true, wind:0.55, color:'150,100,255' },
-  { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:7, batk:1.65, bspd:1.4, color:'255,220,120' },
+  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:36.2, pull:620, zslow:true, wind:0.55, color:'150,100,255' },
+  { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:7, batk:1.65, bspd:1.4, hot:0.015, color:'255,220,120' },
   { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:75, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
 ];
-SKILLS.forEach(b => { if (!b.self && b.mc <= 0.35 && b.range > 130) b.range = Math.round(b.range*0.8); });
+SKILLS.forEach(b => { if (!b.self && b.mc <= 0.35 && b.range > 130) b.range = Math.round(b.range*1.15); });
 
 
 /* ── 진화 (스킬 전용): 등급별 Lv부터 2가지 중 하나를 고름. p = 수치 변경('*1.3' 곱 / '+1' 합 / 숫자 대입), x = 적중 시 추가효과, s = 시전 시 추가효과 */
@@ -303,8 +303,8 @@ const EVO = {
          {"key":"b","name":"비상 탈출","s":[{"k":"evade","n":2,"dur":4},{"k":"haste","dur":3}],"desc":"시전 시 4초 안에 공격 2회 회피, 3초간 이동속도 증가."} ],
   stone:[ {"key":"a","name":"입막음 돌","x":[{"k":"silence","v":1.1}],"desc":"명중 시 1.1초간 침묵한다."},
          {"key":"b","name":"뜀박질 돌","x":[{"k":"refund","t":0.8}],"desc":"명중 시 쿨타임이 0.8초 감소한다."} ],
-  ice:[ {"key":"a","name":"설상가상","x":[{"k":"stun","v":2.5},{"k":"slow","v":7,"m":0.2}],"desc":"명중한 적을 2.5초간 기절시키고 7초간 이동속도를 80% 줄인다."},
-         {"key":"b","name":"냉기","x":[{"k":"mark","v":5}],"desc":"명중 시 5초간 서리 표식을 남긴다. 표식이 남은 적을 2번 이상 공격하면 얼음창의 쿨타임이 초기화된다."} ],
+  ice:[ {"key":"a","name":"설상가상","x":[{"k":"stun","v":2.5},{"k":"slow","v":5,"m":0.3}],"desc":"명중한 적을 2.5초간 기절시키고 5초간 이동속도를 70% 줄인다."},
+         {"key":"b","name":"냉기","p":{"stun":1.1},"x":[{"k":"mark","v":5}],"desc":"명중 시 5초간 서리 표식을 남긴다. 표식이 남은 적을 2번 이상 공격하면 얼음창의 쿨타임이 초기화된다. 기절 시간이 0.5초 늘어난다."} ],
   vamp:[ {"key":"a","name":"빈혈","x":[{"k":"slow","v":3,"m":0.5},{"k":"stunlow","thr":0.5,"v":1.8}],"desc":"명중 시 3초간 이동속도 50% 감소. 체력 50% 이하의 적은 1.8초간 기절한다."},
          {"key":"b","name":"저주 받은 송곳니","x":[{"k":"curse","v":3,"m":0.15}],"desc":"명중 시 3초간 저주를 건다. 저주받은 적은 받는 회복량이 85% 줄어든다."} ],
   poison:[ {"key":"a","name":"신경독","p":{"pdur":7},"desc":"중독 지속시간이 7초로 늘어난다."},
@@ -400,7 +400,7 @@ const SKILL_INFO = {
   nova: '초신성을 폭발시켜 넓은 범위에 막대한 피해를 주고 기절시킨다.',
   moonblade: '적의 등 뒤로 순간이동하며 벤다. 도착 직후 2초간 무적이 된다.',
   prison: '차원 감옥을 열어 안의 적을 끌어당기고 느리게 하며 지속 피해를 준다.',
-  eclipse: '7초간 공격력이 1.65배, 이동속도가 40% 오른다.',
+  eclipse: '7초간 공격력이 1.65배, 이동속도가 40% 오르고 초당 최대 체력의 1.5%를 회복한다.',
   shower: '넓은 범위에 유성 13발을 연달아 떨어뜨린다.',
 };
 const STATUS_GUIDE = [
@@ -411,6 +411,8 @@ const STATUS_GUIDE = [
   ['⚔️','처형','체력이 낮은 적에게 추가 피해'],
 ];
 const statusGuideHtml = () => `<div style="display:grid;gap:6px">${STATUS_GUIDE.map(([e,n,d]) => `<div style="display:flex;gap:10px;align-items:center"><span style="width:26px;text-align:center;font-size:17px">${e}</span><span style="font-size:13px;font-weight:800;min-width:62px">${n}</span><span style="font-size:12px;color:var(--ink3);font-weight:500;line-height:1.4">${d}</span></div>`).join('')}<div style="font-size:11px;color:var(--ink4);margin-top:4px;line-height:1.5">보스는 침묵·속박·실명 지속시간이 40% 짧고, 기절은 절반만 걸려요.</div></div>`;
+const mcText = mc => Math.abs(mc - 0.5) < 0.005 ? '균형 0.50' : mc < 0.5 ? `원거리 ${(1 - mc).toFixed(2)}` : `근접 ${mc.toFixed(2)}`;
+const mcGauge = (mc, bg) => `<div style="background:${bg || '#fff'};border-radius:14px;padding:12px 14px;text-align:left"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><span style="font-size:11px;font-weight:600;color:var(--ink3)">전투 성향</span><span style="font-size:15px;font-weight:800;letter-spacing:-0.02em">${mcText(mc)}</span></div><div style="position:relative;height:8px;border-radius:99px;background:linear-gradient(90deg,#8ec5ff,#e5e8eb 50%,#ff9ca3)"><div style="position:absolute;top:50%;left:${Math.round(mc*100)}%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--ink),0 2px 6px rgba(0,0,0,.25)"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--ink3);margin-top:8px"><span>원거리</span><span>근접</span></div></div>`;
 const infoCard = (kind, id) => {
   if (kind === 'f') { const i = FIGHTER_INFO[id]; return i ? `<div style="margin-top:8px;background:#f5f6f8;border-radius:14px;padding:12px 14px"><div style="font-size:12px;font-weight:800;color:var(--ink2)">${i.role}</div><div style="font-size:12px;color:var(--ink2);margin-top:4px;line-height:1.55;font-weight:500">${i.text}</div>${i.pair ? `<div style="font-size:11px;color:var(--blue);margin-top:6px;font-weight:700;line-height:1.45">${i.pair}</div>` : ''}</div>` : ''; }
   const t = SKILL_INFO[id]; return t ? `<div style="font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.55;font-weight:500">${t}</div>` : '';
@@ -497,7 +499,7 @@ const SAVE_KEY = 'animal-brawl-save-v2';
 /* ===================== 상태 ===================== */
 function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{ dog:1 }, s:{} }, lv: { f:{}, s:{} }, evo: {}, eq: { f:'dog', s:[null,null,null] }, startCd: 2, scd: {}, autoUp: false, vol: { sfx:50, bgm:30 } }; }
 let state = load();
-let tab = 'fight', invTab = 'f', flashSlot = null, battleSpeed = 1, mounted = false;
+let tab = 'fight', invTab = 'f', flashSlot = null, battleSpeed = 1, mounted = false, repeatStage = null;
 let sel = { type:'fighter', idx:0 };
 const battleLog = [];
 function load() {
@@ -693,7 +695,7 @@ function lvInfo(n) {
   const base = needTotal(lv);
   return { lv, cur:n - base, need:needTotal(lv+1) - base, max:false };
 }
-const FIGHTER_TIER_MUL = { n:1.0, r:1.2, e:1.4, m:1.55, l:1.7, t:2.79 };
+const FIGHTER_TIER_MUL = { n:1.0, r:1.2, e:1.4, m:1.55, l:2.5, t:3.76 };
 const FIGHTER_LV_STEP = 0.14;
 const SKILL_LV_STEP = { n:0.25, r:0.22, e:0.15, m:0.12, l:0.1, t:0.1 };
 const lvStepOf = (kind, tier) => kind === 'f' ? FIGHTER_LV_STEP : SKILL_LV_STEP[tier];
@@ -782,7 +784,7 @@ function calcStyle(fmc, entries) {
              : c < 0.5 ? '안전거리에서 견제하고 틈을 노린다'
              : c < 0.7 ? '상황에 따라 거리를 조절해 교전한다'
              : '돌진해 근접전을 벌이고 후딜을 노린다';
-  return { c, aggr: 0.2 + 0.8*c, pref: 250 + (62-250)*c, label, desc };
+  return { c, aggr: 0.2 + 0.8*c, pref: 300 + (62-300)*c, label, desc };
 }
 const myStyle = () => state.eq.f ? calcStyle(F(state.eq.f).mc, skillEntries()) : null;
 
@@ -826,7 +828,7 @@ function skillParts(b, mult, sl, lv) {
     if (b.zslow) p.push(b.slowM != null ? `${Math.round((1-b.slowM)*100)}% 둔화` : '둔화'); if (b.pull) p.push('끌어당김');
   } else if (b.shape === 'shower') p.push(`유성 ${b.n}발 · 각 ${v(b.dmg)} 피해`);
   else if (b.shape === 'flurry') p.push(`${b.hits}연타 · 각 ${v(b.dmg*0.4)} 광역 피해`);
-  else if (b.shape === 'buff') { p.push(`${b.dur}초간 공격력 +${Math.round((b.batk-1)*100*(sl||1))}%`); if (b.bspd > 1) p.push(`이동 +${Math.round((b.bspd-1)*100*(sl||1))}%`); if (b.bls) p.push(b.bls2 != null ? `기본 공격 피해 ${Math.round(b.bls*100)}% · 스킬 피해 ${Math.round(b.bls2*100)}% 흡혈` : `${Math.round(b.bls*100*(sl||1))}% 흡혈`); }
+  else if (b.shape === 'buff') { p.push(`${b.dur}초간 공격력 +${Math.round((b.batk-1)*100*(sl||1))}%`); if (b.bspd > 1) p.push(`이동 +${Math.round((b.bspd-1)*100*(sl||1))}%`); if (b.bls) p.push(b.bls2 != null ? `기본 공격 피해 ${Math.round(b.bls*100)}% · 스킬 피해 ${Math.round(b.bls2*100)}% 흡혈` : `${Math.round(b.bls*100*(sl||1))}% 흡혈`); if (b.hot) p.push(`초당 최대 체력 ${(b.hot*100).toFixed(1)}% 회복`); }
   else if (b.shape === 'shield') p.push(`최대 체력 ${Math.round((lv ? shieldPctAt(lv) : b.pct*Math.min(m,2.2))*100)}% 보호막 (${b.dur}초)`);
   else if (b.shape === 'heal') p.push(`최대 체력 ${Math.round((lv ? healPctAt(lv) : b.fxv*Math.min(m,2.5)*HEAL_MUL)*100)}% 회복`);
   else if (b.shape === 'bind') p.push(`넓은 범위 · ${b.fxv}초간 기절`);
@@ -836,7 +838,7 @@ function skillParts(b, mult, sl, lv) {
   if (b.shape === 'blink') p.push('적의 등 뒤로 순간이동 · 2초 무적');
   if (b.shape === 'strike' || b.shape === 'blast') p.push('범위 지정');
   if (b.fx === 'lifesteal') p.push(`${Math.round(b.fxv*100)}% 흡혈`);
-  if (b.fx === 'freeze') p.push('0.6초 기절'), p.push(`${b.fxv}초간 ${Math.round((1-(b.slowM==null?0.55:b.slowM))*100)}% 둔화`);
+  if (b.fx === 'freeze') p.push((b.stun != null ? b.stun : 0.6) + '초 기절'), p.push(`${b.fxv}초간 ${Math.round((1-(b.slowM==null?0.55:b.slowM))*100)}% 둔화`);
   if (b.fx === 'poison') p.push(`${b.pdur || 4}초 중독`);
   if (b.fx === 'stun') p.push(`${b.fxv}초 기절`);
   if (b.fx === 'airstun') p.push(`넓은 파도 관통 · ${b.fxv}초 기절 · 에어본`);
@@ -876,6 +878,7 @@ function skillInfoHtml(b, lv, id, opts) {
     ${extra.length ? `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${extra.map(x => `<span style="font-size:12px;font-weight:700;color:#5b3fc4;background:#efeaff;border-radius:99px;padding:5px 10px">${x}</span>`).join('')}</div>` : ''}
     ${skillFormula(b, skMult(b, lv))}
     ${sec('📊', '능력', `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${stat('⏱️', '#e8f3ff', '쿨타임', b.cd + '초', '#1b64da')}${stat('🎯', '#fff4d6', '사거리', b.range ? b.range : '자신', '#b36b00')}${stat(rl === '근접' ? '👊' : rl === '원거리' ? '🏹' : '🌀', '#e9f9f1', '성향', rl, '#0a8f56')}</div>`)}
+    <div style="margin-top:14px">${mcGauge(b.mc)}</div>
     ${sec('🎒', '장착 보너스', `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${bcell('❤️', '#ffeceb', 'HP', 'hp', '#d93a46')}${bcell('🗡️', '#fff4d6', '공격', 'atk', '#b36b00')}${bcell('🛡️', '#e8f3ff', '방어', 'def', '#1b64da')}</div>`)}
     ${opts.noCd ? '' : sec('⏳', '시작 쿨타임', `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${[1,2,3,4].map(n => `<button class="btn ${scdOf(id) === n ? 'primary' : 'ghost'} sm" style="height:38px;font-size:14px" onclick="setSkillCd('${id}',${n})">${n}초</button>`).join('')}</div><div style="font-size:12px;color:var(--ink3);margin-top:8px;font-weight:500">전투가 시작되고 이 스킬을 처음 쓸 수 있을 때까지의 시간</div>`)}
   </div>`;
@@ -892,14 +895,6 @@ const COIN = '<svg class="coin" viewBox="0 0 20 20"><defs><linearGradient id="cg
 $('coinIcon').style.cssText = 'display:flex;font-size:17px';
 $('coinIcon').innerHTML = COIN;
 let shownGold = state.gold, goldAnim = 0;
-/* 개발자용 임시 기능: 골드 직접 입력 */
-function devSetGold() {
-  const v = prompt('골드를 입력하세요 (개발자용)', Math.round(state.gold));
-  if (v === null) return;
-  const n = Math.floor(Number(String(v).replace(/,/g, '')));
-  if (!isFinite(n) || n < 0) { toast('올바른 숫자를 입력해 주세요'); return; }
-  state.gold = n; save(); setGold();
-}
 function setGold() {
   const el = $('goldText'), to = state.gold, from = shownGold;
   cancelAnimationFrame(goldAnim);
@@ -1079,7 +1074,7 @@ function detailHtml(kind, b, lv) {
     const st = fighterStats(b, lv, state.eq.f === b.id);
     return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px">${[['HP',st.hp],['공격',st.atk],['방어',defPct(st.def).toFixed(1)+'%'],['속도',st.spd]].map(([l,v])=>`<div style="background:#f5f6f8;border-radius:12px;padding:8px 0"><div style="font-size:10px;color:var(--ink3);font-weight:700">${l}</div><div style="font-size:15px;font-weight:800">${v}</div></div>`).join('')}</div>
       ${state.eq.f === b.id && state.eq.s.some(Boolean) ? (() => { const eb = equipBonus(); return `<div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--blue);text-align:left">스킬 장착 보너스 · ${bonusText(eb, fighterStats(b, lv, false))}</div>`; })() : ''}
-      <div style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px;text-align:left"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div><div style="text-align:left">${infoCard('f', b.id)}</div>`;
+      <div style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px;text-align:left"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div><div style="margin-top:8px">${mcGauge(b.mc, '#f5f6f8')}</div><div style="text-align:left">${infoCard('f', b.id)}</div>`;
   }
   return `<div style="margin-top:16px">${skillInfoHtml(b, lv, b.id, { noCd:true })}</div>`;
 }
@@ -1491,7 +1486,7 @@ function renderDetail() {
   const w = kind === 's' ? skillWith(id) : null, ev = w && w.evo;
   const body = kind === 'f'
     ? (() => { const st = fighterStats(b, lv, state.eq.f === b.id); return `<div data-tour="stat" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${[['HP',st.hp],['공격',st.atk],['방어',defPct(st.def).toFixed(1)+'%'],['속도',st.spd]].map(([l,v]) => `<div style="background:#f5f6f8;border-radius:12px;padding:8px 0;text-align:center"><div style="font-size:10px;color:var(--ink3);font-weight:700">${l}</div><div style="font-size:15px;font-weight:800">${v}</div></div>`).join('')}</div>
-        ${state.eq.f === id && state.eq.s.some(Boolean) ? `<div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--blue)">스킬 장착 보너스 · ${bonusText(equipBonus(), fighterStats(b, lv, false))}</div>` : ''}<div data-tour="pas" style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div>${infoCard('f', id)}`; })()
+        ${state.eq.f === id && state.eq.s.some(Boolean) ? `<div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--blue)">스킬 장착 보너스 · ${bonusText(equipBonus(), fighterStats(b, lv, false))}</div>` : ''}<div data-tour="pas" style="margin-top:8px;background:#fff7e3;border-radius:14px;padding:10px 12px"><div style="font-size:12px;font-weight:800;color:#a86400">특성 · ${b.pas.name}</div><div style="font-size:12px;color:#7a5a1e;margin-top:2px;line-height:1.45">${b.pas.desc}</div></div><div style="margin-top:8px">${mcGauge(b.mc, '#f5f6f8')}</div>${infoCard('f', id)}`; })()
     : skillInfoHtml(w.base, lv, id);
   const upBlock = `<div data-tour="up" style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:6px"><span>Lv.${lv}${lv>1?` · 능력 +${Math.round((lvMul(lv, kind, b.tier)-1)*100)}%`:''}</span><span>${lv>=MAXLV?'MAX':`보유 ${n}개 · Lv.${lv+1}까지 ${needTotal(lv+1)}개`}</span></div>
       <div class="bar"><i style="width:${lv>=MAXLV?100:Math.min(100, n/needTotal(lv+1)*100)}%;background:var(--t)"></i></div>
@@ -1540,7 +1535,7 @@ function fightInfoHtml() {
   return `<div class="card soft">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <button onclick="changeStage(-1)" class="press" style="width:42px;height:42px;border-radius:14px;border:0;background:#f2f4f6;display:flex;align-items:center;justify-content:center;color:var(--ink);${s<=1?'opacity:.3':''}">${ic('chevron-left','w-5 h-5')}</button>
-        <div style="text-align:center"><div style="font-size:12px;font-weight:700;color:var(--ink3)">${frontier?'도전 중':'복습 중'} · 최고 ${state.stage}</div><div style="font-size:26px;font-weight:800;letter-spacing:-0.03em;margin-top:1px">STAGE ${s}</div></div>
+        <div style="text-align:center"><div style="font-size:12px;font-weight:700;color:var(--ink3)">${frontier?'도전 중':'복습 중'} · 최고 ${state.stage}</div><div style="font-size:26px;font-weight:800;letter-spacing:-0.03em;margin-top:1px">STAGE ${s}</div>${repeatStage === s ? `<div style="margin-top:6px"><span class="chip" style="background:var(--blue-s);color:var(--blue)"><span class="emoji">🔁</span> STAGE ${s} 반복 중</span></div>` : ''}</div>
         <button onclick="changeStage(1)" class="press" style="width:42px;height:42px;border-radius:14px;border:0;background:#f2f4f6;display:flex;align-items:center;justify-content:center;color:var(--ink);${s>=state.stage?'opacity:.3':''}">${ic('chevron-right','w-5 h-5')}</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
@@ -1566,7 +1561,7 @@ function fightInfoHtml() {
 }
 function changeStage(d) {
   const s = Math.max(1, Math.min(state.stage, state.sel + d));
-  if (s === state.sel) return;
+  if (s === state.sel) return; repeatStage = null;
   state.sel = s; save(); startBattle(); render();
 }
 
@@ -1606,7 +1601,7 @@ function askReset() {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button class="btn ghost" onclick="closeConfirm()">취소</button><button class="btn" style="background:var(--red);color:#fff" onclick="doReset()">초기화</button></div></div>`;
 }
 function closeConfirm() { const m = $('confirmModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
-function doReset() { state = freshState(); save(); sel = { type:'fighter', idx:0 }; invTab = 'f'; battleLog.length = 0; closeConfirm(); toast('초기화되었어요'); startBattle(); render(); }
+function doReset() { state = freshState(); save(); sel = { type:'fighter', idx:0 }; invTab = 'f'; battleLog.length = 0; repeatStage = null; closeConfirm(); toast('초기화되었어요'); startBattle(); render(); }
 
 /* =====================================================================
    전투 엔진 — 페이지 내장 자동 전투 (고정 월드 720 x 500)
@@ -1753,7 +1748,7 @@ function mkUnit(o) {
     shield:0, shieldT:0, buffT:0, buffAtk:1, buffSpd:1, buffLs:0, boostT:0, pounceT:0, counter:false, hiberT:0, hibernated:false, revived:false, raged:false,
     style, pokes: style.c < 0.42, plan:{ t:'idle' }, thinkT:rnd(0.1,0.3), strafe:Math.random()<0.5?1:-1, strafeT:rnd(1,2.5),
     retreatT:0, retreatCd:0, thKey:null, thAt:0, thDodge:false, thWalk:true, chip:null, ghostT:0, dead:false, deadT:0, cornered:false };
-  u.atkRange = u.pokes ? Math.max(210, style.pref + 20) : u.r + 52;
+  u.atkRange = u.pokes ? Math.max(260, style.pref*1.3 + 30) : u.r + 52;
   u.dodgeSkill = clamp(0.4 + 0.45*(1-style.aggr) + es/800, 0.25, 0.92) * (o.isBoss ? 0.5 : 1);
   return u;
 }
@@ -2077,7 +2072,7 @@ function applyEffects(src, tgt, sk, dmg, pt) {
   const b = sk.b;
   if (b.id === 'fire') fxList(src, tgt, sk, [{ k:'burn', dps:5, dur:3 }], dmg);
   if (b.fx === 'lifesteal') { heal(src, dmg*b.fxv); for (let i = 0; i < 9; i++) P({ k:'dot', x:tgt.x+rnd(-10,10), y:tgt.y+rnd(-10,10), home:src, size:3, color:'255,90,110', life:0.7, speed:260 }); }
-  else if (b.fx === 'freeze') { setSlow(tgt, b.fxv, b.slowM); stunUnit(tgt, 0.6); puff(tgt.x, tgt.y, 5, '190,235,255', 14, 0.5, 30); }
+  else if (b.fx === 'freeze') { setSlow(tgt, b.fxv, b.slowM); stunUnit(tgt, b.stun != null ? b.stun : 0.6); puff(tgt.x, tgt.y, 5, '190,235,255', 14, 0.5, 30); }
   else if (b.fx === 'poison') { applyPoison(tgt, b.pdur || 4, b.fxv*sk.mult*SC(src)); }
   else if (b.fx === 'stun') stunUnit(tgt, b.fxv);
   else if (b.fx === 'airstun') { stunUnit(tgt, b.fxv); tgt.airMax = tgt.air = Math.max(0.5, tgt.stun); }
@@ -2524,7 +2519,7 @@ function resolveAct(u, e, a) {
       ring(u.x, u.y, u.r, u.r*2.3, 0.5, b.color, 3); glow(u.x, u.y, u.r*2, 0.4, b.color);
       break; }
     case 'buff': {
-      { const ls = sk.lvs || 1; u.buffFx = b.id; if (b.id === 'eclipse') { fx('eclipse', u.x, u.y, 120, 1.2, b.color, { owner:u }); ring(u.x, u.y, 10, 150, 0.8, '255,225,140', 5); ring(u.x, u.y, 10, 100, 0.6, '255,255,235', 2, 0.1); } u.buffT = b.dur; u.buffAtk = 1 + (b.batk - 1)*ls; u.buffSpd = 1 + ((b.bspd || 1) - 1)*ls; u.buffLs = (b.bls || 0)*(b.id === 'bloodlust' ? 1 : ls); u.buffLs2 = b.bls2 || 0; u.buffColor = b.color; }
+      { const ls = sk.lvs || 1; if (b.hot) u.hot = { pct:b.hot/HEAL_MUL, t:b.dur }; u.buffFx = b.id; if (b.id === 'eclipse') { fx('eclipse', u.x, u.y, 120, 1.2, b.color, { owner:u }); ring(u.x, u.y, 10, 150, 0.8, '255,225,140', 5); ring(u.x, u.y, 10, 100, 0.6, '255,255,235', 2, 0.1); } u.buffT = b.dur; u.buffAtk = 1 + (b.batk - 1)*ls; u.buffSpd = 1 + ((b.bspd || 1) - 1)*ls; u.buffLs = (b.bls || 0)*(b.id === 'bloodlust' ? 1 : ls); u.buffLs2 = b.bls2 || 0; u.buffColor = b.color; }
       ring(u.x, u.y + u.r*0.4, 6, u.r*2.6, 0.6, b.color, 4); glow(u.x, u.y, u.r*2.6, 0.5, b.color, 0.6);
       for (let i = 0; i < 16; i++) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.6, vx:rnd(-20,20), vy:-rnd(120,260), size:2, color:b.color, life:rnd(0.5,0.9), drag:1.2 });
       break; }
@@ -3181,8 +3176,9 @@ function nextStageAfter() { return B.win ? Math.min(B.stage + 1, state.stage) : 
 function showResult() {
   B.resultShown = true; B.autoT = 3;
   const s = B.stage, n = nextStageAfter(), win = B.win, st = B.stats;
-  B.opts = { def:n, alt: n !== s ? s : null };
-  const defLabel = win ? `다음 스테이지 ${n}` : (n < s ? `이전 스테이지 ${n}` : '다시 도전');
+  B.rep = repeatStage === s;
+  B.opts = B.rep ? { def:{ to:s, rep:true }, alt: n !== s ? { to:n, rep:false } : null } : { def:{ to:n, rep:false }, alt: n !== s ? { to:s, rep:true } : null };
+  const defLabel = B.rep ? '반복' : win ? `다음 스테이지 ${n}` : (n < s ? `이전 스테이지 ${n}` : '다시 도전');
   const coin = '<svg viewBox="0 0 20 20" style="width:1.05em;height:1.05em;vertical-align:-.15em"><circle cx="10" cy="10" r="9.2" fill="#f5b53d"/><circle cx="10" cy="10" r="6.4" fill="none" stroke="#b86e00" stroke-opacity=".5" stroke-width="1.3"/></svg>';
   const row = (l, v) => `<div style="display:flex;justify-content:space-between;padding:.45em 0;border-top:1px solid #eef0f2"><span style="color:#8b95a1;font-weight:500">${l}</span><span style="font-weight:800">${v}</span></div>`;
   const hr = A('hResult'); hr.classList.add('on');
@@ -3196,14 +3192,15 @@ function showResult() {
     ${row('가한 피해 / 회피', `${fmt(st.dealt)} / ${st.dodges}회`)}
     <div style="display:grid;grid-template-columns:${B.opts.alt ? '1.5fr 1fr' : '1fr'};gap:.5em;margin-top:.9em">
       <button class="rbtn p" onclick="pickNext('def')"><div class="fill" id="rbFill"></div><span style="position:relative">${defLabel} · <span id="rbSec">3</span></span></button>
-      ${B.opts.alt ? `<button class="rbtn g" onclick="pickNext('alt')">반복</button>` : ''}
+      ${B.opts.alt ? `<button class="rbtn g" style="white-space:nowrap" onclick="pickNext('alt')">${B.rep ? '다음 스테이지' : '반복'}</button>` : ''}
     </div></div>`;
 }
 function pickNext(which) {
   if (!B || !B.opts || B.resolved) return;
   B.resolved = true;
-  const target = which === 'alt' && B.opts.alt != null ? B.opts.alt : B.opts.def;
-  state.sel = clamp(target, 1, state.stage); save();
+  const o = which === 'alt' && B.opts.alt ? B.opts.alt : B.opts.def;
+  repeatStage = o.rep ? o.to : null;
+  state.sel = clamp(o.to, 1, state.stage); save();
   startBattle();
   if (tab === 'fight') render();
 }
