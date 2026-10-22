@@ -559,7 +559,7 @@ const SAVE_KEY = 'animal-brawl-save-v2';
 /* ===================== 상태 ===================== */
 function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{ dog:1 }, s:{} }, lv: { f:{}, s:{} }, evo: {}, eq: { f:'dog', s:[null,null,null] }, startCd: 2, scd: {}, autoUp: false, vol: { sfx:50, bgm:30 } }; }
 let state = load();
-let tab = 'fight', invTab = 'f', flashSlot = null, battleSpeed = 1, mounted = false, repeatStage = null;
+let tab = 'fight', invTab = 'f', invFilter = 'all', flashSlot = null, battleSpeed = 1, mounted = false, repeatStage = null;
 let sel = { type:'fighter', idx:0 };
 const battleLog = [];
 function load() {
@@ -579,7 +579,7 @@ function load() {
   } catch (e) {}
   return freshState();
 }
-function save() { if (window.__noSave) return; try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} try { arenaSyncSoon(); } catch (e) {} try { accSyncSoon(); } catch (e) {} }
+function save() { if (window.__noSave) return; try { if (Array.isArray(state.presets) && state.presets[state.presetIdx]) state.presets[state.presetIdx] = presetFromCurrent(); } catch (e) {} try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} try { arenaSyncSoon(); } catch (e) {} try { accSyncSoon(); } catch (e) {} }
 
 /* ===================== 사운드 (WebAudio 합성 · 외부 파일 없음) ===================== */
 const Snd = (() => {
@@ -998,6 +998,7 @@ function render(animate) {
   icons();
   if (tab === 'lineup') updMini();
   if (tab === 'lineup' && !state.setTut && Object.keys(state.own.s).length && !$('setTut')) setTimeout(() => { if (tab === 'lineup' && !state.setTut && !$('setTut')) showSetTut(); }, 300);
+  else if (tab === 'lineup' && state.setTut && !state.presetTut && !$('setTut')) setTimeout(() => { if (tab === 'lineup' && state.setTut && !state.presetTut && !$('setTut')) showSetTut('preset'); }, 400);
 }
 
 /* ---- 영입 ---- */
@@ -1252,6 +1253,45 @@ function closeGacha() {
 }
 function again(kind, n) { closeGacha(); n && n > 1 ? pullMulti(kind, n) : pull(kind); }
 
+/* ===================== 덱 프리셋 (세팅 탭 · 3슬롯) ===================== */
+/* 선택한 덱을 수정하면 그 슬롯에 자동 저장된다. 진화·시작 쿨타임도 슬롯마다 따로 기억한다. */
+function presetFromCurrent() {
+  const ids = state.eq.s.filter(Boolean), evo = {}, scd = {};
+  for (const id of ids) { evo[id] = state.evo[id] || null; scd[id] = scdOf(id); }
+  return { f:state.eq.f, s:state.eq.s.slice(), evo, scd };
+}
+function presetsEnsure() {
+  if (!Array.isArray(state.presets) || state.presets.length !== 3) { state.presets = [presetFromCurrent(), null, null]; state.presetIdx = 0; }
+  if (!state.presets[state.presetIdx]) state.presetIdx = state.presets.findIndex(Boolean);
+}
+function presetTap(i) {
+  presetsEnsure();
+  if (!state.presets[i]) { state.presets[i] = presetFromCurrent(); state.presetIdx = i; save(); toast(`현재 덱을 덱 ${i + 1}에 저장했어요`); render(); return; }
+  if (i === state.presetIdx) return;
+  const p = state.presets[i];
+  const f = p.f && owned('f', p.f) > 0 ? p.f : state.eq.f, sl = [0, 1, 2].map(k => { const id = p.s && p.s[k]; return id && SK(id) && owned('s', id) > 0 ? id : null; });
+  state.eq = { f, s:sl };
+  for (const id of sl) if (id) {
+    const key = p.evo && p.evo[id];
+    if (key && (EVO[id] || []).some(e => e.key === key) && curLv('s', id) >= EVO_LV[SK(id).tier]) state.evo[id] = key; else delete state.evo[id];
+    if (p.scd && [1, 2, 3, 4].includes(+p.scd[id])) { state.scd = state.scd || {}; state.scd[id] = +p.scd[id]; }
+  }
+  state.presetIdx = i; save(); startBattle(); render(); toast(`덱 ${i + 1}로 바꿨어요`);
+}
+function presetClear(i, ev) {
+  if (ev) ev.stopPropagation();
+  presetsEnsure(); if (i === state.presetIdx) return;
+  state.presets[i] = null; save(); render();
+}
+function presetPillsHtml() {
+  presetsEnsure();
+  return `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">${[0, 1, 2].map(i => {
+    const p = state.presets[i], on = state.presetIdx === i, fb = p && p.f ? F(p.f) : null;
+    if (!p) return `<button onclick="presetTap(${i})" class="press" style="height:40px;border-radius:13px;border:1.5px dashed #cfd5dc;background:transparent;color:var(--ink4);font-size:12px;font-weight:800">+ 덱 ${i + 1}</button>`;
+    return `<div style="position:relative;min-width:0"><button onclick="presetTap(${i})" class="press" style="width:100%;height:40px;border-radius:13px;border:0;background:${on ? 'var(--blue)' : '#fff'};color:${on ? '#fff' : 'var(--ink2)'};box-shadow:${on ? '0 4px 12px -4px rgba(49,130,246,.6)' : 'inset 0 0 0 1.5px #e1e5ea'};font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px"><span>덱 ${i + 1}</span>${fb ? `<span class="emoji" style="font-size:15px">${fb.emoji}</span>` : ''}</button>${on ? '' : `<button onclick="presetClear(${i}, event)" aria-label="덱 비우기" class="press" style="position:absolute;top:-6px;right:-4px;width:18px;height:18px;border:0;border-radius:50%;background:#8b95a1;color:#fff;font-size:10px;font-weight:800;line-height:1">✕</button>`}</div>`;
+  }).join('')}</div>`;
+}
+
 /* ---- 세팅 ---- */
 function styleGauge(st) {
   return `<div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink3);margin-bottom:8px"><span>원거리</span><span style="color:var(--ink);font-size:13px;font-weight:800">${st.label}</span><span>근접</span></div>
@@ -1264,47 +1304,65 @@ function slot(kind, id, selected, onclick, label, big, key) {
   if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press ${selected?'a-pulse':''}" style="height:${h}px;width:100%;border-radius:20px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-5 h-5')}<span style="font-size:12px;font-weight:700">${label}</span></button>`;
   const b = baseOf(kind, id), lv = curLv(kind, id);
   return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''} ${flashSlot===key?'a-lvup':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''}" style="height:${h}px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px">
-    ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:10px;font-weight:800">Lv.${lv}${kind === 's' && state.evo[id] ? ' Ev.' + evoNumOf(id) : ''}</span>${evoBang(kind, id)}</button>`;
+    ${emojiArt(b.emoji, big ? 44 : 34)}<span style="font-size:12px;font-weight:800">${b.name}</span><span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:10px;font-weight:800">Lv.${lv}</span>${evoBang(kind, id)}${kind === 's' && state.evo[id] ? `<span style="position:absolute;top:6px;right:6px;background:var(--blue);color:#fff;font-size:9.5px;font-weight:800;border-radius:7px;padding:1px 6px;line-height:1.4">Ev.${evoNumOf(id)}</span>` : ''}</button>`;
 }
 function slotMini(kind, id, selected, onclick, label, dk) {
   if (!id) return `<button data-drop="${dk}" onclick="${onclick}" class="press" style="height:50px;width:100%;border-radius:14px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:${selected?'var(--blue-s)':'#fff'};display:flex;align-items:center;justify-content:center;color:${selected?'var(--blue)':'var(--ink4)'};font-size:11px;font-weight:800">${label}</button>`;
   const b = baseOf(kind, id);
-  return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''}" style="height:50px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">${emojiArt(b.emoji, 22)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span></button>`;
+  return `<button data-drop="${dk}" onclick="${onclick}" class="tile t-${b.tier} press ${selected?'sel':''}" style="height:50px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0">${emojiArt(b.emoji, 22)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name}</span>${kind === 's' && state.evo[id] ? `<span style="position:absolute;top:2px;right:3px;background:var(--blue);color:#fff;font-size:8px;font-weight:800;border-radius:5px;padding:0 4px;line-height:1.5">Ev.${evoNumOf(id)}</span>` : ''}</button>`;
 }
 function viewLineup() {
   const kind = invTab, pool = poolOf(kind).slice().sort((a,b) => TIER_IDX[b.tier] - TIER_IDX[a.tier]);
   const eqSlotOf = id => kind === 'f' ? (state.eq.f === id ? 0 : -1) : state.eq.s.indexOf(id);
-  const grid = pool.map(b => {
+  const tileHtml = b => {
     const n = owned(kind, b.id);
     if (!n) return `<div class="tile locked" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink4)">${ic('lock','w-[22px] h-[22px]')}<span style="font-size:11px;font-weight:700">???</span><span style="font-size:10px;font-weight:700">${tierOf(b.tier).name}</span></div>`;
     const li = lvInfo(n), lvc = curLv(kind, b.id), up = canUp(kind, b.id), evd = kind === 's' && state.evo[b.id], es = eqSlotOf(b.id), eq = es >= 0;
     return `<div id="tile-${kind}-${b.id}" class="tile t-${b.tier} press ${eq?'eq':''} ${TIER_IDX[b.tier]>=3?'hi-'+b.tier:''} ${b.tier==='t'?'holo':''}" role="button" data-dex="${kind}:${b.id}" onclick="tileTap('${kind}','${b.id}')" style="padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;scroll-margin-top:150px">
       ${emojiArt(b.emoji, 32)}<span style="font-size:11px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px;margin-top:2px">${b.name}</span>
-      <span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:${(`Lv.${lvc}`.length + (lvc>=MAXLV?4:0) + (evd?5:0) + (up?4:0)) > 11 ? 8.5 : (`Lv.${lvc}`.length + (lvc>=MAXLV?4:0) + (evd?5:0) + (up?4:0)) > 9 ? 9.5 : 10}px;font-weight:800">Lv.${lvc}${lvc>=MAXLV?' MAX':''}${evd?' Ev.' + evoNumOf(b.id):''}${up?' <span style="color:var(--blue)">▲UP</span>':''}</span>${evoBang(kind, b.id)}
+      <span class="tc" style="display:block;max-width:100%;overflow:hidden;white-space:nowrap;font-size:${(`Lv.${lvc}`.length + (lvc>=MAXLV?4:0) + (up?4:0)) > 9 ? 9.5 : 10}px;font-weight:800">Lv.${lvc}${lvc>=MAXLV?' MAX':''}${up?' <span style="color:var(--blue)">▲UP</span>':''}</span>${evoBang(kind, b.id)}
       <div class="bar" style="width:62%;height:4px;margin-top:2px"><i style="width:${li.max?100:li.cur/li.need*100}%;background:var(--t)"></i></div>
-      ${eq ? `<span style="position:absolute;top:5px;left:5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 6px">${kind==='f'?'장착':'슬롯 '+(es+1)}</span>` : ''}
+      ${eq && evd ? `<span style="position:absolute;top:5px;right:5px;background:var(--blue);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 5px">Ev.${evoNumOf(b.id)}</span>` : ''}${eq ? `<span style="position:absolute;top:5px;left:5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;border-radius:6px;padding:1px 6px">${kind==='f'?'장착':'슬롯 '+(es+1)}</span>` : ''}
     </div>`;
-  }).join('');
+  };
   const st = myStyle();
   const slots = [['fighter',0,'f',state.eq.f,'파이터'], ...state.eq.s.map((id,i) => ['skill',i,'s',id,'스킬 '+(i+1)])];
+  const fbE = state.eq.f ? F(state.eq.f) : null;
+  const fighterTile = !fbE
+    ? `<button data-drop="f:0" onclick="focusSlot('fighter',0)" class="press ${sel.type==='fighter'?'a-pulse':''}" style="height:100%;min-height:176px;width:100%;border-radius:20px;border:2px dashed ${sel.type==='fighter'?'var(--blue)':'#d1d6db'};background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--ink4)">${ic('plus','w-6 h-6')}<span style="font-size:12px;font-weight:700">파이터 선택</span></button>`
+    : `<button data-drop="f:0" onclick="focusSlot('fighter',0)" class="tile t-${fbE.tier} press ${sel.type==='fighter'?'sel':''} ${flashSlot==='f'?'a-lvup':''} ${TIER_IDX[fbE.tier]>=3?'hi-'+fbE.tier:''}" style="height:100%;min-height:176px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px">${emojiArt(fbE.emoji, 64)}<span style="font-size:15px;font-weight:800">${fbE.name}</span><span class="chip" style="height:20px;font-size:10px">${tierOf(fbE.tier).name}</span><span class="tc" style="font-size:11px;font-weight:800">Lv.${curLv('f', fbE.id)}</span></button>`;
+  const skillRow = (id, i) => {
+    const selected = sel.type === 'skill' && sel.idx === i, dk = 's:' + i;
+    if (!id) return `<button data-drop="${dk}" onclick="focusSlot('skill',${i})" class="press ${selected?'a-pulse':''}" style="height:100%;min-height:54px;width:100%;border-radius:16px;border:2px dashed ${selected?'var(--blue)':'#d1d6db'};background:#fff;display:flex;align-items:center;gap:8px;padding:0 14px;color:${selected?'var(--blue)':'var(--ink4)'}">${ic('plus','w-4 h-4')}<span style="font-size:12px;font-weight:700">스킬 ${i+1}</span></button>`;
+    const bb = SK(id), n = state.evo[id] ? evoNumOf(id) : 0;
+    return `<button data-drop="${dk}" onclick="focusSlot('skill',${i})" class="tile t-${bb.tier} press ${selected?'sel':''} ${flashSlot==='s'+i?'a-lvup':''}" style="height:100%;min-height:54px;width:100%;display:flex;align-items:center;gap:10px;padding:0 12px;text-align:left">${emojiArt(bb.emoji, 26)}<span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:1px"><span style="font-size:13px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${bb.name}</span><span class="tc" style="font-size:10px;font-weight:800">Lv.${curLv('s', id)}</span></span>${n ? `<span style="flex:none;background:var(--blue);color:#fff;font-size:9.5px;font-weight:800;border-radius:7px;padding:2px 6px">Ev.${n}</span>` : ''}${evoBang('s', id)}</button>`;
+  };
+  const ups = pool.filter(b => owned(kind, b.id) > 0 && canUp(kind, b.id)).length, ownN = pool.filter(b => owned(kind, b.id) > 0).length;
+  const shownPool = pool.filter(b => invFilter === 'all' ? true : owned(kind, b.id) > 0 && (invFilter === 'own' || canUp(kind, b.id)));
+  const gridShown = shownPool.map(tileHtml).join('');
+  const chip = (k, l) => `<button onclick="setFilter('${k}')" class="press" style="height:30px;padding:0 12px;border-radius:99px;border:0;font-size:12px;font-weight:800;background:${invFilter === k ? 'var(--ink)' : '#f2f4f6'};color:${invFilter === k ? '#fff' : 'var(--ink3)'}">${l}</button>`;
   return `<div class="space-y-3">
-    <div class="card soft" id="eqCard">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">장착</div><span class="chip" style="background:var(--blue-s);color:var(--blue)">전투력 ${fmt(myPower())}</span></div>
-      <div class="sect" style="margin-bottom:8px">파이터</div>
-      ${slot('f', state.eq.f, sel.type==='fighter', "focusSlot('fighter',0)", '파이터 선택', true, 'f')}
-      <div class="sect" style="margin:16px 0 8px">스킬</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">${state.eq.s.map((id,i)=>slot('s', id, sel.type==='skill'&&sel.idx===i, `focusSlot('skill',${i})`, '스킬 '+(i+1), false, 's'+i)).join('')}</div>
+    <div class="card soft ${fbE ? 't-' + fbE.tier : ''}" id="eqCard" style="padding:16px 14px 16px;${fbE ? 'background:linear-gradient(165deg,var(--ts) 0,#fff 62%)' : ''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:0 4px 12px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">내 덱</div><span class="chip" style="background:var(--blue-s);color:var(--blue)">전투력 ${fmt(myPower())}</span></div>
+      ${presetPillsHtml()}
+      <div style="display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.3fr);gap:10px;margin-top:14px;align-items:stretch">
+        <div class="${fbE ? 't-' + fbE.tier : ''}" style="display:flex">${fighterTile}</div>
+        <div style="display:grid;grid-template-rows:repeat(3,minmax(54px,1fr));gap:8px">${state.eq.s.map((id, i) => skillRow(id, i)).join('')}</div>
+      </div>
+      <div style="margin-top:16px;padding:14px;border-radius:18px;background:rgba(255,255,255,.8)">${st ? styleGauge(st) : '<div style="font-size:13px;color:var(--ink3)">파이터를 장착하면 전투 성향이 표시돼요.</div>'}</div>
     </div>
     <div id="miniBar" style="opacity:0;visibility:hidden;pointer-events:none;position:fixed;top:var(--hdrH,62px);left:50%;transform:translate(-50%,-14px);transition:opacity .22s ease,transform .26s cubic-bezier(.2,.9,.3,1),visibility 0s linear .26s;width:100%;max-width:480px;z-index:15;padding:14px 14px 10px;margin-top:-6px;background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:0 0 20px 20px;box-shadow:0 10px 24px -14px rgba(25,31,40,.35)">
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${slots.map(([t,i,k,id,lb]) => slotMini(k, id, sel.type===t && sel.idx===i, `focusSlot('${t}',${i})`, lb, t === 'fighter' ? 'f:0' : 's:' + i)).join('')}</div>
     </div>
     <div class="card soft" id="dexCard" style="scroll-margin-top:80px">
-      <div class="seg" style="margin-bottom:14px"><button class="${invTab==='f'?'on':''}" onclick="setInv('f')">파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length}</button><button class="${invTab==='s'?'on':''}" onclick="setInv('s')">스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</button></div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${grid}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">도감</div><span style="font-size:12px;font-weight:700;color:var(--ink3)">카드를 눌러 장착 · 끌어서 슬롯에 놓기</span></div>
+      <div class="seg" style="margin-bottom:12px"><button class="${invTab==='f'?'on':''}" onclick="setInv('f')">파이터 ${Object.keys(state.own.f).length}/${FIGHTERS.length}</button><button class="${invTab==='s'?'on':''}" onclick="setInv('s')">스킬 ${Object.keys(state.own.s).length}/${SKILLS.length}</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto">${chip('all', '전체')}${chip('own', '보유 ' + ownN)}${chip('up', ups ? '▲UP ' + ups : '▲UP')}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">${gridShown || '<div style="grid-column:1/-1;text-align:center;font-size:13px;color:var(--ink3);padding:26px 0">해당하는 카드가 없어요</div>'}</div>
     </div>
-    <div class="card soft"><div class="sect">전투 성향</div>${st ? styleGauge(st) : '<div style="font-size:13px;color:var(--ink3)">파이터를 장착하면 표시돼요.</div>'}</div>
   </div>`;
 }
+function setFilter(k) { invFilter = k; render(); updMini(); }
 function updMini() {
   const m = $('miniBar'), c = $('eqCard'); if (!m || !c || tab !== 'lineup') return;
   const hb = document.querySelector('header').getBoundingClientRect().bottom;
@@ -1506,13 +1564,15 @@ function detailTour(kind, done) {
   };
   box.scrollTo({ top:0 }); setTimeout(show, 120);
 }
-function showSetTut() {
-  const pages = [
+function showSetTut(only) {
+  const all = [
     { em:'🎒', t:'스킬 장착', d:'뽑은 스킬은 슬롯 3칸에 장착해요. 도감의 카드를 눌러 장착하거나, 카드를 끌어서 슬롯에 놓을 수도 있어요.' },
     { em:'⬆️', t:'스킬 업그레이드', d:'같은 카드를 또 뽑으면 레벨 게이지가 차올라요. 게이지가 가득 차면 ▲UP 표시가 뜨고, 카드를 눌러 업그레이드할 수 있어요.' },
+    { id:'preset', em:'🗂️', t:'덱 프리셋', d:'세팅 맨 위의 <b>덱 1·2·3</b>에 조합을 저장해 두고 바로 바꿔 쓸 수 있어요. 지금 쓰는 덱을 수정하면 그 덱에 자동 저장되고, <b>스킬 진화와 시작 쿨타임도 덱마다 따로</b> 기억해요. 빈 덱을 누르면 현재 덱이 복사돼요.' },
     { em:'🧩', t:'스킬 조합과 전투 성향', d:'장착한 스킬 3개는 함께 싸워요. 어떤 스킬을 묶느냐에 따라 전투 성향이 달라지고, 아래쪽 게이지에서 원거리형인지 근접형인지 확인할 수 있어요.' },
     { em:'🐾', t:'파이터 장착', d:'파이터 탭에서 카드를 눌러 장착하거나 파이터 슬롯으로 끌어다 놓아요. 파이터마다 능력치와 전투 성향이 달라요.' },
   ];
+  const pages = only === 'preset' ? all.filter(x => x.id === 'preset') : all;
   let i = 0; const el = document.createElement('div'); el.id = 'setTut';
   el.style.cssText = 'position:fixed;inset:0;z-index:95;background:rgba(8,12,20,.78);display:flex;align-items:center;justify-content:center;padding:24px';
   const draw = () => { const pg = pages[i];
@@ -1522,7 +1582,7 @@ function showSetTut() {
       <div style="font-size:13px;color:var(--ink2);margin-top:12px;line-height:1.6;font-weight:500">${pg.d}</div>
       <div style="display:flex;justify-content:center;gap:6px;margin-top:16px">${pages.map((_, k) => `<i style="width:${k === i ? 18 : 6}px;height:6px;border-radius:99px;background:${k === i ? 'var(--blue)' : '#d9dde2'}"></i>`).join('')}</div>
       <button class="btn primary" style="width:100%;margin-top:16px" id="setTutBtn">${i < pages.length - 1 ? '다음' : '시작하기'}</button></div>`;
-    el.querySelector('#setTutBtn').onclick = () => { if (i < pages.length - 1) { i++; draw(); } else { el.remove(); state.setTut = true; save(); } };
+    el.querySelector('#setTutBtn').onclick = () => { if (i < pages.length - 1) { i++; draw(); } else { el.remove(); state.setTut = true; state.presetTut = true; save(); } };
   };
   draw(); document.body.appendChild(el);
 }
@@ -1835,7 +1895,7 @@ function speedOf(u) {
 }
 const CHIP_OK = ['부활','각성','분노','겨울잠','무적','재생'];
 function chip(u, text, force) { if (!force && !CHIP_OK.includes(text)) return; u.chip = { text, t:0, life:1.1 }; }
-function regen(u, amt) { amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM); u.hp = Math.min(u.maxHp, u.hp + amt); }
+function regen(u, amt, key) { amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM); const h0 = u.hp; u.hp = Math.min(u.maxHp, u.hp + amt); rec(u, key || attId(u), 'h', u.hp - h0); }
 
 /* ---------- 이펙트 생성 ---------- */
 function P(o) { if (B.parts.length > 800) B.parts.shift(); B.parts.push(Object.assign({ t:0, drag:0, g:0, add:true, size:3, life:0.5, rot:0, vr:0, grow:0, vx:0, vy:0 }, o)); }
@@ -2109,9 +2169,9 @@ function applyHit(src, tgt, raw, o) {
     if (tgt.shield <= 0) { tgt.shieldT = 0; ring(tgt.x, tgt.y, tgt.r, tgt.r*2.2, 0.35, '150,200,255', 2); }
     if (dmg <= 0) return 0;
   }
-  tgt.hp = Math.max(0, tgt.hp - dmg); tgt.hitFlash = 0.16;
+  tgt.hp = Math.max(0, tgt.hp - dmg); tgt.hitFlash = 0.16; rec(src, o.basic ? 'basic' : attId(src), 'd', dmg);
   if (src._pBleed) { src._pBleed = false; fxList(src, tgt, { mult:1, b:{ color:'255,170,90' }, cd:0 }, [{ k:'bleed', dps:10, dur:4 }], dmg); }
-  if (tgt.thorns > 0 && !o.zone && src !== tgt && src.hp > 0) { const rf = Math.max(1, Math.round(dmg*tgt.thornsPct)); src.hp = Math.max(0, src.hp - rf); src.hitFlash = 0.1; if (tgt.side === 'me') B.stats.dealt += rf; else B.stats.taken += rf; addText(src.x, src.y - src.r*1.4, '-' + rf, '167,243,208', 18, 0.6); sparks(src.x, src.y, 4, '167,243,208', 200, 0.25); }
+  if (tgt.thorns > 0 && !o.zone && src !== tgt && src.hp > 0) { const rf = Math.max(1, Math.round(dmg*tgt.thornsPct*(B.arena ? 0.334 : 1))); src.hp = Math.max(0, src.hp - rf); src.hitFlash = 0.1; rec(tgt, 'thorns', 'd', rf); if (tgt.side === 'me') B.stats.dealt += rf; else B.stats.taken += rf; addText(src.x, src.y - src.r*1.4, '-' + rf, '167,243,208', 18, 0.6); sparks(src.x, src.y, 4, '167,243,208', 200, 0.25); }
   if (src.side === 'me') B.stats.dealt += dmg; else B.stats.taken += dmg;
   if (tgt.markT > 0 && src === tgt.markSrc && !o.zone) { tgt.markN++; if (tgt.markN >= 2) { tgt.markSk.cd = 0; tgt.markN = 0; tgt.markT = 0; addText(src.x, src.y - src.r*2.3, '쿨타임 초기화', '170,225,255', 20, 0.9); ring(src.x, src.y, src.r, src.r*2.2, 0.4, '170,225,255', 3); } }
   if (o.basic && src.twiT > 0) { setSlow(tgt, 1, 0.4); debuff(tgt, 'blind', 1); }
@@ -2122,7 +2182,7 @@ function applyHit(src, tgt, raw, o) {
   const hx = tgt.x - Math.cos(ang)*tgt.r*0.6, hy = tgt.y - Math.sin(ang)*tgt.r*0.6;
   sparks(hx, hy, o.quiet ? 3 : big ? 14 : 8, col, big ? 300 : 220, 0.35, ang, 0.9);
   if (!o.quiet) { glow(hx, hy, tgt.r*(big?1.3:0.9), 0.18, col); B.hitstop = Math.max(B.hitstop, big ? 0.07 : 0.032); shake(big ? 7 : 3); if (big) B.punch = Math.max(B.punch, 0.6); tgt.strafe = Math.random() < 0.5 ? 1 : -1; }
-  if (src.buffT > 0 && (o.basic ? src.buffLs : (src.buffLs2 || 0)) > 0) { regen(src, dmg*(o.basic ? src.buffLs : src.buffLs2)); for (let i = 0; i < 3; i++) P({ k:'dot', x:tgt.x, y:tgt.y, home:src, size:3, color:'255,90,110', life:0.6, speed:260 }); }
+  if (src.buffT > 0 && (o.basic ? src.buffLs : (src.buffLs2 || 0)) > 0) { regen(src, dmg*(o.basic ? src.buffLs : src.buffLs2), 'lifesteal'); for (let i = 0; i < 3; i++) P({ k:'dot', x:tgt.x, y:tgt.y, home:src, size:3, color:'255,90,110', life:0.6, speed:260 }); }
   if (src.pas === 'frog' && !o.zone && tgt.hp > 0 && Math.random() < 0.2) setSlow(tgt, 1.5, 0.7);
   if (tgt.pas === 'bear' && !tgt.hibernated && tgt.hp > 0 && tgt.hp <= tgt.maxHp*0.4) { tgt.hibernated = true; tgt.hiberT = 4; tgt.stun = Math.max(tgt.stun, 4); tgt.act = null; tgt.plan = { t:'idle' }; chip(tgt, '겨울잠'); ring(tgt.x, tgt.y, tgt.r, tgt.r*2.6, 0.6, '150,200,255', 3); }
   return dmg;
@@ -2130,14 +2190,14 @@ function applyHit(src, tgt, raw, o) {
 function heal(u, amt, silent) {
   amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM);
   amt = Math.round(Math.min(amt, u.maxHp - u.hp)); if (amt <= 0) return;
-  u.hp += amt; if (!silent) addText(u.x, u.y - u.r*1.4, '+' + amt, '110,231,160', 24, 0.95);
+  u.hp += amt; rec(u, attId(u), 'h', amt); if (!silent) addText(u.x, u.y - u.r*1.4, '+' + amt, '110,231,160', 24, 0.95);
 }
 function stunUnit(u, t) {
   if (u.immuneT > 0) return;
   t *= u.isBoss ? 0.5 : 1; u.stun = Math.max(u.stun, t); u.act = null; u.plan = { t:'idle' }; chip(u, '기절');
   ring(u.x, u.y, u.r, u.r*1.9, 0.4, '255,235,160', 2);
 }
-function applyEffects(src, tgt, sk, dmg, pt) {
+function _applyEffects(src, tgt, sk, dmg, pt) {
   const b = sk.b;
   if (b.id === 'fire') fxList(src, tgt, sk, [{ k:'burn', dps:5, dur:3 }], dmg);
   if (b.fx === 'lifesteal') { heal(src, dmg*b.fxv); for (let i = 0; i < 9; i++) P({ k:'dot', x:tgt.x+rnd(-10,10), y:tgt.y+rnd(-10,10), home:src, size:3, color:'255,90,110', life:0.7, speed:260 }); }
@@ -2168,7 +2228,7 @@ function debuff(tgt, k, t, m) {
 function trueDmg(src, tgt, amt, col, label) {
   if (tgt.dead || tgt.hp <= 0) return 0;
   amt = Math.min(tgt.hp, Math.max(1, Math.round(amt)));
-  tgt.hp -= amt; tgt.hitFlash = 0.12;
+  tgt.hp -= amt; tgt.hitFlash = 0.12; rec(src, attId(src), 'd', amt);
   if (src.side === 'me') B.stats.dealt += amt; else B.stats.taken += amt;
   addText(tgt.x, tgt.y - tgt.r*1.9, (label ? label + ' ' : '') + '-' + amt, col, 22, 0.85);
   sparks(tgt.x, tgt.y, 6, col, 240, 0.3);
@@ -2180,15 +2240,15 @@ function applyPoison(tgt, dur, dps) {
   dps *= 0.7;
   const o = tgt.poison;
   if (o && !o.burn) { o.t = Math.max(o.t, dur); o.dps = Math.max(o.dps, dps); }
-  else tgt.poison = { t:dur, dps, tick:POISON_SEQ[0], n:0 };
+  else tgt.poison = { t:dur, dps, tick:POISON_SEQ[0], n:0, key:(ATT && ATT.sk && ATT.sk.b && ATT.sk.b.id) || 'dot' };
 }
 /* 적에게 거는 효과 목록 (적중 시 x / 시전 시 f / 영역 틱 z 공통) */
-function fxList(src, tgt, sk, list, dmg) {
+function _fxList(src, tgt, sk, list, dmg) {
   if (!list || !tgt || tgt.dead || tgt.hp <= 0) return;
   const m = sk.mult*SC(src);
   for (const x of list) {
     switch (x.k) {
-      case 'burn': if (tgt.immuneT > 0) break; tgt.poison = { t:x.dur, dps:Math.max(x.dps*m*2, (tgt.poison && tgt.poison.burn) ? tgt.poison.dps : 0), tick:0.5, burn:true }; break;
+      case 'burn': if (tgt.immuneT > 0) break; tgt.poison = { t:x.dur, dps:Math.max(x.dps*m*2, (tgt.poison && tgt.poison.burn) ? tgt.poison.dps : 0), tick:0.5, burn:true, key:(sk && sk.b && sk.b.id) || 'dot' }; break;
       case 'poison': applyPoison(tgt, x.dur || 4, x.v*m); break;
       case 'slow': setSlow(tgt, x.v, x.m); break;
       case 'poisonpct': if (tgt.poison && !tgt.poison.burn) tgt.poison.pct = x.v; break;
@@ -2204,12 +2264,12 @@ function fxList(src, tgt, sk, list, dmg) {
         for (let i = 0; i < n; i++) {
           const a = TAU*i/n + rnd(0, 0.6), d = i < 2 ? rnd(18, 40) : rnd(40, 85), px = tgt.x + Math.cos(a)*d, py = tgt.y + Math.sin(a)*d;
           P({ k:'glow', x:tgt.x, y:tgt.y, vx:Math.cos(a)*d*5.4, vy:Math.sin(a)*d*5.4, size:7, color:col, life:0.5, drag:5 });
-          B.timers.push({ t:0.5, fn:() => { if (src.dead) return; ring(px, py, 4, 50, 0.3, col, 3); glow(px, py, 50, 0.25, col); sparks(px, py, 6, '255,200,110', 240, 0.3); const e2 = foe(src); if (!e2.dead && e2.invuln <= 0 && Math.hypot(e2.x - px, e2.y - py) < 56 + e2.r*0.6) applyHit(src, e2, raw, { quiet:true, zone:true, color:col }); } });
+          B.timers.push({ ctx:ATT, t:0.5, fn:() => { if (src.dead) return; ring(px, py, 4, 50, 0.3, col, 3); glow(px, py, 50, 0.25, col); sparks(px, py, 6, '255,200,110', 240, 0.3); const e2 = foe(src); if (!e2.dead && e2.invuln <= 0 && Math.hypot(e2.x - px, e2.y - py) < 56 + e2.r*0.6) applyHit(src, e2, raw, { quiet:true, zone:true, color:col }); } });
         }
         break; }
       case 'stun': stunUnit(tgt, x.v); break;
       case 'vuln': case 'weak': case 'silence': case 'blind': case 'root': case 'curse': case 'sunder': debuff(tgt, x.k, x.v, x.m); break;
-      case 'bleed': { const o = tgt.bleed, st = Math.min(5, (o ? o.st : 0) + 1); tgt.bleed = { t:x.dur, dps:x.dps*m, st, tick:o ? o.tick : 0.5 }; break; }
+      case 'bleed': { const o = tgt.bleed, st = Math.min(5, (o ? o.st : 0) + 1); tgt.bleed = { t:x.dur, dps:x.dps*m, st, tick:o ? o.tick : 0.5, key:(sk && sk.b && sk.b.id) || 'dot' }; break; }
       case 'frost': { tgt.frost += x.n; tgt.frostT = 5; setSlow(tgt, 1.2);
         if (tgt.frost >= 3) { tgt.frost = 0; tgt.frostT = 0; stunUnit(tgt, 1.0); chip(tgt, '빙결!'); ring(tgt.x, tgt.y, tgt.r, tgt.r*2.2, 0.5, '170,225,255', 4); puff(tgt.x, tgt.y, 8, '200,240,255', 16, 0.6, 60); }
         else chip(tgt, '서리 ' + tgt.frost + '/3'); break; }
@@ -2217,7 +2277,7 @@ function fxList(src, tgt, sk, list, dmg) {
       case 'pct': trueDmg(src, tgt, Math.min(tgt.hp*x.pct, x.cap*m), '216,180,254', '붕괴'); break;
       case 'leech': if (dmg > 0) { heal(src, dmg*x.pct); for (let i = 0; i < 4; i++) P({ k:'dot', x:tgt.x + rnd(-8,8), y:tgt.y + rnd(-8,8), home:src, size:3, color:'255,90,110', life:0.6, speed:260 }); } break;
       case 'refund': sk.cd = Math.max(0, sk.cd - x.t); break;
-      case 'chain': { const d0 = Math.max(1, Math.round(dmg*x.pct)), col = sk.b.color; B.timers.push({ t:x.delay || 0.5, fn:() => { if (!tgt.dead && tgt.hp > 0) { ring(tgt.x, tgt.y, 6, tgt.r*1.8, 0.3, col, 3); if (sk.b.shape === 'strike') { B.beams.push({ pts:mkBolt(tgt.x + rnd(-30,30), tgt.y - 460, tgt.x, tgt.y), t:0, life:0.22, color:col }); B.beams.push({ pts:mkBolt(tgt.x + rnd(-20,20), tgt.y - 460, tgt.x, tgt.y), t:0, life:0.16, color:col, thin:true }); glow(tgt.x, tgt.y, 70, 0.3, '200,220,255'); sparks(tgt.x, tgt.y, 14, '210,230,255', 340, 0.4); B.flash = Math.max(B.flash, 0.14); shake(5); } trueDmg(src, tgt, d0, col, ''); } } }); break; }
+      case 'chain': { const d0 = Math.max(1, Math.round(dmg*x.pct)), col = sk.b.color; B.timers.push({ ctx:ATT, t:x.delay || 0.5, fn:() => { if (!tgt.dead && tgt.hp > 0) { ring(tgt.x, tgt.y, 6, tgt.r*1.8, 0.3, col, 3); if (sk.b.shape === 'strike') { B.beams.push({ pts:mkBolt(tgt.x + rnd(-30,30), tgt.y - 460, tgt.x, tgt.y), t:0, life:0.22, color:col }); B.beams.push({ pts:mkBolt(tgt.x + rnd(-20,20), tgt.y - 460, tgt.x, tgt.y), t:0, life:0.16, color:col, thin:true }); glow(tgt.x, tgt.y, 70, 0.3, '200,220,255'); sparks(tgt.x, tgt.y, 14, '210,230,255', 340, 0.4); B.flash = Math.max(B.flash, 0.14); shake(5); } trueDmg(src, tgt, d0, col, ''); } } }); break; }
     }
   }
 }
@@ -2230,12 +2290,12 @@ function auroraFx(u) {
   B.flash = Math.max(B.flash, 0.1);
 }
 /* 나에게 거는 효과 목록 (시전 시 s / 영역 안 zo) */
-function selfFx(u, sk, list) {
+function _selfFx(u, sk, list) {
   if (!list) return;
   for (const x of list) {
     switch (x.k) {
-      case 'hot': u.hot = { pct:x.pct*Math.min(sk.mult, 2.5), t:x.dur }; break;
-      case 'shield': u.shield = Math.max(u.shield, healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : x.pct*Math.min(sk.mult, 2.2))); u.shieldT = x.dur; u.shieldMax = u.shield; ring(u.x, u.y, u.r, u.r*2.3, 0.5, sk.b.color, 3); break;
+      case 'hot': u.hot = { pct:x.pct*Math.min(sk.mult, 2.5), t:x.dur, key:sk.b && sk.b.id }; break;
+      case 'shield': u.shield = Math.max(u.shield, healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : x.pct*Math.min(sk.mult, 2.2))); u.shieldT = x.dur; u.shieldMax = u.shield; rec(u, attId(u), 's', u.shield); ring(u.x, u.y, u.r, u.r*2.3, 0.5, sk.b.color, 3); break;
       case 'haste': u.boostT = Math.max(u.boostT, x.dur); break;
       case 'mspd': u.mspd = 1 + x.v; u.mspdT = Math.max(u.mspdT || 0, x.dur); break;
       case 'healx': heal(u, healHp(u)*x.pct/HEAL_MUL); break;
@@ -2504,14 +2564,14 @@ function explode(u, x, y, r, raw, b, sk, mini) {
   const ev = sk && sk.evo;
   if (ev && b.id === 'meteor' && !mini) {
     if (ev.key === 'a') { B.zones.push({ id:++B.actId, owner:u, x, y, r:105, t:0, dur:4, tick:0.5, tt:0.5, style:'crater', raw:0, heal:0, pull:0, slow:false, color:'190,110,60', sk, stayT:0, enterCd:0, wasIn:false, zsT:0, zf:null, trap:true }); ring(x, y, 20, 105, 0.5, '220,140,80', 5); }
-    else if (ev.key === 'b') { const w = 0.75; B.warns.push({ id:++B.actId, owner:u, x, y, r, t:0, dur:w }); B.meteors.push({ x, y, t:0, dur:w, s:0.9 }); B.timers.push({ t:w, fn:() => { if (!u.dead) explode(u, x, y, r, raw*0.75, b, null, false); } }); }
+    else if (ev.key === 'b') { const w = 0.75; B.warns.push({ id:++B.actId, owner:u, x, y, r, t:0, dur:w }); B.meteors.push({ x, y, t:0, dur:w, s:0.9 }); B.timers.push({ ctx:ATT, t:w, fn:() => { if (!u.dead) explode(u, x, y, r, raw*0.75, b, null, false); } }); }
   }
   if (ev && b.id === 'nova' && ev.key === 'a') B.zones.push({ id:++B.actId, owner:u, x, y, r:r*0.85, t:0, dur:6, tick:0.5, tt:0.5, style:'nebula', raw:0, heal:0, pull:0, slow:false, color:'190,140,255', sk, stayT:0, enterCd:0, wasIn:false, zsT:0, zf:null });
   return hit;
 }
 function delayedBlast(u, x, y, r, warn, raw, b, sk, extra) {
   B.warns.push({ id:++B.actId, owner:u, x, y, r, t:0, dur:warn }); if (b.shape === 'shower') B.meteors.push({ x, y, t:0, dur:warn, s:0.55 });
-  B.timers.push({ t:warn, fn:() => {
+  B.timers.push({ ctx:ATT, t:warn, fn:() => {
     const hit = explode(u, x, y, r, raw, b, sk, true);
     if (hit && sk && sk.evo && sk.evo.orb && !extra) {
       sk.orbN = (sk.orbN || 0) + 1;
@@ -2528,7 +2588,7 @@ function spawnProj(u, o) {
   B.projs.push({ id:++B.actId, owner:u, kind:o.kind, x:sx, y:sy, vx:Math.cos(o.ang)*o.speed, vy:Math.sin(o.ang)*o.speed, r:o.r, raw:o.raw, color:o.color, kb:o.kb, sk:o.sk, life:2.2, rot:0, hw:o.hw || 0, hits:o.hw ? new Set() : null });
   glow(sx, sy, o.r*2.2, 0.15, o.color);
 }
-function resolveAct(u, e, a) {
+function _resolveAct(u, e, a) {
   const d = a.data;
   if (a.type === 'atk') {
     const area = { type:'arc', x:u.x, y:u.y, ang:d.ang, reach:u.r + 52, half:0.95 };
@@ -2553,7 +2613,7 @@ function resolveAct(u, e, a) {
       const dd = dist2(u, e), lead = (dd/b.speed)*0.85, aa = Math.atan2(e.y + e.vy*lead - u.y, e.x + e.vx*lead - u.x), n = b.n || 1;
       const rr = n > 1 ? b.dmg*sk.mult*scCm(u, b.cm)*(u.pas === 'dragon' ? 1.35 : 1)*rangedMul(b) : raw;
       const grp = { n:0, done:false }; for (let i = 0; i < n; i++) { spawnProj(u, { kind:b.kind, ang:aa + (n > 1 ? (i - (n-1)/2)*(b.spread/(n-1)) : 0), speed:b.speed, r:b.pr, raw:rr, color:b.color, kb:b.kb, hw:b.hw, sk }); B.projs[B.projs.length - 1].grp = grp; }
-      if (b.id === 'wave' && sk.evo && sk.evo.key === 'a') B.timers.push({ t:0.3, fn:() => { if (u.dead) return; spawnProj(u, { kind:'wave', ang:aa, speed:b.speed, r:Math.round(b.pr*0.75), raw:rr*0.4, color:b.color, kb:b.kb, hw:Math.round(b.hw*0.7), sk:null }); B.projs[B.projs.length - 1].sk = sk; B.projs[B.projs.length - 1].noFx = true; shake(4); } });
+      if (b.id === 'wave' && sk.evo && sk.evo.key === 'a') B.timers.push({ ctx:ATT, t:0.3, fn:() => { if (u.dead) return; spawnProj(u, { kind:'wave', ang:aa, speed:b.speed, r:Math.round(b.pr*0.75), raw:rr*0.4, color:b.color, kb:b.kb, hw:Math.round(b.hw*0.7), sk:null }); B.projs[B.projs.length - 1].sk = sk; B.projs[B.projs.length - 1].noFx = true; shake(4); } });
       if (b.id === 'wave' && sk.evo && sk.evo.surf) { const dsh = b.speed*0.9; u.act = { type:'dash', t:0, dur:0.9, id:++B.actId, data:{ vx:Math.cos(aa)*b.speed*0.85, vy:Math.sin(aa)*b.speed*0.85, noImpact:true, after:() => { u.surfT = 4; } } }; puff(u.x, u.y + u.r*0.5, 10, '170,215,255', 16, 0.5, 70); }
       break; }
     case 'bite': {
@@ -2585,11 +2645,11 @@ function resolveAct(u, e, a) {
       for (let i = 0; i < 12; i++) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y + rnd(-u.r*0.5,u.r), vy:-rnd(40,110), vx:rnd(-12,12), size:rnd(4,6), color:b.color, life:rnd(0.6,1.1), drag:0.6 });
       break; }
     case 'shield': {
-      u.shield = healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : b.pct*Math.min(sk.mult, 2.2)); u.shieldT = b.dur; u.shieldMax = u.shield;
+      u.shield = healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : b.pct*Math.min(sk.mult, 2.2)); u.shieldT = b.dur; u.shieldMax = u.shield; rec(u, b.id, 's', u.shield);
       ring(u.x, u.y, u.r, u.r*2.3, 0.5, b.color, 3); glow(u.x, u.y, u.r*2, 0.4, b.color);
       break; }
     case 'buff': {
-      { const ls = sk.lvs || 1; if (b.hot) u.hot = { pct:b.hot/HEAL_MUL, t:b.dur }; u.buffFx = b.id; if (b.id === 'eclipse') { fx('eclipse', u.x, u.y, 120, 1.2, b.color, { owner:u }); ring(u.x, u.y, 10, 150, 0.8, '255,225,140', 5); ring(u.x, u.y, 10, 100, 0.6, '255,255,235', 2, 0.1); } u.buffT = b.dur; u.buffAtk = 1 + (b.batk - 1)*ls; u.buffSpd = 1 + ((b.bspd || 1) - 1)*ls; u.buffLs = (b.bls || 0)*(b.id === 'bloodlust' ? 1 : ls); u.buffLs2 = b.bls2 || 0; u.buffColor = b.color; }
+      { const ls = sk.lvs || 1; if (b.hot) u.hot = { pct:b.hot/HEAL_MUL, t:b.dur, key:b.id }; u.buffFx = b.id; if (b.id === 'eclipse') { fx('eclipse', u.x, u.y, 120, 1.2, b.color, { owner:u }); ring(u.x, u.y, 10, 150, 0.8, '255,225,140', 5); ring(u.x, u.y, 10, 100, 0.6, '255,255,235', 2, 0.1); } u.buffT = b.dur; u.buffAtk = 1 + (b.batk - 1)*ls; u.buffSpd = 1 + ((b.bspd || 1) - 1)*ls; u.buffLs = (b.bls || 0)*(b.id === 'bloodlust' ? 1 : ls); u.buffLs2 = b.bls2 || 0; u.buffColor = b.color; }
       ring(u.x, u.y + u.r*0.4, 6, u.r*2.6, 0.6, b.color, 4); glow(u.x, u.y, u.r*2.6, 0.5, b.color, 0.6);
       for (let i = 0; i < 16; i++) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.6, vx:rnd(-20,20), vy:-rnd(120,260), size:2, color:b.color, life:rnd(0.5,0.9), drag:1.2 });
       break; }
@@ -2609,7 +2669,7 @@ function resolveAct(u, e, a) {
       const per = b.dmg*sk.mult*SC(u)*0.4*(u.pas === 'dragon' ? 1.35 : 1)*rangedMul(b);
       u.act = { type:'lock', t:0, dur:b.hits*0.13, id:++B.actId, data:{ rec:0.2 } };
       if (sk.evo && sk.evo.vanish) { u.invuln = Math.max(u.invuln, b.hits*0.13 + 0.15); u.vanish = b.hits*0.13 + 0.1; puff(u.x, u.y, 10, '210,225,255', 16, 0.5, 70); ring(u.x, u.y, 6, 48, 0.35, b.color, 2); }
-      for (let i = 0; i < b.hits; i++) B.timers.push({ t:i*0.13, fn:() => {
+      for (let i = 0; i < b.hits; i++) B.timers.push({ ctx:ATT, t:i*0.13, fn:() => {
         if (u.dead) return;
         fx('sweep', u.x, u.y, b.radius, 0.3, b.color, { owner:u, ang:rnd(0, TAU), dir:i % 2 ? -1 : 1 }); sparks(u.x, u.y, 4, '235,245,255', 220, 0.25); shake(2);
         if (i === b.hits - 1) { fx('bladering', u.x, u.y, b.radius*1.15, 0.45, b.color, { owner:u }); ring(u.x, u.y, 8, b.radius*1.25, 0.4, '230,240,255', 3); shake(4); }
@@ -2647,7 +2707,7 @@ function resolveAct(u, e, a) {
       break; }
     case 'shower': {
       const per = b.dmg*sk.mult*SC(u)*(u.pas === 'dragon' ? 1.35 : 1)*rangedMul(b);
-      for (let i = 0; i < b.n; i++) B.timers.push({ t:i*(b.span/b.n) + rnd(0,0.1), fn:() => {
+      for (let i = 0; i < b.n; i++) B.timers.push({ ctx:ATT, t:i*(b.span/b.n) + rnd(0,0.1), fn:() => {
         if (u.dead) return;
         const aa = rnd(0,TAU), rr = Math.sqrt(Math.random())*area.r;
         delayedBlast(u, clamp(area.x + Math.cos(aa)*rr, 30, WW-30), clamp(area.y + Math.sin(aa)*rr, 30, WH-30), b.mr, 0.55, per, b, sk);
@@ -2655,7 +2715,7 @@ function resolveAct(u, e, a) {
       break; }
   }
 }
-function projHit(p, tgt) {
+function _projHit(p, tgt) {
   const src = p.owner, c = p.color;
   const dm = applyHit(src, tgt, p.raw, { kb:p.kb, color:c, proj:true, basic:!p.sk });
   if (p.sk && !p.noFx) applyEffects(src, tgt, p.sk, dm, p);
@@ -2724,14 +2784,14 @@ function updateUnit(u, dt) {
   if (u.bleed) {
     u.bleed.t -= dt; u.bleed.tick -= dt;
     if (Math.random() < dt*6) P({ k:'dot', x:u.x + rnd(-u.r,u.r), y:u.y + rnd(-u.r,u.r*0.5), vy:20, g:200, size:2.5, color:'220,50,70', life:0.5 });
-    if (u.bleed.tick <= 0) { u.bleed.tick += 0.5; const dm = Math.max(1, Math.round(u.bleed.dps*u.bleed.st*0.5)); u.hp = Math.max(0, u.hp - dm); if (e.side === 'me') B.stats.dealt += dm; else B.stats.taken += dm; addText(u.x, u.y - u.r*1.4, '-' + dm, '248,113,113', 20, 0.7); }
+    if (u.bleed.tick <= 0) { u.bleed.tick += 0.5; const dm = Math.max(1, Math.round(u.bleed.dps*u.bleed.st*0.5)); u.hp = Math.max(0, u.hp - dm); rec(e, u.bleed.key || 'dot', 'd', dm); if (e.side === 'me') B.stats.dealt += dm; else B.stats.taken += dm; addText(u.x, u.y - u.r*1.4, '-' + dm, '248,113,113', 20, 0.7); }
     if (u.bleed.t <= 0) u.bleed = null;
   }
   if (u.buffT > 0) { u.buffT -= dt; if (Math.random() < dt*12) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.5, vy:-rnd(60,140), size:1.8, color:u.buffColor || '255,200,120', life:0.5 }); if (u.buffT <= 0) { u.buffAtk = 1; u.buffSpd = 1; u.buffLs = 0; u.buffFx = null; } }
   if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
-  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, healHp(u)*0.0627*dt/HEAL_MUL); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
-  if (u.pas === 'panda') regen(u, healHp(u)*0.00765*dt/HEAL_MUL);
-  if (u.hot) { u.hot.t -= dt; regen(u, healHp(u)*u.hot.pct*dt); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
+  if (u.hiberT > 0) { u.hiberT -= dt; regen(u, healHp(u)*0.0627*dt/HEAL_MUL, 'passive'); if (u.hiberT <= 0 && u.pas === 'bear' && u.buffT <= 0) { u.buffAtk = 1.4; u.buffSpd = 1; u.buffLs = 0; u.buffColor = '255,190,120'; u.buffT = 5; chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
+  if (u.pas === 'panda') regen(u, healHp(u)*0.00765*dt/HEAL_MUL, 'passive');
+  if (u.hot) { u.hot.t -= dt; regen(u, healHp(u)*u.hot.pct*dt, u.hot.key || 'hot'); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
   if (u.pas === 'dog' && !u.raged && u.hp < u.maxHp*0.3) { u.raged = true; chip(u, '분노'); }
   if (u.poison) {
     u.poison.t -= dt; u.poison.tick -= dt;
@@ -2741,7 +2801,7 @@ function updateUnit(u, dt) {
       if (!po.burn) { po.n = (po.n || 0) + 1; iv = POISON_SEQ[Math.min(po.n, POISON_SEQ.length - 1)]; }
       po.tick += iv; let dm = Math.max(1, Math.round(po.dps*0.5));
       if (po.pct) dm += Math.round(baseHp(u)*po.pct);
-      u.hp = Math.max(0, u.hp - dm); if (e.side === 'me') B.stats.dealt += dm; else B.stats.taken += dm;
+      u.hp = Math.max(0, u.hp - dm); rec(e, po.key || 'dot', 'd', dm); if (e.side === 'me') B.stats.dealt += dm; else B.stats.taken += dm;
       if (po.burn || iv >= 0.3 || po.n % 3 === 0) addText(u.x, u.y - u.r*1.4, '-' + dm, po.burn ? '255,150,70' : '170,240,110', 20, 0.7);
     }
     if (u.poison.t <= 0) u.poison = null;
@@ -2794,7 +2854,7 @@ function updateZones(h) {
       if (z.style === 'nebula' && inside0 && z.sk) z.sk.cd = Math.max(0, z.sk.cd - 0.5*h);
     }
     if (z.tt <= 0) {
-      z.tt += z.tick;
+      z.tt += z.tick; ATT = { u:z.owner, sk:z.sk || null };
       const zev = z.sk && z.sk.evo;
       if (zev && zev.zo && !z.owner.dead && dist2(z.owner, z) < z.r + z.owner.r*0.3) selfFx(z.owner, z.sk, zev.zo);
       if (z.heal) {
@@ -2857,11 +2917,11 @@ function separate() {
   if (d < min && d > 0.01) { const push = (min - d)/2, nx = (b.x-a.x)/d, ny = (b.y-a.y)/d; a.x -= nx*push; a.y -= ny*push; b.x += nx*push; b.y += ny*push; }
 }
 function simulate(h) {
-  B.time += h;
+  ATT = null; B.time += h;
   if (B.introT > 0) B.introT -= h;
   const live = B.introT <= 0 && !B.over;
   for (const t of B.timers) t.t -= h;
-  const due = B.timers.filter(t => t.t <= 0); B.timers = B.timers.filter(t => t.t > 0); for (const t of due) t.fn();
+  const due = B.timers.filter(t => t.t <= 0); B.timers = B.timers.filter(t => t.t > 0); for (const t of due) { ATT = t.ctx || null; try { t.fn(); } finally { ATT = null; } }
   if (live) { B.fightT += h; updateUnit(B.me, h); updateUnit(B.en, h); separate(); }
   else if (B.over) { updateUnit(B.me, h); updateUnit(B.en, h); }
   updateProjs(h); updateZones(h); updateMines(h); updateFx(h);
@@ -3220,6 +3280,18 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
+/* ---- 전투 수치 기록: 지금 어떤 스킬이 실행 중인지(ATT)를 따라가며 피해·회복·보호막을 스킬별로 센다 ---- */
+let ATT = null;
+const attId = u => (ATT && ATT.u === u && ATT.sk && ATT.sk.b && ATT.sk.b.id) || 'etc';
+function rec(u, key, f, amt) {
+  if (!B || !B.att || !(amt > 0)) return;
+  const m = B.att[u.side] || (B.att[u.side] = {}), r = m[key] || (m[key] = { d:0, h:0, s:0 }); r[f] += amt;
+}
+function resolveAct(u, e, a) { const pv = ATT; ATT = { u, sk:(a.data && a.data.sk) || null }; try { return _resolveAct(u, e, a); } finally { ATT = pv; } }
+function applyEffects(src, tgt, sk, dmg, pt) { const pv = ATT; ATT = { u:src, sk }; try { return _applyEffects(src, tgt, sk, dmg, pt); } finally { ATT = pv; } }
+function fxList(src, tgt, sk, list, dmg) { const pv = ATT; ATT = { u:src, sk }; try { return _fxList(src, tgt, sk, list, dmg); } finally { ATT = pv; } }
+function selfFx(u, sk, list) { const pv = ATT; ATT = { u, sk }; try { return _selfFx(u, sk, list); } finally { ATT = pv; } }
+function projHit(p, tgt) { const pv = ATT; ATT = { u:p.owner, sk:p.sk || null }; try { return _projHit(p, tgt); } finally { ATT = pv; } }
 function startBattle() {
   if (wantVert()) { WW = 500; WH = 720; } else { WW = 720; WH = 500; }
   arenaEl.classList.toggle('vert', WW < WH);
@@ -3232,7 +3304,7 @@ function startBattle() {
   B = { projs:[], parts:[], rings:[], slashes:[], beams:[], decals:[], ghosts:[], texts:[], zones:[], warns:[], meteors:[], timers:[], fxs:[],
     time:0, fightT:0, introT:1.0, over:false, win:false, timeout:false, speed:battleSpeed, acc:0, actId:0,
     mines:[], pickups:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage, arena:ao, lagMe:1, lagEn:1,
-    stats:{ dealt:0, taken:0, dodges:0 }, bossStyleLabel:bi.style.label, bg:bgFor(stage), contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
+    stats:{ dealt:0, taken:0, dodges:0 }, att:{ me:{}, en:{} }, bossStyleLabel:bi.style.label, bg:bgFor(stage), contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
   const me = mkUnit({ side:'me', hpK:ao ? ARENA_HP : 1, emoji:fb.emoji, name:fb.name, st:fighterStats(fb, 0, true), fmc:fb.mc, entries, pas:fb.pas.id });
   const en = ao ? mkUnit({ side:'en', arena:true, hpK:ARENA_HP, emoji:ao.fb.emoji, name:ao.name, st:ao.st, fmc:ao.fb.mc, entries:ao.entries, pas:ao.fb.pas.id })
     : mkUnit({ side:'en', isBoss:true, emoji:bi.emoji, name:bi.name, st:bi.st, fmc:bi.kit.fmc, entries:bi.entries });
@@ -3293,8 +3365,64 @@ const SAMPLE_OPPS = [
 ];
 /* 내 현재 세팅 스냅샷 (레벨·진화·시작 쿨타임 포함) — 이게 곧 내 수비 팀 */
 function myTeamSnapshot() {
-  if (!state.eq.f) return null;
-  return { v:SNAP_VER, f:{ id:state.eq.f, lv:curLv('f', state.eq.f) }, s:state.eq.s.map(id => id ? { id, lv:curLv('s', id), evo:state.evo[id] || null, scd:scdOf(id) } : null) };
+  const d = defDeck(); if (!d.f) return null;
+  return { v:SNAP_VER, f:{ id:d.f, lv:curLv('f', d.f) }, s:d.s.map(id => id ? { id, lv:curLv('s', id), evo:state.evo[id] || null, scd:scdOf(id) } : null) };
+}
+/* ---- 방어덱: 레벨·진화·시작 쿨타임을 포함한 스냅샷. 자동으로 바뀌지 않고 직접 업데이트해야 한다 ---- */
+const liveF = id => ({ id, lv:curLv('f', id) });
+const liveS = id => ({ id, lv:curLv('s', id), evo:state.evo[id] || null, scd:scdOf(id) });
+function defFromStage() { return { f:liveF(state.eq.f), s:state.eq.s.map(id => id ? liveS(id) : null) }; }
+function defDeck() {
+  let d = state.defDeck;
+  if (d && typeof d.f === 'string') d = state.defDeck = { f:liveF(d.f), s:[0, 1, 2].map(i => d.s && d.s[i] && SK(d.s[i]) ? liveS(d.s[i]) : null) }; /* 이전 버전 데이터 변환 */
+  if (!d || !d.f || !F(d.f.id)) { if (!state.eq.f) return { f:null, s:[null, null, null] }; d = state.defDeck = defFromStage(); }
+  return d;
+}
+function myTeamSnapshot() {
+  const d = defDeck(); if (!d.f) return null;
+  return { v:SNAP_VER, f:{ id:d.f.id, lv:d.f.lv }, s:d.s.map(x => x ? { id:x.id, lv:x.lv, evo:x.evo || null, scd:x.scd } : null) };
+}
+function defOutdated() {
+  const d = defDeck(); if (!d.f) return false;
+  if (curLv('f', d.f.id) !== d.f.lv) return true;
+  return d.s.some(x => x && (curLv('s', x.id) !== x.lv || (state.evo[x.id] || null) !== (x.evo || null) || scdOf(x.id) !== x.scd));
+}
+function defUpdateAll() { const d = defDeck(); if (!d.f) return; d.f = liveF(d.f.id); d.s = d.s.map(x => x ? liveS(x.id) : null); state.defDeck = d; save(); toast('방어덱을 업데이트했어요'); render(); }
+function defCopyStage() { if (!state.eq.f) { toast('스테이지 덱에 파이터가 없어요'); return; } state.defDeck = defFromStage(); save(); toast('스테이지 덱을 방어덱으로 복사했어요'); render(); }
+function myDefPower() { const sn = myTeamSnapshot(), pr = sn && arenaPrep({ team:sn }); return pr ? pr.power : 0; }
+function setDefSlot(slot, id) {
+  const d = defDeck();
+  if (slot === 'f') d.f = liveF(id); else { if (id) d.s = d.s.map(x => x && x.id === id ? null : x); d.s[+slot] = id ? liveS(id) : null; }
+  state.defDeck = d; save(); closeDeckPick(); render();
+}
+function closeDeckPick() { const e = $('deckPick'); if (e) e.remove(); }
+function openDeckPick(slot) {
+  closeDeckPick();
+  const kind = slot === 'f' ? 'f' : 's', d = defDeck(), curX = slot === 'f' ? d.f : d.s[+slot], cur = curX ? curX.id : null;
+  const pool = (kind === 'f' ? FIGHTERS : SKILLS).filter(b => owned(kind, b.id) > 0).sort((a, b) => TIER_IDX[b.tier] - TIER_IDX[a.tier]);
+  const tiles = pool.map(b => { const n = kind === 's' && state.evo[b.id] ? evoNumOf(b.id) : 0, inUse = kind === 's' && d.s.some(x => x && x.id === b.id) && b.id !== cur;
+    return `<button onclick="setDefSlot('${slot}','${b.id}')" class="tile t-${b.tier} press ${b.id === cur ? 'sel' : ''}" style="height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;${inUse ? 'opacity:.55' : ''}">${emojiArt(b.emoji, 30)}<span style="font-size:11px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px">${b.name}</span><span class="tc" style="font-size:10px;font-weight:800">Lv.${curLv(kind, b.id)}</span>${n ? `<span style="position:absolute;top:4px;right:4px;background:var(--blue);color:#fff;font-size:8.5px;font-weight:800;border-radius:6px;padding:0 5px;line-height:1.5">Ev.${n}</span>` : ''}</button>`; }).join('');
+  const el = document.createElement('div'); el.id = 'deckPick';
+  el.style.cssText = 'position:fixed;inset:0;z-index:90;background:rgba(8,12,20,.6);display:flex;align-items:flex-end;justify-content:center';
+  el.onclick = e => { if (e.target === el) closeDeckPick(); };
+  el.innerHTML = `<div class="a-pop" style="width:100%;max-width:520px;max-height:78vh;overflow:auto;background:#fff;border-radius:28px 28px 0 0;padding:20px 16px 24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><div style="font-size:18px;font-weight:800;letter-spacing:-0.02em">${slot === 'f' ? '방어 파이터 선택' : '방어 스킬 ' + (+slot + 1) + ' 선택'}</div><button class="btn ghost sm" onclick="closeDeckPick()">닫기</button></div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">${tiles || '<div style="grid-column:1/-1;text-align:center;color:var(--ink3);font-size:13px;padding:20px">보유한 카드가 없어요</div>'}</div>
+    ${slot !== 'f' && cur ? `<button class="btn ghost" style="width:100%;margin-top:14px" onclick="setDefSlot('${slot}',null)">이 슬롯 비우기</button>` : ''}</div>`;
+  document.body.appendChild(el);
+}
+function arenaDefCardHtml() {
+  const d = defDeck(), old = defOutdated(), dp = myDefPower();
+  const tile = (kind, x, slot) => {
+    if (!x) return `<button onclick="openDeckPick('${slot}')" class="press" style="height:74px;width:100%;border-radius:16px;border:2px dashed #d1d6db;background:#fff;color:var(--ink4);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">+</button>`;
+    const b = baseOf(kind, x.id), n = kind === 's' && x.evo ? evoNumOf(x.id, x.evo) : 0;
+    return `<button onclick="openDeckPick('${slot}')" class="tile t-${b.tier} press" style="height:74px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px">${emojiArt(b.emoji, 26)}<span style="font-size:10px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px">${b.name}</span><span class="tc" style="font-size:9.5px;font-weight:800">Lv.${x.lv}</span>${n ? `<span style="position:absolute;top:3px;right:3px;background:var(--blue);color:#fff;font-size:8px;font-weight:800;border-radius:5px;padding:0 4px;line-height:1.5">Ev.${n}</span>` : ''}</button>`;
+  };
+  return `<div class="card soft"><div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">내 방어덱</div><span class="chip" style="${old ? 'background:#fff3e0;color:#d9730d' : 'background:#e9f9f1;color:var(--green)'}">${old ? '업데이트 필요' : '최신 상태'}</span></div>
+    <div style="font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500;line-height:1.5">다른 사람이 도전할 때 쓰이는 덱이에요. 레벨·진화·시작 쿨타임은 <b>자동으로 바뀌지 않아요</b>. 바뀐 뒤에는 직접 업데이트해 주세요.</div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px">${tile('f', d.f, 'f')}${d.s.map((x, i) => tile('s', x, String(i))).join('')}</div>
+    <div style="margin-top:12px;font-size:13px;font-weight:700;color:var(--ink2)">방어 전투력 <b style="color:var(--blue)">${fmt(dp)}</b></div>
+    <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:8px;margin-top:10px"><button class="btn ghost sm" onclick="defCopyStage()">스테이지 덱 복사</button><button class="btn ${old ? 'primary' : 'ghost'} sm" onclick="defUpdateAll()">현재 상태로 업데이트</button></div></div>`;
 }
 /* 서버에서 받은 데이터는 믿지 않고 검증·정리한다 */
 function sanitizeTeam(t) {
@@ -3321,7 +3449,7 @@ function teamBonus(team) { const o = { hp:0, atk:0, def:0 }; for (const x of tea
 function arenaPrep(p) {
   const team = sanitizeTeam(p.team); if (!team) return null;
   const fb = F(team.f.id), entries = teamEntries(team), st = fighterStats(fb, team.f.lv, true, teamBonus(team));
-  return { uid:p.uid, name:String(p.name || '이름 없음').slice(0, 12), stage:Math.max(1, Math.min(9999, Math.floor(+p.stage) || 1)), team, fb, st, entries, power:powerOf(st, entries), sample:!!p.sample };
+  return { uid:p.uid, me:!!p.me, name:String(p.name || '이름 없음').slice(0, 12), stage:Math.max(1, Math.min(9999, Math.floor(+p.stage) || 1)), team, fb, st, entries, power:powerOf(st, entries), sample:!!p.sample };
 }
 const arenaSorted = list => list.slice().sort((a, b) => Arn.sort === 'stage' ? (b.stage - a.stage || b.power - a.power) : (b.power - a.power || b.stage - a.stage));
 /* ---- 내 수비 팀 자동 등록 (세팅이 바뀌면 잠시 뒤 서버에 반영) ---- */
@@ -3333,7 +3461,7 @@ async function arenaSync() {
   const snap = myTeamSnapshot(), key = state.nick + '|' + state.stage + JSON.stringify(snap);
   if (key === arnKey) { if (Arn.sync !== 'ok') { Arn.sync = 'ok'; arenaRenderIf(); } return; }
   Arn.sync = 'syncing'; arenaRenderIf();
-  try { await window.ArenaFB.saveProfile({ name:state.nick, power:myPower(), stage:state.stage, team:snap, ver:SNAP_VER }); arnKey = key; Arn.sync = 'ok'; }
+  try { await window.ArenaFB.saveProfile({ name:state.nick, power:myDefPower(), stage:state.stage, team:snap, ver:SNAP_VER }); arnKey = key; Arn.sync = 'ok'; }
   catch (e) { Arn.sync = 'error'; }
   arenaRenderIf();
 }
@@ -3353,7 +3481,13 @@ function arenaEnter() { if (!state.arenaTut) setTimeout(() => { if (tab === 'are
 window.addEventListener('arenafb', () => { const au = accUser(), id = au ? au.uid : null; if (Acc.uid !== id) { Acc.uid = id; arnKey = ''; Arn.opps = []; Arn.logs = []; Arn.sync = 'idle'; Acc.synced = false; Acc.checkedUid = null; } accCheckCloud(); accRefresh(); arenaSyncSoon(true); if (tab === 'arena') { arenaRefresh(); arenaLoadLogs(); } else arenaRenderIf(); });
 setTimeout(() => { if (!window.ArenaFB) { window.ArenaFB = { configured:true, ready:false }; arenaRenderIf(); } }, 8000);
 function arenaSort(k) { if (Arn.sort === k) return; Arn.sort = k; Arn.opps = arenaSorted(Arn.opps); if (FBok()) arenaRefresh(); else render(); }
-function arenaOpen(i) { const o = Arn.opps[i]; if (!o) return; Arn.cur = o; Arn.view = 'detail'; render(true); window.scrollTo({ top:0 }); }
+function arenaShown() {
+  const list = Arn.opps.slice(), sn = myTeamSnapshot();
+  if (sn) { const me = arenaPrep({ uid:'me', me:true, name:state.nick || '나', stage:state.stage, team:sn }); if (me) list.push(me); }
+  return arenaSorted(list);
+}
+function arenaQuick(i) { const o = (Arn.shown || [])[i]; if (!o || o.me) return; Arn.cur = o; arenaChallenge(); }
+function arenaOpen(i) { const o = (Arn.shown || [])[i]; if (!o) return; Arn.cur = o; Arn.view = 'detail'; render(true); window.scrollTo({ top:0 }); }
 function arenaClose() { Arn.view = 'list'; Arn.cur = null; render(true); window.scrollTo({ top:0 }); }
 function arenaChallenge() {
   const o = Arn.cur; if (!o) return;
@@ -3361,7 +3495,7 @@ function arenaChallenge() {
   Arn.opp = o; Arn.fight = true; startBattle(); render(true); window.scrollTo({ top:0 });
 }
 function arenaBack() { Arn.fight = false; Arn.opp = null; startBattle(); render(true); }
-function arenaRematch() { startBattle(); }
+function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai.innerHTML = arenaFightInfoHtml(); icons(); } }
 function arenaReport(win) {
   if (B.reported) return; B.reported = true;
   if (FBok() && Arn.opp && !Arn.opp.sample) window.ArenaFB.logMatch({ defenderUid:Arn.opp.uid, attackerName:state.nick || '이름 없음', win:!!win }).catch(() => {});
@@ -3373,16 +3507,37 @@ function showArenaResult() {
   hr.innerHTML = `<div class="rcard a-pop">
     <div style="margin-bottom:.8em"><div style="font-size:.8em;font-weight:700;color:#8b95a1">친선전 · ${esc(o.name)}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${win ? '#3182f6' : '#f04452'}">${win ? '승리' : '패배'}</div></div>
     ${row('가한 피해 / 회피', `${fmt(st.dealt)} / ${st.dodges}회`)}${row('받은 피해', fmt(st.taken))}
-    <div style="font-size:.8em;color:#8b95a1;margin-top:.7em;font-weight:500">친선전이라 보상은 없어요.</div>
+    <div style="font-size:.8em;color:#8b95a1;margin-top:.7em;font-weight:500">친선전이라 보상은 없어요. 스킬별 수치는 아래에서 볼 수 있어요.</div>
     <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:.5em;margin-top:.9em"><button class="rbtn g" onclick="arenaBack()">돌아가기</button><button class="rbtn p" onclick="arenaRematch()">다시 도전</button></div></div>`;
+  const ai = $('arenaInfo'); if (ai) { ai.innerHTML = arenaFightInfoHtml(); icons(); }
 }
-const skIcons = list => list.map(x => { const n = x.evo ? evoNumOf(x.id, x.evo) : 0;
-  return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;width:40px;flex:none"><span class="emoji" style="display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:#fff;box-shadow:inset 0 0 0 1.5px ${n ? 'var(--blue)' : '#e1e5ea'};font-size:19px">${SK(x.id).emoji}</span><span style="font-size:10px;line-height:1;font-weight:800;white-space:nowrap;color:${n ? 'var(--blue)' : 'var(--ink4)'}">${n ? 'Ev.' + n : '-'}</span></span>`; }).join('');
+const skIcons = (list, compact) => list.map(x => { const n = x.evo ? evoNumOf(x.id, x.evo) : 0, w = compact ? 34 : 40, t = compact ? 30 : 34;
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;gap:3px;width:${w}px;flex:none"><span class="emoji" style="display:inline-flex;align-items:center;justify-content:center;width:${t}px;height:${t}px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1.5px ${n ? 'var(--blue)' : '#e1e5ea'};font-size:${compact ? 17 : 19}px">${SK(x.id).emoji}</span><span style="font-size:${compact ? 9.5 : 10}px;line-height:1;font-weight:800;white-space:nowrap;color:${n ? 'var(--blue)' : 'var(--ink4)'}">${n ? 'Ev.' + n : '-'}</span></span>`; }).join('');
 function arenaStatRows(my, th) {
   return [['체력', fmt(my.hp*ARENA_HP), fmt(th.hp*ARENA_HP)], ['공격력', fmt(my.atk), fmt(th.atk)], ['방어력', defPct(my.def).toFixed(1) + '%', defPct(th.def).toFixed(1) + '%']].map(([l, a, b], i) => `<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:36px;${i ? 'border-top:1px solid var(--line)' : ''}"><span style="font-size:14px;font-weight:800;color:var(--blue)">${a}</span><span style="font-size:11px;font-weight:700;color:var(--ink3)">${l}</span><span style="font-size:14px;font-weight:800;color:var(--red);text-align:right">${b}</span></div>`).join('');
 }
+const ATT_LABEL = { basic:['👊', '기본 공격'], thorns:['🌵', '가시 반사'], passive:['🐾', '패시브'], lifesteal:['🩸', '흡혈'], dot:['☠️', '지속 피해'], hot:['💚', '지속 회복'], etc:['✨', '기타'] };
+function attBlockHtml(side, title, color) {
+  const m = (B.att && B.att[side]) || {}, unit = side === 'me' ? B.me : B.en, keys = ['basic'];
+  for (const sk of unit.skills) if (!keys.includes(sk.b.id)) keys.push(sk.b.id);
+  for (const k of ['thorns', 'passive', 'lifesteal', 'dot', 'hot', 'etc']) if (m[k] && (m[k].d + m[k].h + m[k].s) > 0.5) keys.push(k);
+  const get = k => m[k] || { d:0, h:0, s:0 }, tot = keys.reduce((a, k) => { const r = get(k); a.d += r.d; a.h += r.h; a.s += r.s; return a; }, { d:0, h:0, s:0 }), maxD = Math.max(1, ...keys.map(k => get(k).d));
+  const cell = (v, c) => `<div style="text-align:right;font-size:13px;font-weight:800;color:${v > 0.5 ? c : 'var(--ink4)'}">${v > 0.5 ? fmt(v) : '-'}</div>`;
+  const rows = keys.map(k => { const r = get(k), sk = SK(k), lab = sk ? [sk.emoji, sk.name] : (ATT_LABEL[k] || ['✨', k]);
+    return `<div style="display:grid;grid-template-columns:minmax(0,1fr) 62px 52px 52px;gap:6px;align-items:center;padding:7px 0;border-top:1px solid var(--line)"><div style="min-width:0"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700"><span class="emoji" style="flex:none">${lab[0]}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${lab[1]}</span>${tot.d > 0 && r.d > 0.5 ? `<span style="flex:none;font-size:10px;color:var(--ink3);font-weight:700">${Math.round(r.d/tot.d*100)}%</span>` : ''}</div><div style="height:3px;border-radius:2px;background:#eceff2;margin-top:5px"><div style="height:100%;border-radius:2px;background:${color};width:${Math.round(r.d/maxD*100)}%"></div></div></div>${cell(r.d, 'var(--ink)')}${cell(r.h, 'var(--green)')}${cell(r.s, '#4f8cff')}</div>`; }).join('');
+  return `<div style="margin-top:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="width:8px;height:8px;border-radius:50%;background:${color}"></span><span style="font-size:14px;font-weight:800">${title}</span></div>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 62px 52px 52px;gap:6px;font-size:11px;font-weight:700;color:var(--ink3);padding-bottom:4px"><span></span><span style="text-align:right">피해</span><span style="text-align:right">회복</span><span style="text-align:right">보호막</span></div>${rows}
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 62px 52px 52px;gap:6px;align-items:center;padding:9px 0 0;border-top:2px solid var(--line)"><span style="font-size:13px;font-weight:800">합계</span>${cell(tot.d, 'var(--ink)')}${cell(tot.h, 'var(--green)')}${cell(tot.s, '#4f8cff')}</div></div>`;
+}
+function arenaStatsHtml() {
+  if (!B || !B.arena || !B.over || !B.resultShown) return '';
+  return `<div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">전투 상세 <span style="font-size:12px;color:var(--ink3);font-weight:600">${B.win ? '승리' : '패배'} · ${Math.round(B.time)}초</span></div>${attBlockHtml('me', esc(state.nick || '나'), 'var(--blue)')}${attBlockHtml('en', esc(B.arena.name), 'var(--red)')}</div>`;
+}
 function arenaFightInfoHtml() {
   const o = Arn.opp; if (!o || !state.eq.f) return '';
+  return arenaStatsHtml() + arenaFightInfoHtml0(o);
+}
+function arenaFightInfoHtml0(o) {
   const fb = F(state.eq.f), my = fighterStats(fb, 0, true), mp = myPower(), ms = myStyle(), os = calcStyle(o.fb.mc, o.entries);
   const mine = state.eq.s.filter(Boolean).map(id => ({ id, evo:state.evo[id] })), theirs = o.team.s.filter(Boolean);
   const ratio = Math.min(92, Math.max(8, Math.round(mp/Math.max(1, mp + o.power)*100)));
@@ -3444,13 +3599,16 @@ function showArenaTut() {
 function viewArenaList() {
   const mp = myPower();
   const seg = (k, l) => `<button onclick="arenaSort('${k}')" class="press" style="flex:1;height:34px;border:0;border-radius:11px;font-size:13px;font-weight:800;background:${Arn.sort === k ? '#fff' : 'transparent'};color:${Arn.sort === k ? 'var(--ink)' : 'var(--ink3)'};${Arn.sort === k ? 'box-shadow:0 1px 4px rgba(25,31,40,.12)' : ''}">${l}</button>`;
-  const rows = Arn.opps.map((o, i) => { const pc = o.power > mp ? 'var(--red)' : 'var(--green)', sks = o.team.s.filter(Boolean), rk = [['#fff4d1', '#f2cf63', '#c98a00'], ['#dde2e9', '#a3adba', '#4e5968'], ['#fdeadb', '#eebd96', '#b8672a']][i], rbg = rk ? `background:${rk[0]};box-shadow:inset 0 0 0 1.5px ${rk[1]};` : i < 10 ? 'background:#f7f9fc;' : '';
-    return `<button onclick="arenaOpen(${i})" class="card soft press" style="width:100%;text-align:left;border:0;padding:14px 16px;display:flex;align-items:center;gap:12px;${rbg}"><span style="width:22px;flex:none;text-align:center;font-size:14px;font-weight:800;color:${rk ? rk[2] : 'var(--ink4)'}">${i + 1}</span><div class="medal t-${o.fb.tier}" style="width:48px;height:48px;flex:none"><span class="emoji" style="font-size:28px">${o.fb.emoji}</span></div>
-      <div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span><span class="chip t-${o.fb.tier}" style="height:20px;padding:0 7px;font-size:10px;flex:none">Lv.${o.team.f.lv}</span></div>
-      <div style="display:flex;gap:4px;margin-top:6px">${skIcons(sks)}</div></div>
-      <div style="text-align:right;flex:none"><div style="font-size:15px;font-weight:800;color:${Arn.sort === 'power' ? pc : 'var(--ink)'}">${fmt(o.power)}</div><div style="font-size:11px;font-weight:700;color:var(--ink3);margin-top:2px">STAGE ${o.stage}</div></div></button>`; }).join('');
+  const shown = Arn.shown = arenaShown(), canFight = !!state.eq.f;
+  const rows = shown.map((o, i) => { const pc = o.power > mp ? 'var(--red)' : 'var(--green)', sks = o.team.s.filter(Boolean), rk = [['#fff4d1', '#f2cf63', '#c98a00'], ['#dde2e9', '#a3adba', '#4e5968'], ['#fdeadb', '#eebd96', '#b8672a']][i], rbg = (rk ? `background:${rk[0]};box-shadow:inset 0 0 0 1.5px ${rk[1]};` : i < 10 ? 'background:#f7f9fc;' : '') + (o.me ? 'box-shadow:inset 0 0 0 2.5px var(--blue);' : '');
+    return `<div class="card soft" style="padding:0;display:flex;align-items:stretch;${rbg}"><button onclick="arenaOpen(${i})" class="press" style="flex:1;min-width:0;text-align:left;border:0;background:none;padding:14px 8px 14px 14px;display:flex;align-items:center;gap:10px"><span style="width:18px;flex:none;text-align:center;font-size:14px;font-weight:800;color:${rk ? rk[2] : 'var(--ink4)'}">${i + 1}</span><div class="medal t-${o.fb.tier}" style="width:44px;height:44px;flex:none"><span class="emoji" style="font-size:26px">${o.fb.emoji}</span></div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;gap:6px;min-width:0"><span style="flex:1;min-width:0;display:flex;align-items:center;gap:5px"><span style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(o.name)}</span>${o.me ? '<span class="chip" style="flex:none;height:19px;padding:0 7px;font-size:10px;background:var(--blue);color:#fff">나</span>' : `<span class="chip t-${o.fb.tier}" style="height:19px;padding:0 6px;font-size:10px;flex:none">Lv.${o.team.f.lv}</span>`}</span><span style="flex:none;font-size:15px;font-weight:800;white-space:nowrap;color:${Arn.sort === 'power' && !o.me ? pc : 'var(--ink)'}">${fmt(o.power)}</span></div>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:4px 6px;flex-wrap:wrap"><span style="display:flex;gap:3px">${skIcons(sks, true)}</span><span style="flex:none;font-size:11px;font-weight:700;color:var(--ink3);white-space:nowrap;margin-left:auto">STAGE ${o.stage}</span></div>
+      </div></button>
+      ${o.me ? '<div style="width:12px"></div>' : `<button onclick="arenaQuick(${i})" aria-label="바로 도전" ${canFight ? '' : 'disabled'} class="press" style="flex:none;width:52px;border:0;border-left:1px solid rgba(25,31,40,.08);background:none;color:var(--blue);display:flex;align-items:center;justify-content:center;${canFight ? '' : 'opacity:.35'}">${ic('swords', 'w-5 h-5')}</button>`}</div>`; }).join('');
   const logs = Arn.logs.length ? Arn.logs.map(l => `<div style="display:flex;align-items:center;justify-content:space-between;height:44px;border-top:1px solid var(--line)"><span style="font-size:14px;font-weight:700">${esc(l.attackerName)}</span><span class="chip" style="${l.win ? 'background:var(--red-s);color:var(--red)' : 'background:#e9f9f1;color:var(--green)'}">${l.win ? '방어 실패' : '방어 성공'}</span></div>`).join('') : '<div style="padding:18px 0 8px;text-align:center;font-size:13px;color:var(--ink3);border-top:1px solid var(--line)">아직 도전 기록이 없어요</div>';
-  return `<div class="space-y-3">${arenaHeadHtml()}
+  return `<div class="space-y-3">${arenaHeadHtml()}${arenaDefCardHtml()}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">플레이어</div><button class="btn ghost sm" onclick="arenaRefresh()">${Arn.loading ? '불러오는 중…' : '새로고침'}</button></div>
     <div style="display:flex;gap:4px;padding:4px;border-radius:15px;background:#eceff2">${seg('power', '전투력순')}${seg('stage', '최고 스테이지순')}</div>
     ${rows || `<div class="card soft" style="text-align:center;font-size:13px;color:var(--ink3);padding:26px 20px">${Arn.err || (Arn.loading ? '불러오는 중이에요' : '아직 등록된 플레이어가 없어요')}</div>`}
@@ -3476,7 +3634,7 @@ function viewArenaDetail() {
       <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:14px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue)"></div><div style="flex:1;background:var(--red)"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(o.power)}</span></div>
       ${my ? `<div style="margin-top:12px;background:#f5f6f8;border-radius:14px;padding:4px 14px">${arenaStatRows(my, o.st)}</div>` : ''}</div>
-    <button class="btn primary" style="width:100%;height:54px;font-size:16px" ${fbm ? '' : 'disabled'} onclick="arenaChallenge()">친선전 도전</button>
+    <button class="btn primary" style="width:100%;height:54px;font-size:16px" ${fbm && !o.me ? '' : 'disabled'} onclick="arenaChallenge()">${o.me ? '내 방어덱이에요' : '친선전 도전'}</button>
   </div>`;
 }
 
@@ -3490,7 +3648,7 @@ function accErr(e) {
     'auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않아요.', 'auth/wrong-password':'이메일 또는 비밀번호가 맞지 않아요.', 'auth/user-not-found':'이메일 또는 비밀번호가 맞지 않아요.',
     'auth/missing-password':'비밀번호를 입력해 주세요.', 'auth/too-many-requests':'시도가 너무 많아요. 잠시 뒤에 다시 해 주세요.', 'auth/network-request-failed':'네트워크 연결을 확인해 주세요.',
     'auth/popup-blocked':'팝업이 차단됐어요. 팝업을 허용해 주세요.', 'auth/operation-not-allowed':'Firebase 콘솔에서 이 로그인 방식을 켜야 해요.', 'auth/unauthorized-domain':'Firebase 승인된 도메인에 이 주소를 추가해야 해요.',
-    'auth/popup-closed-by-user':'', 'auth/cancelled-popup-request':'' };
+    'auth/popup-closed-by-user':'', 'auth/cancelled-popup-request':'', 'permission-denied':'Firestore 규칙이 게시되지 않았거나 거부됐어요. firestore.rules를 게시해 주세요. (permission-denied)', 'unavailable':'서버에 연결할 수 없어요. 네트워크를 확인해 주세요.' };
   return c in m ? m[c] : '실패했어요 (' + (c || (e && e.message) || '알 수 없음') + ')';
 }
 function accRefresh() { const a = document.getElementById('accCard'); if (a && tab === 'settings') { a.outerHTML = accCardHtml(); icons(); } }
@@ -3515,8 +3673,10 @@ function accCardHtml() {
   } else {
     const prov = u.providers.includes('google.com') ? 'Google' : '이메일';
     body = `<div style="display:flex;align-items:center;gap:10px;margin-top:12px;background:#f5f6f8;border-radius:16px;padding:12px 14px"><span class="chip" style="background:var(--blue-s);color:var(--blue);flex:none">${prov}</span><span style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.email || '연동됨')}</span></div>
-      <div style="font-size:12px;color:var(--ink3);margin-top:10px;font-weight:600">${Acc.synced ? '클라우드에 저장됨' + (Acc.last ? ' · ' + new Date(Acc.last).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' }) : '') : '클라우드 확인 중…'} · 변경하면 자동으로 저장돼요</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button class="btn ghost" ${Acc.synced && !Acc.busy ? '' : 'disabled'} onclick="accSaveNow()">지금 저장</button><button class="btn danger" ${Acc.busy ? 'disabled' : ''} onclick="askLogout()">로그아웃</button></div>`;
+      <div style="font-size:12px;color:var(--ink3);margin-top:10px;font-weight:600;line-height:1.6">${Acc.synced ? '클라우드에 저장됨' + (Acc.last ? ' · ' + new Date(Acc.last).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' }) : '') : '클라우드 확인 중…'} · 변경하면 자동으로 저장돼요${Acc.sum ? `<br>저장된 기록: STAGE ${Acc.sum.stage} · 파이터 ${Acc.sum.f} · 스킬 ${Acc.sum.s}` : ''}</div>
+      ${Acc.syncErr ? `<div style="font-size:12px;color:var(--red);font-weight:700;margin-top:6px;line-height:1.5">저장 실패: ${Acc.syncErr}</div>` : ''}
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><button class="btn ghost" ${Acc.busy ? 'disabled' : ''} onclick="accSaveNow()">지금 저장</button><button class="btn ghost" ${Acc.busy ? 'disabled' : ''} onclick="accLoadNow()">클라우드에서 불러오기</button></div>
+      <button class="btn danger" ${Acc.busy ? 'disabled' : ''} style="width:100%;margin-top:8px" onclick="askLogout()">로그아웃</button>`;
   }
   const nick = `<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line)"><div style="font-size:14px;font-weight:800;margin-bottom:8px">닉네임 <span style="font-size:12px;color:var(--ink3);font-weight:600">아레나에 표시돼요</span></div>
     <div style="display:flex;gap:8px"><input id="nickIn" maxlength="10" value="${esc(state.nick || '')}" placeholder="닉네임 (최대 10자)" style="${accInp};flex:1;min-width:0;width:auto"><button class="btn primary" onclick="setNick()">저장</button></div></div>`;
@@ -3553,11 +3713,13 @@ async function accUpload() {
   const savedAt = Date.now();
   await window.ArenaFB.cloudPut(JSON.stringify(d), savedAt, state.stage | 0);
   state.cloudUid = u.uid; state.cloudAt = savedAt; try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
-  Acc.synced = true; Acc.last = savedAt; accRefresh();
+  Acc.synced = true; Acc.last = savedAt; Acc.syncErr = ''; Acc.sum = accSummary(d); accRefresh();
 }
-function accSyncSoon() { if (!Acc.synced || window.__noSave) return; clearTimeout(accT); accT = setTimeout(() => accUpload().catch(() => {}), 4000); }
-async function accSaveNow() { try { clearTimeout(accT); await accUpload(); toast('클라우드에 저장했어요'); } catch (e) { toast('저장하지 못했어요'); } }
-document.addEventListener('visibilitychange', () => { if (document.hidden && Acc.synced && !window.__noSave) { clearTimeout(accT); accUpload().catch(() => {}); } });
+const accFail = e => { Acc.syncErr = accErr(e); accRefresh(); };
+function accSyncSoon() { if (!Acc.synced || window.__noSave) return; clearTimeout(accT); accT = setTimeout(() => accUpload().catch(accFail), 4000); }
+async function accSaveNow() { try { clearTimeout(accT); await accUpload(); toast('클라우드에 저장했어요'); } catch (e) { accFail(e); toast('저장하지 못했어요'); } }
+async function accLoadNow() { try { const c = await window.ArenaFB.cloudGet(); if (!c) { toast('클라우드에 저장된 기록이 없어요'); return; } accPrompt(c); } catch (e) { accFail(e); } }
+document.addEventListener('visibilitychange', () => { if (document.hidden && Acc.synced && !window.__noSave) { clearTimeout(accT); accUpload().catch(accFail); } });
 /* 로그인 직후/앱 시작 시: 클라우드와 이 기기의 기록을 비교한다 */
 async function accCheckCloud(force) {
   const u = accUser(); if (!u || u.anon || Acc.checking) return;
@@ -3567,13 +3729,23 @@ async function accCheckCloud(force) {
     const c = await window.ArenaFB.cloudGet();
     if (!c) await accUpload();
     else if (state.cloudUid === u.uid && (state.cloudAt || 0) >= c.savedAt) await accUpload();
-    else accPrompt(c);
+    else {
+      const a = accSummary(c.data), b = accSummary(state), triv = x => x.stage <= 1 && x.s === 0 && x.f <= 1 && x.lvs <= 3;
+      let pick = null;
+      if (!a) pick = 'local'; else if (!b) pick = 'cloud';
+      else if (triv(b) && !triv(a)) pick = 'cloud';
+      else if (triv(a) && !triv(b)) pick = 'local';
+      else if (Math.abs(a.stage - b.stage) <= 1 && Math.abs(a.f - b.f) + Math.abs(a.s - b.s) <= 1 && Math.abs(a.lvs - b.lvs) <= 2 && a.evos === b.evos) pick = c.savedAt > (state.cloudAt || 0) ? 'cloud' : 'local';
+      if (pick === 'local') await accUpload();
+      else if (pick === 'cloud') { Acc.pending = c; accUseCloud(); }
+      else accPrompt(c);
+    }
     Acc.checkedUid = u.uid;
-  } catch (e) { Acc.msg = '클라우드 기록을 확인하지 못했어요.'; }
+  } catch (e) { Acc.syncErr = accErr(e); Acc.msg = '클라우드 기록을 확인하지 못했어요.'; }
   Acc.checking = false; accRefresh();
 }
 function accSummary(d) {
-  try { const s = typeof d === 'string' ? JSON.parse(d) : d; return { stage:s.stage | 0, gold:s.gold | 0, f:Object.keys(s.own.f).length, s:Object.keys(s.own.s).length, nick:s.nick || '' }; } catch (e) { return null; }
+  try { const s = typeof d === 'string' ? JSON.parse(d) : d; return { lvs:Object.values(s.lv.f || {}).concat(Object.values(s.lv.s || {})).reduce((a, b) => a + (+b || 0), 0), evos:Object.keys(s.evo || {}).length, stage:s.stage | 0, gold:s.gold | 0, f:Object.keys(s.own.f).length, s:Object.keys(s.own.s).length, nick:s.nick || '' }; } catch (e) { return null; }
 }
 function accPrompt(c) {
   Acc.pending = c;
@@ -3620,4 +3792,4 @@ startBattle();
 requestAnimationFrame(loop);
 </script>
 </body>
-  </html>
+</html>
