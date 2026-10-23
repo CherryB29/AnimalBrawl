@@ -274,6 +274,7 @@ else {
     };
     API.myLogs = async () => (await fs.getDocs(fs.query(fs.collection(db, 'players', uid(), 'logs'), fs.orderBy('at', 'desc'), fs.limit(15)))).docs.map(d => d.data());
     API.logMatch = m => fs.addDoc(fs.collection(db, 'players', m.defenderUid, 'logs'), { attackerUid:uid(), attackerName:String(m.attackerName).slice(0, 12), win:!!m.win, at:fs.serverTimestamp() });
+    API.logBattles = list => { const wb = fs.writeBatch(db), me = uid(); for (const r of list) wb.set(fs.doc(fs.collection(db, 'battles')), Object.assign({}, r, { uid:me, srv:fs.serverTimestamp() })); return wb.commit(); };
     API.cloudGet = async () => { const s = await fs.getDoc(fs.doc(db, 'saves', uid())); return s.exists() ? { data:s.data().data, savedAt:s.data().savedAt } : null; };
     API.cloudPut = (data, savedAt, stage) => fs.setDoc(fs.doc(db, 'saves', uid()), { data, savedAt, stage });
   } catch (e) { console.warn('Firebase 연결 실패', e); }
@@ -343,7 +344,7 @@ const SKILLS = [
   // ── 초월 (상향)
   { id:'nova',      tier:'t', emoji:'🌌', name:'초신성 폭발', dmg:242, cd:12, mc:0.10, range:420, shape:'blast', wind:1.0, radius:190, kb:800, fx:'stun', fxv:1.7, color:'255,230,150' },
   { id:'moonblade', tier:'t', emoji:'🌙', name:'기습',      dmg:72, cd:8, mc:0.90, range:430, shape:'blink', wind:0.28, kb:300, color:'175,150,255' },
-  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:11, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:6, tick:0.4, tickDmg:43.4, pull:620, zslow:true, wind:0.55, color:'150,100,255' },
+  { id:'prison',    tier:'t', emoji:'🕳️', name:'차원 감옥', dmg:0, cd:12, mc:0.40, range:300, shape:'zone', zstyle:'void', radius:150, dur:5, tick:0.4, tickDmg:43.4, pull:620, zslow:true, wind:0.55, color:'150,100,255' },
   { id:'eclipse',   tier:'t', emoji:'☀️', name:'일식',    dmg:0, cd:13, mc:0.70, range:0, shape:'buff', self:true, wind:0.35, dur:7, batk:1.7, bspd:1.4, hot:0.025, cc:0.5, color:'255,220,120' },
   { id:'shower',    tier:'t', emoji:'🌠', name:'유성우',    dmg:90, cd:12, mc:0.15, range:420, shape:'shower', n:13, span:2.1, radius:150, mr:55, wind:0.60, kb:300, color:'255,170,90' },
 ];
@@ -980,7 +981,7 @@ function dbgGoldPrompt() {
   document.body.appendChild(el);
   const inp = el.querySelector('#dbgGoldIn'); inp.focus(); inp.select();
   const close = () => el.remove();
-  const ok = () => { const v = Math.floor(Number(inp.value)); if (!isFinite(v) || v < 0) { toast('0 이상의 숫자를 입력해 주세요'); return; } state.gold = Math.min(v, 1e15); save(); setGold(); close(); toast('골드를 ' + fmt(state.gold) + '으로 바꿨어요'); };
+  const ok = () => { const v = Math.floor(Number(inp.value)); if (!isFinite(v) || v < 0) { toast('0 이상의 숫자를 입력해 주세요'); return; } state.gold = Math.min(v, 1e15); state.dbg = true; save(); setGold(); close(); toast('골드를 ' + fmt(state.gold) + '으로 바꿨어요'); };
   el.querySelector('#dbgNo').onclick = close; el.querySelector('#dbgOk').onclick = ok;
   inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') ok(); });
   el.addEventListener('click', ev => { if (ev.target === el) close(); });
@@ -3034,8 +3035,10 @@ function checkEnd() {
   B.firstClear = B.win && B.stage === state.stage;
   B.bonus = B.firstClear ? clearBonus(B.stage) : 0;
   state.gold += B.contrib + B.bonus;
+  const front = B.stage === state.stage;
   if (B.firstClear) state.stage += 1;
   save();
+  statLog('s', B.win, { front });
   battleLog.push({ win:B.win, stage:B.stage, gold:B.contrib + B.bonus, first:B.firstClear }); if (battleLog.length > 6) battleLog.shift();
   if (!arenaEl.isConnected) toast(`${B.win ? '승리' : '패배'} · STAGE ${B.stage} · +${fmt(B.contrib + B.bonus)} 골드`);
   setGold();
@@ -3580,8 +3583,36 @@ function arenaChallenge() {
 }
 function arenaBack() { Arn.fight = false; Arn.opp = null; startBattle(); render(true); }
 function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai.innerHTML = arenaFightInfoHtml(); icons(); } }
+/* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
+   아레나는 전부, 스테이지는 '진행 중인 최고 스테이지' 전투만 전부 + 반복 전투는 10%만(가중치 w=10) 기록한다.
+   서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. 디버그 골드를 쓴 기기는 dbg 표시가 붙는다. */
+const GAME_VER = '3-31', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+let statQ = [], statBusy = false;
+try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
+const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
+const statAtt = m => { const o = {}; for (const k in (m || {})) { const r = m[k]; o[k] = [Math.round(r.d), Math.round(r.h), Math.round(r.s)]; } return o; };
+function statLog(kind, win, o) {
+  try {
+    if (!FBok() || !B) return;
+    o = o || {}; let w = 1;
+    if (kind === 's' && !o.front) { if (Math.random() >= 0.1) return; w = 10; }
+    if (kind === 'a' && (!B.arena || B.arena.sample || B.arena.me)) return;
+    const r = { t:kind, stage:kind === 's' ? B.stage : 0, win:!!win, dur:Math.round(B.fightT), w, ver:GAME_VER, me:defFromStage(), att:statAtt(B.att && B.att.me), dbg:!!state.dbg, at:Date.now() };
+    if (kind === 'a') { r.opp = B.arena.team; r.oatt = statAtt(B.att && B.att.en); r.pw = [myPower(), B.arena.power || 0]; }
+    statQ.push(r); if (statQ.length > STAT_MAX) statQ.splice(0, statQ.length - STAT_MAX);
+    statSave(); if (statQ.length >= 20) statFlush();
+  } catch (e) { console.warn('stat', e); }
+}
+function statFlush() {
+  if (statBusy || !statQ.length || !FBok() || !window.ArenaFB.logBattles) return;
+  const batch = statQ.slice(0, 20); statBusy = true;
+  window.ArenaFB.logBattles(batch).then(() => { statQ = statQ.filter(x => !batch.includes(x)); statSave(); }).catch(() => {}).finally(() => { statBusy = false; });
+}
+setInterval(statFlush, 60000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') statFlush(); });
 function arenaReport(win) {
   if (B.reported) return; B.reported = true;
+  statLog('a', win);
   if (FBok() && Arn.opp && !Arn.opp.sample) window.ArenaFB.logMatch({ defenderUid:Arn.opp.uid, attackerName:state.nick || '이름 없음', win:!!win }).catch(() => {});
 }
 function showArenaResult() {
