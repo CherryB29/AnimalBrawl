@@ -586,7 +586,7 @@ function load() {
     if (raw) {
       const s = JSON.parse(raw), d = freshState();
       if (s && s.own && s.eq) {
-        const r = Object.assign(d, s);
+        const r = Object.assign(d, s); if (!s.patchSeen) r.patchSeen = null; /* 기존 저장에는 본 패치 기록이 없으니 최신 패치 노트를 보여준다 */
         r.stage = Math.max(1, r.stage|0); r.sel = Math.min(Math.max(1, r.sel|0), r.stage);
         if (!Array.isArray(r.eq.s)) r.eq.s = [null,null,null];
         if (!r.lv) r.lv = { f:{}, s:{} }; if (!r.evo) r.evo = {}; if (![1,2,3,4].includes(r.startCd)) r.startCd = 2; if (!r.scd) r.scd = {}; if (!r.vol || typeof r.vol !== 'object') r.vol = { sfx:50, bgm:30 }; r.vol.sfx = Math.max(0, Math.min(100, +r.vol.sfx || 0)); r.vol.bgm = Math.max(0, Math.min(100, +r.vol.bgm || 0));
@@ -1998,7 +1998,7 @@ function speedOf(u) {
 }
 const CHIP_OK = ['부활','각성','분노','겨울잠','무적','재생'];
 function chip(u, text, force) { if (!force && !CHIP_OK.includes(text)) return; u.chip = { text, t:0, life:1.1 }; }
-function regen(u, amt, key) { amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM); const h0 = u.hp; u.hp = Math.min(u.maxHp, u.hp + amt); rec(u, key || attId(u), 'h', u.hp - h0); }
+function regen(u, amt, key) { if (u.hp <= 0) return; /* 체력이 0이 된 유닛은 틱 회복으로 되살아나지 않는다 */ amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM); const h0 = u.hp; u.hp = Math.min(u.maxHp, u.hp + amt); rec(u, key || attId(u), 'h', u.hp - h0); }
 
 /* ---------- 이펙트 생성 ---------- */
 function P(o) { if (B.parts.length > 800) B.parts.shift(); B.parts.push(Object.assign({ t:0, drag:0, g:0, add:true, size:3, life:0.5, rot:0, vr:0, grow:0, vx:0, vy:0 }, o)); }
@@ -2293,6 +2293,7 @@ function applyHit(src, tgt, raw, o) {
   return dmg;
 }
 function heal(u, amt, silent) {
+  if (u.hp <= 0) return;
   amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM);
   amt = Math.round(Math.min(amt, u.maxHp - u.hp)); if (amt <= 0) return;
   u.hp += amt; rec(u, attId(u), 'h', amt); if (!silent) addText(u.x, u.y - u.r*1.4, '+' + amt, '110,231,160', 24, 0.95);
@@ -3645,7 +3646,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-38', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-40', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
