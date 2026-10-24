@@ -251,7 +251,8 @@ else {
       setUser(u); if (first) { first = false; res(); } else ping();
     }));
     const refresh = () => { setUser(fauth.currentUser); ping(); };
-    const switchTo = async cred => { await au.signInWithCredential(fauth, cred); refresh(); return 'switched'; };
+    const dropAnon = async () => { const u = fauth.currentUser; if (u && u.isAnonymous) { try { await fs.deleteDoc(fs.doc(db, 'players', u.uid)); } catch (e) { console.warn('guest profile cleanup', e); } } };
+    const switchTo = async cred => { await dropAnon(); await au.signInWithCredential(fauth, cred); refresh(); return 'switched'; };
     API.googleConnect = async () => {
       const prov = new au.GoogleAuthProvider(), u = fauth.currentUser;
       try { await au.linkWithPopup(u, prov); refresh(); return 'linked'; }
@@ -261,7 +262,7 @@ else {
       }
     };
     API.emailConnect = async (email, pw, mode) => {
-      if (mode === 'login') { await au.signInWithEmailAndPassword(fauth, email, pw); refresh(); return 'switched'; }
+      if (mode === 'login') { await dropAnon(); await au.signInWithEmailAndPassword(fauth, email, pw); refresh(); return 'switched'; }
       await au.linkWithCredential(fauth.currentUser, au.EmailAuthProvider.credential(email, pw)); refresh(); return 'linked';
     };
     API.resetPassword = email => au.sendPasswordResetEmail(fauth, email);
@@ -270,7 +271,7 @@ else {
     API.listOpponents = async sort => {
       const snap = await fs.getDocs(fs.query(fs.collection(db, 'players'), fs.orderBy(sort === 'stage' ? 'stage' : 'power', 'desc'), fs.limit(40)));
       const me = uid();
-      return snap.docs.filter(d => d.id !== me).map(d => { const x = d.data(); return { uid:d.id, name:x.name, power:x.power, stage:x.stage, team:x.team }; });
+      return snap.docs.filter(d => d.id !== me).map(d => { const x = d.data(); return { uid:d.id, name:x.name, power:x.power, stage:x.stage, team:x.team, at:(x.updatedAt && x.updatedAt.toMillis ? x.updatedAt.toMillis() : 0) }; });
     };
     API.myLogs = async () => (await fs.getDocs(fs.query(fs.collection(db, 'players', uid(), 'logs'), fs.orderBy('at', 'desc'), fs.limit(15)))).docs.map(d => d.data());
     API.logMatch = m => fs.addDoc(fs.collection(db, 'players', m.defenderUid, 'logs'), { attackerUid:uid(), attackerName:String(m.attackerName).slice(0, 12), win:!!m.win, at:fs.serverTimestamp() });
@@ -3439,6 +3440,8 @@ function pickNext(which) {
 
 /* ===================== 아레나 (친선전 · Firebase) ===================== */
 const SNAP_VER = 1;
+/* 같은 사람 식별용 번호. 클라우드 기록에 함께 저장돼서 기기·계정이 바뀌어도 유지된다 */
+function myPid() { if (!state.pid) { state.pid = 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {} } return state.pid; }
 const Arn = { fight:false, view:'list', sort:'power', cur:null, opp:null, opps:[], loading:false, logs:[], sync:'idle', editNick:false, err:'' };
 const FBok = () => !!(window.ArenaFB && window.ArenaFB.ready);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
@@ -3535,7 +3538,7 @@ function teamBonus(team) { const o = { hp:0, atk:0, def:0 }; for (const x of tea
 function arenaPrep(p) {
   const team = sanitizeTeam(p.team); if (!team) return null;
   const fb = F(team.f.id), entries = teamEntries(team), st = fighterStats(fb, team.f.lv, true, teamBonus(team));
-  return { uid:p.uid, me:!!p.me, name:String(p.name || '이름 없음').slice(0, 12), stage:Math.max(1, Math.min(9999, Math.floor(+p.stage) || 1)), team, fb, st, entries, power:powerOf(st, entries, team.f.id), sample:!!p.sample };
+  return { uid:p.uid, pid:String((p.team && p.team.pid) || '').slice(0, 40), at:+p.at || 0, me:!!p.me, name:String(p.name || '이름 없음').slice(0, 12), stage:Math.max(1, Math.min(9999, Math.floor(+p.stage) || 1)), team, fb, st, entries, power:powerOf(st, entries, team.f.id), sample:!!p.sample };
 }
 const arenaSorted = list => list.slice().sort((a, b) => Arn.sort === 'stage' ? (b.stage - a.stage || b.power - a.power) : (b.power - a.power || b.stage - a.stage));
 /* ---- 내 수비 팀 자동 등록 (세팅이 바뀌면 잠시 뒤 서버에 반영) ---- */
@@ -3544,12 +3547,24 @@ const arenaRenderIf = () => { if (tab === 'arena' && !Arn.fight) render(); };
 function arenaSyncSoon(now) { clearTimeout(arnTimer); arnTimer = setTimeout(arenaSync, now ? 50 : 2500); }
 async function arenaSync() {
   if (!FBok() || !state.nick || !state.eq.f) return;
-  const snap = myTeamSnapshot(), key = state.nick + '|' + state.stage + JSON.stringify(snap);
+  const snap = Object.assign({}, myTeamSnapshot(), { pid:myPid() }), key = state.nick + '|' + state.stage + JSON.stringify(snap);
   if (key === arnKey) { if (Arn.sync !== 'ok') { Arn.sync = 'ok'; arenaRenderIf(); } return; }
   Arn.sync = 'syncing'; arenaRenderIf();
   try { await window.ArenaFB.saveProfile({ name:state.nick, power:myDefPower(), stage:state.stage, team:snap, ver:SNAP_VER }); arnKey = key; Arn.sync = 'ok'; }
   catch (e) { Arn.sync = 'error'; }
   arenaRenderIf();
+}
+/* 내 옛 기록(같은 pid, 또는 같은 닉네임)은 숨기고, 같은 사람이 여러 번 올라온 경우 가장 최근 것만 남긴다 */
+function arenaDedupe(list) {
+  const mine = myPid(), nick = (state.nick || '').trim().toLowerCase(), by = new Map(), out = [];
+  for (const o of list) {
+    if (o.sample) { out.push(o); continue; }
+    if (o.pid && o.pid === mine) continue;
+    if (nick && String(o.name).trim().toLowerCase() === nick) continue;
+    if (!o.pid) { out.push(o); continue; }
+    const c = by.get(o.pid); if (!c || o.at > c.at) by.set(o.pid, o);
+  }
+  return out.concat([...by.values()]);
 }
 async function arenaRefresh() {
   if (Arn.loading || !window.ArenaFB) return;
@@ -3558,7 +3573,7 @@ async function arenaRefresh() {
     let list = [];
     if (FBok()) list = await window.ArenaFB.listOpponents(Arn.sort);
     else if (!window.ArenaFB.configured) list = SAMPLE_OPPS.map(o => ({ uid:'sample:' + o.name, name:o.name, stage:o.stage, team:{ f:o.f, s:o.s }, sample:true }));
-    Arn.opps = arenaSorted(list.map(arenaPrep).filter(Boolean)).slice(0, 40);
+    Arn.opps = arenaSorted(arenaDedupe(list.map(arenaPrep).filter(Boolean))).slice(0, 40);
   } catch (e) { Arn.err = '플레이어 목록을 불러오지 못했어요'; }
   Arn.loading = false; arenaRenderIf();
 }
@@ -3585,7 +3600,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-35', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-36', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
