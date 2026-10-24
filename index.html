@@ -327,12 +327,12 @@ const SKILLS = [
   // ── 희귀
   { id:'ice',    tier:'r', emoji:'❄️', name:'얼음창', dmg:47, cd:5, mc:0.30, range:310, shape:'proj', kind:'ice', wind:0.32, speed:540, pr:10, kb:120, fx:'freeze', stun:0.6, fxv:3.5, slowM:0.45, color:'130,220,255' },
   { id:'vamp',   tier:'r', emoji:'🩸', name:'흡혈',   dmg:61, cd:4, mc:1.00, range:90,  shape:'bite', wind:0.22, kb:200, fx:'lifesteal', fxv:1.5, color:'235,60,80' },
-  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:22, cd:6, mc:0.18, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.43, pdur:5, color:'150,230,90' },
+  { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:23.1, cd:6, mc:0.18, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.75, pdur:5, color:'150,230,90' },
   { id:'rush',   tier:'r', emoji:'💨', name:'질풍참', dmg:72, cd:5, mc:0.90, range:300, shape:'rush', wind:0.20, kb:260, color:'200,230,255' },
   { id:'barrier',tier:'r', emoji:'🛡️', name:'보호막', dmg:0,  cd:10, mc:0.50, range:0, shape:'shield', self:true, wind:0.35, pct:0.14, dur:4, color:'150,200,255' },
   // ── 영웅 (상향)
   { id:'bolt',   tier:'e', emoji:'⚡', name:'번개',   dmg:82, cd:6, mc:0.10, range:360, shape:'strike', wind:0.48, radius:42, kb:140, color:'170,200,255' },
-  { id:'bomb',   tier:'e', emoji:'💥', name:'폭발',   dmg:110, cd:7, mc:0.75, range:170, shape:'blast', wind:0.70, radius:82, kb:480, color:'255,120,60' },
+  { id:'bomb',   tier:'e', emoji:'💥', name:'폭발',   dmg:137.5, cd:6.3, mc:0.75, range:170, shape:'blast', wind:0.70, radius:82, kb:480, color:'255,120,60' },
   { id:'volley', tier:'e', emoji:'🏹', name:'화살비', dmg:33, cd:7, mc:0.15, range:340, shape:'proj', kind:'arrow', n:6, spread:0.6, wind:0.40, speed:620, pr:7, kb:80, cm:0.76, color:'235,230,180' },
   { id:'swamp',  tier:'e', emoji:'🕸️', name:'끈끈이 늪', dmg:0, cd:6, mc:0.30, range:260, shape:'zone', zstyle:'swamp', radius:109, dur:4.5, tick:0.5, tickDmg:13, zslow:true, slowM:0.1, wind:0.45, color:'200,175,110' },
   { id:'rage',   tier:'e', emoji:'😡', name:'광폭화', dmg:0,  cd:9, mc:0.75, range:0, shape:'buff', self:true, wind:0.30, dur:6, batk:1.55, bspd:1.25, color:'255,100,90' },
@@ -363,7 +363,7 @@ const EVO_RESET_COST = { n:0, r:0, e:0, m:0, l:0, t:0 };
 const EVO = {
   fire:[ {"key":"a","name":"잿더미","x":[{"k":"sunder","v":4},{"k":"burn","dps":7,"dur":3}],"desc":"명중 시 4초간 방어력이 60% 감소한다. 화상 피해가 40% 늘어난다."},
          {"key":"b","name":"불똥","x":[{"k":"sparkburst","n":5,"pct":0.8}],"desc":"명중 시 불똥 5개가 튀어 0.5초 뒤 작게 폭발한다. 불똥 하나는 불꽃 피해의 80%를 준다."} ],
-  smash:[ {"key":"a","name":"약점 파쇄","p":{"fxv":1.2},"x":[{"k":"vuln","v":5,"m":1.4}],"desc":"명중 시 5초간 받는 피해가 40% 늘어난다. 기절 시간이 1.2초로 늘어난다."},
+  smash:[ {"key":"a","name":"약점 파쇄","p":{"fxv":1.5},"x":[{"k":"vuln","v":5,"m":1.4}],"desc":"명중 시 5초간 받는 피해가 40% 늘어난다. 기절 시간이 1.5초로 늘어난다."},
          {"key":"b","name":"반동 강타","x":[{"k":"wallkb","kb":1820,"mult":2}],"desc":"적을 멀리 날려 보낸다. 벽에 부딪히면 강타 피해의 200%를 추가로 입히고 2초간 기절시킨다."} ],
   wind:[ {"key":"a","name":"모래 바람","p":{"radius":"*1.2"},"x":[{"k":"blind","v":2}],"desc":"명중 시 2초간 실명(공격 40% 빗나감). 범위 +20%."},
          {"key":"b","name":"소용돌이 방패","p":{"cd":"*1.3"},"s":[{"k":"evade","n":1,"dur":3}],"desc":"시전 시 3초 안에 받는 공격 1회를 무효화한다. 쿨타임 +30%."} ],
@@ -377,7 +377,7 @@ const EVO = {
          {"key":"b","name":"저주 받은 송곳니","x":[{"k":"curse","v":3,"m":0.15}],"desc":"명중 시 3초간 저주를 건다. 저주받은 적은 받는 회복량이 85% 줄어든다."} ],
   poison:[ {"key":"a","name":"신경독","p":{"pdur":7},"desc":"중독 지속시간이 7초로 늘어난다."},
          {"key":"b","name":"부식독","x":[{"k":"poisonpct","v":0.0015}],"desc":"중독 피해가 들어갈 때마다 적 최대 체력의 0.15%를 추가로 입힌다."} ],
-  rush:[ {"key":"a","name":"가속도","x":[{"k":"refund","t":3.5}],"desc":"명중 시 쿨타임이 3.5초 감소한다."},
+  rush:[ {"key":"a","name":"가속도","x":[{"k":"refund","t":4}],"desc":"명중 시 쿨타임이 4초 감소한다."},
          {"key":"b","name":"점멸","tp":1,"x":[{"k":"stun","v":1.5}],"desc":"돌진 대신 순간이동해 벤다. 명중 시 1.5초간 기절시킨다."} ],
   barrier:[ {"key":"a","name":"가시 방벽","s":[{"k":"thorns","pct":4.8,"dur":5}],"desc":"보호막과 함께 5초간 가시를 두른다. 받는 피해의 480%를 공격자에게 반사한다."},
          {"key":"b","name":"수호자","s":[{"k":"invuln","t":2}],"desc":"보호막을 펼친 직후 2초간 무적이 된다."} ],
@@ -565,6 +565,14 @@ const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
    새 패치는 PATCHES 맨 앞에 추가하면 된다. 접속했을 때 아직 안 본 최신 패치가 있으면 팝업으로 보여준다.
    type: 'buff'(버프) · 'nerf'(너프) · 'adjust'(조정) / sk: 스킬 id, f: 파이터 id, 또는 emoji + tier 직접 지정 */
 const PATCHES = [
+  { ver:'3-41', date:'2026.10.24', title:'밸런스 패치', items:[
+    { type:'buff', sk:'bomb', text:'피해량 25% 증가', from:'110', to:'137.5' },
+    { type:'buff', sk:'bomb', text:'쿨타임 10% 감소', from:'7초', to:'6.3초' },
+    { type:'buff', sk:'poison', text:'피해량 5% 증가 (직격·중독 피해 모두)', from:'', to:'' },
+    { type:'buff', sk:'smash', text:'1진화(약점 파쇄) 기절 시간 증가', from:'1.2초', to:'1.5초' },
+    { type:'buff', sk:'rush', text:'1진화(가속도) 쿨타임 감소량 증가', from:'3.5초', to:'4초' },
+    { type:'adjust', sk:'swamp', text:'고유 시각 효과 추가', from:'', to:'' }
+  ] },
   { ver:'3-38', date:'2026.10.24', title:'밸런스 패치', items:[
     { type:'buff', sk:'vamp', text:'치유량 3배 증가', from:'피해의 50%', to:'피해의 150%' },
     { type:'adjust', emoji:'🔥', tier:'n', name:'화염 디버프', text:'시각 효과 개선', from:'', to:'' },
@@ -1775,10 +1783,14 @@ function patchItemHtml(it) {
 function showPatchNote(force) {
   const pt = PATCHES[0]; if (!pt || (!force && state.patchSeen === pt.ver)) return;
   const m = $('confirmModal'); if (!m || !m.classList.contains('hidden')) return;
-  const groups = ['buff', 'nerf', 'adjust'].map(k => { const list = pt.items.filter(i => i.type === k); if (!list.length) return ''; const tp = PATCH_TYPES[k];
-    return `<div style="margin-top:14px"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:${tp[2]}"><span>${tp[1]}</span><span>${tp[0]}</span><span style="font-weight:700;opacity:.7">${list.length}</span></div><div style="border-top:2px solid ${tp[3]};margin-top:6px">${list.map(patchItemHtml).join('<div style="height:1px;background:var(--line)"></div>')}</div></div>`; }).join('');
+  const si = PATCHES.findIndex(x => x.ver === state.patchSeen), list = (si > 0 ? PATCHES.slice(0, si) : [pt]).slice(0, 3);
+  const body = list.map(P1 => {
+    const groups = ['buff', 'nerf', 'adjust'].map(k => { const its = P1.items.filter(i => i.type === k); if (!its.length) return ''; const tp = PATCH_TYPES[k];
+      return `<div style="margin-top:14px"><div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:${tp[2]}"><span>${tp[1]}</span><span>${tp[0]}</span><span style="font-weight:700;opacity:.7">${its.length}</span></div><div style="border-top:2px solid ${tp[3]};margin-top:6px">${its.map(patchItemHtml).join('<div style="height:1px;background:var(--line)"></div>')}</div></div>`; }).join('');
+    return `${list.length > 1 ? `<div style="margin-top:18px;font-size:12px;font-weight:800;color:var(--ink3);text-align:center">v${esc(P1.ver)} · ${esc(P1.date)}</div>` : ''}${groups}`;
+  }).join('');
   m.classList.remove('hidden'); m.classList.add('flex');
-  m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:24px 20px 18px;width:100%;max-width:360px;max-height:86dvh;display:flex;flex-direction:column"><div style="text-align:center"><div style="font-size:12px;font-weight:800;color:var(--blue);letter-spacing:.06em">PATCH NOTE</div><div style="font-size:21px;font-weight:800;letter-spacing:-0.03em;margin-top:4px">${esc(pt.title)}</div><div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:3px">v${esc(pt.ver)} · ${esc(pt.date)}</div></div><div style="overflow-y:auto;flex:1;min-height:0;margin-top:2px">${groups}</div><button class="btn primary" style="width:100%;margin-top:16px" onclick="closePatchNote()">확인</button></div>`;
+  m.innerHTML = `<div class="a-pop" style="background:#fff;border-radius:28px;padding:24px 20px 18px;width:100%;max-width:360px;max-height:86dvh;display:flex;flex-direction:column"><div style="text-align:center"><div style="font-size:12px;font-weight:800;color:var(--blue);letter-spacing:.06em">PATCH NOTE</div><div style="font-size:21px;font-weight:800;letter-spacing:-0.03em;margin-top:4px">${esc(pt.title)}</div><div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:3px">v${esc(pt.ver)} · ${esc(pt.date)}</div></div><div style="overflow-y:auto;flex:1;min-height:0;margin-top:2px">${body}</div><button class="btn primary" style="width:100%;margin-top:16px" onclick="closePatchNote()">확인</button></div>`;
 }
 function closePatchNote() { if (PATCHES[0]) state.patchSeen = PATCHES[0].ver; save(); closeConfirm(); }
 function closeConfirm() { const m = $('confirmModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
@@ -2956,7 +2968,11 @@ function updateZones(h) {
     z.t += h; z.tt -= h; const e = foe(z.owner), c = z.color;
     const rr = Math.sqrt(Math.random())*z.r, aa = rnd(0,TAU), px = z.x + Math.cos(aa)*rr, py = z.y + Math.sin(aa)*rr;
     if (z.style === 'fire' && Math.random() < h*30) P({ k:'glow', x:px, y:py, vy:-rnd(30,90), size:rnd(6,12), color:'255,130,40', life:0.6 });
-    else if (z.style === 'swamp' && Math.random() < h*12) P({ k:'dot', x:px, y:py, vy:-rnd(8,24), size:rnd(2,4), color:'210,190,130', life:0.8 });
+    else if (z.style === 'swamp') {
+      if (Math.random() < h*7) P({ k:'bubble', add:false, x:px, y:py, vx:rnd(-4,4), vy:-rnd(10,26), size:rnd(3,7), color:'120,90,50', rim:'235,215,160', life:rnd(0.9,1.5) });
+      if (Math.random() < h*4) P({ k:'smoke', add:false, x:px, y:py, vy:-rnd(6,16), size:rnd(5,9), grow:8, color:'150,125,80', life:rnd(1,1.6), drag:0.6 });
+      if (Math.random() < h*2.5) { const sx = z.x + rnd(-0.7,0.7)*z.r, sy = z.y + rnd(-0.7,0.7)*z.r; for (let i = 0; i < 5; i++) P({ k:'dot', x:sx + rnd(-3,3), y:sy, vx:rnd(-30,30), vy:-rnd(50,110), g:260, size:rnd(1.8,3), color:'110,80,45', life:0.7 }); }
+    }
     else if (z.style === 'void' && Math.random() < h*20) P({ k:'spark', x:z.x + Math.cos(aa)*z.r, y:z.y + Math.sin(aa)*z.r, vx:-Math.cos(aa)*140, vy:-Math.sin(aa)*140, size:2, color:'180,140,255', life:0.5 });
     else if (z.style === 'sanct') { if (Math.random() < h*8) P({ k:'cross', x:px, y:py, vy:-rnd(20,60), size:4, color:c, life:0.9 }); if (Math.random() < h*16) P({ k:'glow', x:px, y:py, vy:-rnd(25,60), size:rnd(5,9), color:'255,246,205', life:1.1 }); }
     else if (z.style === 'storm' && Math.random() < h*8) P({ k:'spark', x:px, y:py, size:2, vx:rnd(-60,60), vy:rnd(-60,60), color:'200,220,255', life:0.3 });
@@ -3153,6 +3169,22 @@ function drawWarn(w) {
   ctx.beginPath(); ctx.arc(w.x, w.y, w.r, 0, TAU); ctx.fill(); ctx.stroke();
   ctx.strokeStyle = rgba(col, 0.9*k); ctx.beginPath(); ctx.arc(w.x, w.y, w.r*p, 0, TAU); ctx.stroke(); ctx.restore();
 }
+/* 끈끈이 늪: 탁한 진흙 + 일렁이는 물결 + 늘어진 끈끈한 거미줄 */
+function drawSwamp(z) {
+  const t = z.t, R = z.r;
+  ctx.save(); ctx.beginPath(); ctx.arc(z.x, z.y, R, 0, TAU); ctx.clip();
+  const mg = ctx.createRadialGradient(z.x, z.y, 0, z.x, z.y, R); mg.addColorStop(0, 'rgba(52,36,20,0.6)'); mg.addColorStop(0.75, 'rgba(78,56,30,0.42)'); mg.addColorStop(1, 'rgba(100,78,44,0.1)');
+  ctx.fillStyle = mg; ctx.fillRect(z.x - R, z.y - R, R*2, R*2);
+  for (let i = 0; i < 5; i++) { const a = t*0.35 + i*TAU/5, rr = R*(0.38 + 0.2*Math.sin(t*0.8 + i*1.7)); ctx.fillStyle = 'rgba(34,22,12,0.3)'; ctx.beginPath(); ctx.ellipse(z.x + Math.cos(a)*rr, z.y + Math.sin(a)*rr*0.8, R*0.24, R*0.17, a, 0, TAU); ctx.fill(); }
+  for (let i = 0; i < 3; i++) { const ph = (t*0.55 + i/3) % 1; ctx.strokeStyle = rgba('235,212,150', 0.4*(1 - ph)); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(z.x, z.y, R*ph, R*ph*0.82, 0, 0, TAU); ctx.stroke(); }
+  const N = 8, sway = Math.sin(t*1.6)*0.04; ctx.strokeStyle = 'rgba(245,232,190,0.42)'; ctx.lineWidth = 1.2; ctx.lineCap = 'round';
+  for (let i = 0; i < N; i++) { const a = i*TAU/N + sway; ctx.beginPath(); ctx.moveTo(z.x, z.y); ctx.lineTo(z.x + Math.cos(a)*R, z.y + Math.sin(a)*R); ctx.stroke(); }
+  for (const k of [0.3, 0.55, 0.8]) { const rad = R*k*(1 + 0.02*Math.sin(t*2 + k*9)); ctx.beginPath();
+    for (let i = 0; i <= N; i++) { const a = i*TAU/N + sway, am = a - TAU/N/2, x = z.x + Math.cos(a)*rad, y = z.y + Math.sin(a)*rad; if (!i) ctx.moveTo(x, y); else ctx.quadraticCurveTo(z.x + Math.cos(am)*rad*0.86, z.y + Math.sin(am)*rad*0.86, x, y); }
+    ctx.stroke(); }
+  ctx.fillStyle = 'rgba(255,245,210,0.55)'; for (let i = 0; i < 6; i++) { const a = i*TAU/6 + t*0.2, rr = R*(0.3 + 0.5*((i*0.37 + t*0.08) % 1)); ctx.beginPath(); ctx.arc(z.x + Math.cos(a)*rr, z.y + Math.sin(a)*rr, 1.8 + Math.sin(t*3 + i)*0.6, 0, TAU); ctx.fill(); }
+  ctx.restore();
+}
 function drawZone(z) {
   const a = Math.min(1, z.t/0.3, (z.dur - z.t)/0.5), c = z.color;
   ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
@@ -3162,6 +3194,7 @@ function drawZone(z) {
   ctx.strokeStyle = rgba(c, 0.6); ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -z.t*30; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   if (z.style === 'void') drawVoid(z);
   if (z.style === 'sanct') drawSanct(z);
+  if (z.style === 'swamp') drawSwamp(z);
   if (z.style === 'crater') { const g2 = ctx.createRadialGradient(z.x, z.y, z.r*0.2, z.x, z.y, z.r); g2.addColorStop(0, 'rgba(30,15,8,0.75)'); g2.addColorStop(0.75, 'rgba(70,40,22,0.5)'); g2.addColorStop(1, 'rgba(120,70,40,0)'); ctx.fillStyle = g2; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.fill(); ctx.strokeStyle = 'rgba(255,140,70,0.55)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(z.x, z.y, z.r*0.92, 0, TAU); ctx.stroke(); for (let i = 0; i < 7; i++) { const a = i*TAU/7 + 0.4; ctx.strokeStyle = 'rgba(255,110,40,0.55)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(z.x + Math.cos(a)*z.r*0.25, z.y + Math.sin(a)*z.r*0.25); ctx.lineTo(z.x + Math.cos(a + 0.2)*z.r*0.7, z.y + Math.sin(a + 0.2)*z.r*0.7); ctx.stroke(); } }
   if (z.style === 'nebula') { ctx.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const a = z.t*0.5 + i*TAU/4, cx = z.x + Math.cos(a)*z.r*0.35, cy = z.y + Math.sin(a)*z.r*0.35, g3 = ctx.createRadialGradient(cx, cy, 0, cx, cy, z.r*0.55); g3.addColorStop(0, i % 2 ? 'rgba(255,150,220,0.35)' : 'rgba(150,140,255,0.38)'); g3.addColorStop(1, 'rgba(120,100,255,0)'); ctx.fillStyle = g3; ctx.beginPath(); ctx.arc(cx, cy, z.r*0.55, 0, TAU); ctx.fill(); } ctx.fillStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 14; i++) { const a = z.t*0.8 + i*2.4, rr = z.r*((i*0.137)%1)*0.95; ctx.fillRect(z.x + Math.cos(a)*rr, z.y + Math.sin(a)*rr, 2, 2); } ctx.globalCompositeOperation = 'source-over'; }
   ctx.restore();
@@ -3276,7 +3309,7 @@ function drawParts() {
     else if (p.k === 'smoke') { ctx.fillStyle = rgba(p.color, k*0.3); ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, TAU); ctx.fill(); }
     else if (p.k === 'shard') { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = rgba(p.color, k); ctx.beginPath(); ctx.moveTo(p.size, 0); ctx.lineTo(-p.size*0.6, -p.size*0.5); ctx.lineTo(-p.size*0.6, p.size*0.5); ctx.closePath(); ctx.fill(); ctx.restore(); }
     else if (p.k === 'flame') { const sz = p.size*(0.35 + k*0.85), g = ctx.createRadialGradient(p.x, p.y + sz*0.3, 0, p.x, p.y, sz*1.5); g.addColorStop(0, rgba('255,246,200', 0.95*k)); g.addColorStop(0.35, rgba('255,176,56', 0.85*k)); g.addColorStop(0.75, rgba('235,70,24', 0.45*k)); g.addColorStop(1, rgba('200,40,10', 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(p.x, p.y, sz*0.8, sz*1.45, 0, 0, TAU); ctx.fill(); }
-    else if (p.k === 'bubble') { const sz = p.size*(0.75 + (1 - k)*0.45); ctx.fillStyle = rgba(p.color, 0.28*k); ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill(); ctx.strokeStyle = rgba('205,255,150', 0.9*k); ctx.lineWidth = 1.4; ctx.stroke(); ctx.fillStyle = rgba('255,255,255', 0.85*k); ctx.beginPath(); ctx.arc(p.x - sz*0.35, p.y - sz*0.35, Math.max(0.8, sz*0.22), 0, TAU); ctx.fill(); }
+    else if (p.k === 'bubble') { const sz = p.size*(0.75 + (1 - k)*0.45); ctx.fillStyle = rgba(p.color, 0.28*k); ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, TAU); ctx.fill(); ctx.strokeStyle = rgba(p.rim || '205,255,150', 0.9*k); ctx.lineWidth = 1.4; ctx.stroke(); ctx.fillStyle = rgba('255,255,255', 0.85*k); ctx.beginPath(); ctx.arc(p.x - sz*0.35, p.y - sz*0.35, Math.max(0.8, sz*0.22), 0, TAU); ctx.fill(); }
     else if (p.k === 'cross') { ctx.strokeStyle = rgba(p.color, k); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x-p.size, p.y); ctx.lineTo(p.x+p.size, p.y); ctx.moveTo(p.x, p.y-p.size); ctx.lineTo(p.x, p.y+p.size); ctx.stroke(); }
   }
   ctx.globalCompositeOperation = 'source-over';
@@ -3646,7 +3679,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-40', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-41', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
