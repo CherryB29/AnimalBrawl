@@ -305,8 +305,10 @@ const TIER_COLOR = { n:'#9ca3af', r:'#3b82f6', e:'#8b5cf6', m:'#f43f5e', l:'#f59
 const FIGHTERS = [
   { id:'dog',     tier:'n', emoji:'🐶', name:'강아지',   hp:116.48, atk:17.68, def:3, spd:100, mc:0.60, pas:{ id:'dog',     name:'충성심',       desc:'5초마다 최대 체력의 {dog}를 회복하고 2초간 이동속도 +30%' } },
   { id:'rabbit',  tier:'n', emoji:'🐰', name:'토끼',     hp:118, atk:20.52, def:3, spd:184.28, mc:0.35, pas:{ id:'rabbit',  name:'날쌘 발',      desc:'회피 쿨타임 -35%, 회피 직후 0.8초간 이동속도 +30%' } },
+  { id:'octopus', tier:'r', emoji:'🐙', name:'문어',     hp:126, atk:16.5, def:3.6, spd:100, mc:0.55, pas:{ id:'octopus', name:'먹물 팔',      desc:'기본 공격이 명중하면 팔이 한 번 더 쳐서 기본 피해의 35%를 추가로 입힌다. 체력 50% 이하 첫 진입 시 먹물을 뿜어 적을 4초간 침묵시키고 1.5초간 이동속도 +50%' } },
   { id:'fox',     tier:'r', emoji:'🦊', name:'여우',     hp:133.12, atk:21, def:4, spd:115, mc:0.50, pas:{ id:'fox',     name:'교활한 반격',  desc:'공격을 회피하면 3초간 모든 공격 피해 +35%' } },
   { id:'frog',    tier:'r', emoji:'🐸', name:'개구리',   hp:115, atk:19, def:4, spd:105, mc:0.30, pas:{ id:'frog',    name:'끈적한 피부',  desc:'공격 시 적을 1.5초간 50% 확정 둔화, 둔화된 적을 3회 적중하면 2초간 속박' } },
+  { id:'beaver',  tier:'e', emoji:'🦫', name:'비버',     hp:138, atk:17.5, def:4.4, spd:88, mc:0.80, pas:{ id:'beaver',  name:'댐 건설',      desc:'전투 시작 시 앞쪽에 체력이 있는 통나무 방벽(최대 체력의 18%)을 세운다. 방벽은 적의 투사체와 근접 공격을 막고 적의 이동을 가로막는다. 부서지거나 10초가 지나 사라지면 6초 뒤 최대 체력 10%의 방벽을 다시 세운다' } },
   { id:'wolf',    tier:'e', emoji:'🐺', name:'늑대',     hp:125, atk:21, def:4, spd:112, mc:0.65, pas:{ id:'wolf',    name:'사냥 본능',    desc:'적 체력 50% 이하에서 공격 속도 +25%, 이동속도 +10%, 기본 공격 명중 시 3초간 방어력 -30%. 피해를 입힌 적은 3.5초간 회복량 -80%' } },
   { id:'panda',   tier:'e', emoji:'🐼', name:'판다',     hp:150, atk:16.2, def:4.128, spd:85,  mc:0.75, pas:{ id:'panda',   name:'대나무 갑옷',  desc:'받는 피해 -12%, 초당 최대 체력 0.8% 회복' } },
   { id:'tiger',   tier:'m', emoji:'🐯', name:'호랑이',   hp:132.6, atk:22, def:4, spd:108, mc:0.85, pas:{ id:'tiger',   name:'분노',  desc:'피격 시마다 분노가 쌓이고, 7회 쌓이면 7초간 상태이상에 면역이 되며 공격력 +45%, 이동속도 +30%. 쿨타임 15초(효과 지속 중에는 흐르지 않음)' } },
@@ -319,7 +321,7 @@ const FIGHTERS = [
 
 const SKILLS = [
   // ── 일반
-  { id:'fire',  tier:'n', emoji:'🔥', name:'불꽃',   dmg:54, cd:4,   mc:0.20, range:330, shape:'proj', kind:'fire', wind:0.38, speed:430, pr:13, kb:220, color:'255,140,50' },
+  { id:'fire',  tier:'n', emoji:'🔥', name:'불꽃',   dmg:48.6, cd:4,   mc:0.20, range:330, shape:'proj', kind:'fire', wind:0.38, speed:430, pr:13, kb:220, color:'255,140,50' },
   { id:'smash', tier:'n', emoji:'👊', name:'강타',   dmg:46, cd:3,   mc:1.00, range:90,  shape:'bite', vis:'fist', wind:0.26, kb:380, fx:'stun', fxv:0.7, color:'255,220,150' },
   { id:'wind',  tier:'n', emoji:'🌪️', name:'회오리', dmg:40, cd:2,   mc:0.95, range:95,  shape:'spin', wind:0.30, radius:88, kb:420, color:'170,230,230' },
   { id:'firstaid', tier:'n', emoji:'🩹', name:'응급처치', dmg:0, cd:8, mc:0.50, range:0, shape:'heal', self:true, wind:0.55, fxv:0.09, color:'90,230,150' },
@@ -345,6 +347,7 @@ const SKILLS = [
   { id:'snipe',     tier:'m', emoji:'🎯', name:'저격',    dmg:119, cd:7, mc:0.00, range:430, shape:'proj', kind:'snipe', wind:0.50, speed:950, pr:8, kb:260, color:'255,250,235' },
   { id:'storm',     tier:'m', emoji:'⛈️', name:'뇌우',    dmg:0, cd:7, mc:0.25, range:340, shape:'zone', zstyle:'storm', radius:120, dur:6, tick:0.5, tickDmg:34, wind:0.45, color:'170,200,255' },
   { id:'bloodlust', tier:'m', emoji:'🧛', name:'혈귀화',  dmg:0, cd:12, mc:0.80, range:0, shape:'buff', self:true, wind:0.30, dur:8, batk:1.3, bspd:1, bls:0.2, bls2:0.05, color:'235,60,80' },
+  { id:'mirror',    tier:'m', emoji:'🪞', name:'반사경', dmg:0, cd:11, mc:0.30, range:0, shape:'mirror', self:true, wind:0.30, dur:4, refl:0.6, color:'190,225,255' },
   // ── 전설 (상향)
   { id:'meteor',     tier:'l', emoji:'☄️', name:'운석',     dmg:174, cd:10, mc:0.20, range:380, shape:'blast', meteor:true, wind:0.9, radius:135, kb:700, color:'255,120,50' },
   { id:'bladedance', tier:'l', emoji:'🗡️', name:'검무',     dmg:195.36, cd:6, mc:0.95, range:100, shape:'flurry', hits:5, radius:100, wind:0.30, kb:90, color:'220,235,255' },
@@ -432,6 +435,8 @@ const EVO = {
          {"key":"b","name":"스카이 콩콩","p":{"cd":"*0.5"},"desc":"쿨타임이 50% 줄어든다."} ],
   breath:[ {"key":"a","name":"역린","rage":1,"desc":"내 체력이 낮을수록 피해가 늘어난다. 체력이 거의 없으면 최대 120% 늘어난다."},
          {"key":"b","name":"얼음 숨결","ice":1,"desc":"화염 대신 냉기를 뿜는다. 0.5초마다 서리가 쌓이고, 3중첩이 되면 2초간 기절한다."} ],
+  mirror:[ {"key":"a","name":"오목렌즈","burn":1,"desc":"반사한 투사체가 적에게 명중하면 화상을 입힌다."},
+         {"key":"b","name":"볼록 렌즈","split":1,"desc":"반사한 투사체가 렌즈를 지나 세 갈래로 퍼져 각각 원래 위력의 50%로 되돌아간다. (넓은 파도는 갈라지지 않는다)"} ],
   thread:[ {"key":"a","name":"끊을 수 없는 인연","p":{"dur":"+1"},"leash":1,"desc":"지속시간이 6초로 늘어난다. 적은 실이 처음 걸린 거리보다 멀어질 수 없다."},
          {"key":"b","name":"가위질","cut":1,"desc":"실이 끊어질 때 폭발한다. 적에게 최대 체력의 8%를 입히고 2초간 기절시킨다."} ],
   shower:[ {"key":"a","name":"오로라","s":[{"k":"aurora"},{"k":"healx","pct":0.2},{"k":"mspd","v":0.3,"dur":3}],"desc":"시전 시 오로라가 펼쳐진다. 아군 전체가 최대 체력의 20%를 회복하고 3초간 이동속도 +30%."},
@@ -445,6 +450,8 @@ const FIGHTER_INFO = {
   rabbit: { role:'기동형 견제', text:'속도가 빠르고 회피 쿨타임이 짧다. 회피 직후 잠시 더 빨라진다.', pair:'' },
   fox: { role:'반격형 중거리', text:'공격을 회피하면 3초 동안 모든 공격이 더 강해진다.', pair:'' },
   frog: { role:'방해형 원거리', text:'공격이 적중하면 적을 확정으로 둔화시키고, 둔화된 적을 3번 맞히면 속박한다.', pair:'' },
+  beaver: { role:'방벽형 근접', text:'앞쪽에 체력이 있는 통나무 방벽을 세워 투사체와 근접 공격을 막고 적의 길을 막는다. 방벽이 사라지면 잠시 뒤 다시 세운다.', pair:'' },
+  octopus: { role:'연타형 중거리', text:'기본 공격이 한 번 더 들어가고, 체력이 절반 이하가 되면 먹물을 뿜어 적을 4초간 침묵시키고 빠르게 움직인다.', pair:'' },
   wolf: { role:'사냥형 근접', text:'적 체력이 절반 이하가 되면 공격 속도와 이동속도가 오르고 기본 공격이 방어력을 깎는다. 피해를 입힌 적은 한동안 회복량이 크게 줄어든다.', pair:'' },
   panda: { role:'탱커형 근접', text:'받는 피해가 줄고 체력을 서서히 회복한다.', pair:'' },
   tiger: { role:'돌격형 근접', text:'피격될 때마다 분노가 쌓인다. 7번 쌓이면 7초간 상태이상에 면역이 되고 공격력과 이동속도가 오른다.', pair:'' },
@@ -455,7 +462,7 @@ const FIGHTER_INFO = {
   unicorn: { role:'불사 부활형', text:'치명상을 입으면 1회 부활하고 상태이상을 정화하며 적을 기절시킨다. 강인함 40%로 상태이상 시간이 줄어든다.', pair:'' },
 };
 const SKILL_INFO = {
-  fire: '적에게 불덩이를 발사한다. 맞은 적은 화상을 입는다.',
+  fire: '적에게 불덩이를 발사한다. 맞은 적은 화상을 입어 지속 피해를 받고 받는 피해가 10% 늘어난다.',
   smash: '눈앞의 적을 내리쳐 밀어내고 0.5초간 기절시킨다.',
   wind: '회전하며 주변의 적을 밀쳐낸다.',
   firstaid: '최대 체력의 일부를 회복한다.',
@@ -482,7 +489,8 @@ const SKILL_INFO = {
   boomerang: '부메랑을 던진다. 나갈 때와 돌아올 때 각각 피해를 준다.',
   hook: '갈고리를 던져 맞힌 적을 눈앞으로 끌어와 기절시킨다.',
   leap: '적에게 도약해 착지 지점의 적에게 피해를 주고 기절시킨다.',
-  breath: '전방 부채꼴에 화염을 뿜어 피해와 화상을 입힌다.',
+  breath: '전방 부채꼴에 화염을 뿜어 피해와 화상을 입힌다. 화상 중인 적은 받는 피해가 10% 늘어난다.',
+  mirror: '4초간 반사경을 펼쳐 날아오는 투사체를 반대 방향으로 되돌려 보낸다. 되돌아간 투사체는 원래 위력의 60%로 적을 맞히며, 투사체가 가진 상태이상도 그대로 건다.',
   thread: '운명의 실로 적과 이어진다. 내가 걸린 디버프가 적에게 옮겨가고 적은 받는 피해가 늘어난다.',
   sanctuary: '자신의 주변에 성역을 펼쳐 안에 있는 동안 체력을 지속 회복한다.',
   nova: '초신성을 폭발시켜 넓은 범위에 막대한 피해를 주고 기절시킨다.',
@@ -585,6 +593,14 @@ const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
    새 패치는 PATCHES 맨 앞에 추가하면 된다. 접속했을 때 아직 안 본 최신 패치가 있으면 팝업으로 보여준다.
    type: 'buff'(버프) · 'nerf'(너프) · 'adjust'(조정) / sk: 스킬 id, f: 파이터 id, 또는 emoji + tier 직접 지정 */
 const PATCHES = [
+  { ver:'3-54', date:'2026.10.25', title:'반사경 · 비버 · 문어 · 화상 개편', items:[
+    { type:'new', sk:'mirror', text:'4초간 반사경을 펼쳐 날아오는 투사체를 반대로 되돌린다. 되돌아간 투사체는 원래 위력의 60%이며 투사체의 상태이상도 그대로 건다. (신화 · 쿨 11초)', evos:[['1진화 오목렌즈', '반사한 투사체가 명중하면 화상'], ['2진화 볼록 렌즈', '세 갈래로 갈라져 각 50%']] },
+    { type:'new', f:'beaver', text:'앞쪽에 체력이 있는 통나무 방벽을 세워 투사체와 근접 공격을 막고 적의 길을 막는다. 부서지면 다시 세운다. (영웅)' },
+    { type:'new', f:'octopus', text:'기본 공격 뒤에 팔이 한 번 더 내려친다. 체력 50% 이하에서 먹물을 뿜어 적을 4초간 침묵시킨다. (희귀)' },
+    { type:'nerf', sk:'fire', text:'피해량 10% 감소', from:'54', to:'48.6' },
+    { type:'nerf', emoji:'🔥', tier:'n', name:'화염 디버프', text:'화상 지속 피해 감소', from:'100%', to:'60%' },
+    { type:'buff', emoji:'🔥', tier:'n', name:'화염 디버프', text:'화상 중인 적이 받는 피해 증가', from:'0%', to:'+10%' }
+  ] },
   { ver:'3-53', date:'2026.10.25', title:'친선전 나가기', items:[
     { type:'adjust', emoji:'🏟️', tier:'n', name:'아레나', text:'친선전 도중 나갈 수 있고, 나갈 때 전투 상세 통계를 볼 수 있다. 나가도 기록에는 남지 않는다.', from:'', to:'' }
   ] },
@@ -762,7 +778,7 @@ const Snd = (() => {
       if (b.id === 'timestop') sfx.clock();
       else if (b.zstyle === 'sanct') sfx.bell();
       else if (sh === 'heal') sfx.heal();
-      else if (sh === 'shield') sfx.shield();
+      else if (sh === 'shield' || sh === 'mirror') sfx.shield();
       else if (sh === 'buff') sfx.buff();
       else if (sh === 'zone') sfx.zone();
       else if (sh === 'strike') sfx.bolt();
@@ -883,7 +899,7 @@ const SKILL_STAT = {
   fire:[2,5,0], smash:[3,4,12], wind:[4,2,18], firstaid:[8,0,12], stone:[2,5,0],
   ice:[4,5,10], vamp:[7,5,8], poison:[3,7,0], rush:[3,8,10], barrier:[6,0,40],
   bolt:[4,9,0], bomb:[6,9,12], volley:[4,9,6], swamp:[8,3,26], rage:[4,12,8],
-  inferno:[8,10,16], hole:[8,10,16], snipe:[4,14,0], storm:[6,11,10], bloodlust:[11,9,10],
+  inferno:[8,10,16], hole:[8,10,16], snipe:[4,14,0], storm:[6,11,10], bloodlust:[11,9,10], mirror:[7,10,14],
   meteor:[6,16,0], bladedance:[8,13,16], wave:[8,12,14], timestop:[9,9,28], sanctuary:[15,5,34],
   boomerang:[3,7,0], hook:[4,6,8], leap:[7,9,12], breath:[9,15,8], thread:[8,12,12],
   nova:[8,18,10], moonblade:[8,15,16], prison:[11,11,34], eclipse:[7,20,12], shower:[6,15,6],
@@ -912,7 +928,7 @@ const skSoft = (b, lv) => lvSoft(lv || curLv('s', b.id));
 const SKDMG = 0.7, SKCOEF = 0.4;
 const scFrom = atk => SKDMG*(1 + (atk/ATK_REF - 1)*SKCOEF);
 /* 전투력: 체력은 방어력이 깎아 주는 피해(1당 0.4%)까지 반영한 '실질 체력'으로 계산하고, 패시브가 주는 생존력(피해 감소·회복·부활 등)도 보정한다 */
-const DUR_PAS = { panda:1.45, bear:1.35, unicorn:1.25, tiger:1.1, dog:1.08 };
+const DUR_PAS = { beaver:1.3, panda:1.45, bear:1.35, unicorn:1.25, tiger:1.1, dog:1.08 };
 function powerOf(st, entries, pid) {
   const ehp = st.hp/(1 - Math.min(0.75, st.def*0.004))*(DUR_PAS[pid] || 1);
   let p = ehp/(4.2*STAT_K) + st.atk*3/STAT_K + Math.min(st.spd,220)/2; const af = st.atk/(ATK_REF*STAT_K);
@@ -988,6 +1004,7 @@ function skillParts(b, mult, sl, lv) {
   else if (b.shape === 'heal') p.push(`최대 체력 ${Math.round((lv ? healPctAt(lv) : b.fxv*Math.min(m,2.5)*HEAL_MUL)*100)}% 회복`);
   else if (b.shape === 'bind') p.push(`넓은 범위 · ${b.fxv}초간 기절`);
   else if (b.shape === 'breath') p.push(`${b.dur}초간 전방 부채꼴 · 총 ${v(b.dmg)} 피해 · 화상`);
+  else if (b.shape === 'mirror') p.push(`${b.dur}초간 투사체 반사 · 위력 ${Math.round(b.refl*100)}%`);
   else if (b.shape === 'thread') p.push(`${b.dur}초간 적과 연결 · 받는 피해 ${Math.round((b.vuln - 1)*100)}% 증가 · 내 디버프를 적에게 전이`);
   else if (b.n > 1) p.push(`${b.n}연발 · 발당 ${v(b.dmg)} 피해`);
   else if (b.dmg) p.push(`피해 ${v(b.dmg)}`);
@@ -2391,6 +2408,7 @@ function drawFx(f) {
 /* ---------- 피해 / 회복 / 상태 ---------- */
 function applyHit(src, tgt, raw, o) {
   if (tgt.dead) return 0; o = o || {};
+  if (o.basic && !o.proj && !o.zone && !o.arm && src !== tgt && B.walls.length) { const w = B.walls.find(q => q.hp > 0 && q.owner === tgt && dist2(src, q) < dist2(src, tgt) - 4 && dist2(src, q) < src.r + 66); if (w) { wallDamage(w, raw, w.x + (src.x - w.x)*0.2, w.y + (src.y - w.y)*0.2); return 0; } }
   if (!o.zone) {
     if (tgt.evade > 0) { tgt.evade--; if (tgt.evade <= 0) tgt.evadeT = 0; addText(tgt.x, tgt.y - tgt.r*1.7, '회피', '147,197,253', 22, 0.7); ring(tgt.x, tgt.y, tgt.r, tgt.r*1.9, 0.3, '147,197,253', 2); return 0; }
     if (src.blind > 0 && Math.random() < 0.4) { addText(src.x, src.y - src.r*1.7, '빗나감', '203,213,225', 20, 0.7); return 0; }
@@ -2401,11 +2419,12 @@ function applyHit(src, tgt, raw, o) {
   if (src.pounceT > 0 && !o.zone) { raw *= 2.0; src.pounceT = 0; src._pBleed = true; addText(src.x, src.y - src.r*2.3, '맹습!', '255,170,90', 22, 0.8); }
   let dmg = Math.max(1, Math.round(raw*(1 - defRed(tgt))));
   if (tgt.vuln > 0) dmg = Math.round(dmg*(tgt.vulnM == null ? 1.2 : tgt.vulnM));
+  if (tgt.poison && tgt.poison.burn) dmg = Math.round(dmg*BURN_VULN);
   if (tgt.drT > 0) dmg = Math.max(1, Math.round(dmg*(1 - tgt.dr)));
   if (o.proj && !tgt.pokes && tgt.style.c >= 0.55) dmg = Math.max(1, Math.round(dmg*0.92));
   if (tgt.pas === 'panda') dmg = Math.max(1, Math.round(dmg*0.88));
   if (tgt.hiberT > 0) dmg = Math.max(1, Math.round(dmg*0.3));
-  if (tgt.pas === 'tiger' && src !== tgt) tigerHit(tgt);
+  if (tgt.pas === 'tiger' && src !== tgt && !o.arm) tigerHit(tgt);
   const ang = angTo(src, tgt);
   if (tgt.shield > 0) {
     const ab = Math.min(tgt.shield, dmg); tgt.shield -= ab; dmg = Math.round(dmg - ab);
@@ -2429,6 +2448,8 @@ function applyHit(src, tgt, raw, o) {
   if (src.buffT > 0 && (o.basic ? src.buffLs : (src.buffLs2 || 0)) > 0) { regen(src, dmg*(o.basic ? src.buffLs : src.buffLs2), 'lifesteal'); for (let i = 0; i < 3; i++) P({ k:'dot', x:tgt.x, y:tgt.y, home:src, size:3, color:'255,90,110', life:0.6, speed:260 }); }
   if (src.pas === 'frog' && !o.zone && tgt.hp > 0) { setSlow(tgt, 1.5, 0.5); if (tgt.slow > 0) { src.frogN = (src.frogN || 0) + 1; if (src.frogN >= 3) { src.frogN = 0; debuff(tgt, 'root', 2); } } else src.frogN = 0; }
   if (src.pas === 'wolf' && tgt.hp > 0) { debuff(tgt, 'curse', 3.5, 0.2); if (o.basic && tgt.hp < tgt.maxHp*0.5) debuff(tgt, 'sunder', 3, 0.7); }
+  if (src.pas === 'octopus' && o.basic && !o.arm && !o.zone && tgt.hp > 0) octoArm(src, tgt, raw*0.35);
+  if (tgt.pas === 'octopus' && !tgt.inked && tgt.hp > 0 && tgt.hp <= tgt.maxHp*0.5) octoInk(tgt);
   if (tgt.pas === 'bear' && !tgt.hibernated && tgt.hp > 0 && tgt.hp <= tgt.maxHp*0.4) { tgt.hibernated = true; tgt.hiberT = 4; tgt.stun = Math.max(tgt.stun, 4); if (!(tgt.act && tgt.act.type === 'cast')) tgt.act = null; tgt.plan = { t:'idle' }; chip(tgt, '겨울잠'); ring(tgt.x, tgt.y, tgt.r, tgt.r*2.6, 0.6, '150,200,255', 3); }
   return dmg;
 }
@@ -2498,6 +2519,7 @@ function trueDmg(src, tgt, amt, col, label) {
   return amt;
 }
 const POISON_SEQ = [1, 1, 0.5, 0.5, 0.5, 0.3, 0.1];
+const BURN_K = 0.6, BURN_VULN = 1.1; /* 화상: 지속 피해 -40%, 화상 중인 적이 받는 피해 +10% */
 function applyPoison(tgt, dur, dps) {
   if (tgt.immuneT > 0) return;
   dur *= ccK(tgt); if (dur <= 0.01) return; dps *= 0.7;
@@ -2511,7 +2533,7 @@ function _fxList(src, tgt, sk, list, dmg) {
   const m = sk.mult*SC(src);
   for (const x of list) {
     switch (x.k) {
-      case 'burn': if (tgt.immuneT > 0 || ccK(tgt) <= 0.01) break; tgt.poison = { t:x.dur*ccK(tgt), dps:Math.max(x.dps*m*2, (tgt.poison && tgt.poison.burn) ? tgt.poison.dps : 0), tick:0.5, burn:true, key:(sk && sk.b && sk.b.id) || 'dot' }; break;
+      case 'burn': if (tgt.immuneT > 0 || ccK(tgt) <= 0.01) break; tgt.poison = { t:x.dur*ccK(tgt), dps:Math.max(x.dps*m*2*BURN_K, (tgt.poison && tgt.poison.burn) ? tgt.poison.dps : 0), tick:0.5, burn:true, key:(sk && sk.b && sk.b.id) || 'dot' }; break;
       case 'poison': applyPoison(tgt, x.dur || 4, x.v*m); break;
       case 'slow': setSlow(tgt, x.v, x.m); break;
       case 'poisonpct': if (tgt.poison && !tgt.poison.burn) tgt.poison.pct = x.v; break;
@@ -2720,6 +2742,7 @@ function pickSkill(u, e, d, will, eRec) {
       else if (b.zstyle === 'sanct') { if (hpR > 0.75 || B.zones.some(z => z.owner === u && z.heal)) continue; sc = 170; }
       else if (b.shape === 'shield') { if (u.shield > 0 || d > 520) continue; sc = 130; }
       else if (b.shape === 'buff') { if (u.buffs.some(x => x.k === b.id) || d > 520) continue; sc = 110; }
+      else if (b.shape === 'mirror') { if (u.mirror && u.mirror.t > 0) continue; const thr = B.projs.some(q => q.owner === e && !q.boom && !q.refl && dist2(q, u) < 460); if (!thr && !(e.style.c < 0.45) && !e.skills.some(q => q.b.shape === 'proj' && q.cd < 3)) continue; sc = thr ? 190 : 85; }
       else continue;
     } else {
       sc = skillValue(u, e, s); if (e.stun > 0.3) sc *= 1.35;
@@ -3093,6 +3116,12 @@ function _resolveAct(u, e, a) {
       u.shield = healHp(u)*(sk.lv ? shieldPctAt(sk.lv) : b.pct*Math.min(sk.mult, 2.2)); u.shieldT = b.dur; u.shieldMax = u.shield; rec(u, b.id, 's', u.shield);
       ring(u.x, u.y, u.r, u.r*2.3, 0.5, b.color, 3); glow(u.x, u.y, u.r*2, 0.4, b.color);
       break; }
+    case 'mirror': {
+      const ev = sk.evo || {};
+      u.mirror = { t:b.dur, sk, pow:ev.split ? 0.5 : b.refl, split:!!ev.split, burn:!!ev.burn, flash:0.4, tint:ev.key === 'a' ? '255,175,95' : ev.key === 'b' ? '205,175,255' : '190,225,255' };
+      ring(u.x, u.y, u.r*0.8, u.r*2.6, 0.5, '210,235,255', 4); glow(u.x, u.y, u.r*2.4, 0.5, b.color, 0.5);
+      for (let i = 0; i < 14; i++) { const a2 = rnd(0, TAU); P({ k:'shard', x:u.x + Math.cos(a2)*u.r*1.2, y:u.y + Math.sin(a2)*u.r*1.2, vx:Math.cos(a2)*90, vy:Math.sin(a2)*90, size:rnd(4, 7), rot:rnd(0, TAU), vr:rnd(-6, 6), color:'215,238,255', life:0.6, drag:2 }); }
+      break; }
     case 'buff': {
       { const ls = sk.lvs || 1; if (b.hot) u.hot = { pct:b.hot/HEAL_MUL, t:b.dur, key:b.id }; if (b.id === 'eclipse') { fx('eclipse', u.x, u.y, 120, 1.2, b.color, { owner:u }); ring(u.x, u.y, 10, 150, 0.8, '255,225,140', 5); ring(u.x, u.y, 10, 100, 0.6, '255,255,235', 2, 0.1); } addBuff(u, b.id, b.dur, { atk:1 + (b.batk - 1)*ls, spd:1 + ((b.bspd || 1) - 1)*ls, ls:(b.bls || 0)*(b.id === 'bloodlust' ? 1 : ls), ls2:b.bls2 || 0, cc:b.cc || 0, color:b.color, fx:b.id }); }
       ring(u.x, u.y + u.r*0.4, 6, u.r*2.6, 0.6, b.color, 4); glow(u.x, u.y, u.r*2.6, 0.5, b.color, 0.6);
@@ -3209,7 +3238,8 @@ function _resolveAct(u, e, a) {
 function _projHit(p, tgt) {
   const src = p.owner, c = p.color;
   const dm = applyHit(src, tgt, p.raw*((p.kind === 'hook' && p.sk && p.sk.evo && p.sk.evo.leap) ? 1.8 : 1), { kb:p.kb, color:c, proj:true, basic:!p.sk });
-  if (p.sk && !p.noFx) applyEffects(src, tgt, p.sk, dm, p);
+  { const fsk = p.fxSk !== undefined ? p.fxSk : p.sk; if (fsk && !p.noFx) applyEffects(src, tgt, fsk, dm, p); }
+  if (p.refl && p.burn && p.sk && tgt.hp > 0) { fxList(src, tgt, p.sk, [{ k:'burn', dps:5, dur:3 }], dm); for (let i = 0; i < 8; i++) P({ k:'flame', x:tgt.x + rnd(-10, 10), y:tgt.y + rnd(-6, 12), vx:rnd(-30, 30), vy:-rnd(60, 130), drag:0.6, size:tgt.r*rnd(0.2, 0.34), life:rnd(0.4, 0.7) }); }
   if (p.grp && !p.grp.done) { p.grp.n++; if (p.grp.n >= 4 && p.sk && p.sk.evo && p.sk.evo.multi) { p.grp.done = true; p.sk.cd = 0; addText(src.x, src.y - src.r*2.3, '쿨타임 초기화', '255,240,180', 20, 0.9); ring(src.x, src.y, src.r, src.r*2.2, 0.4, '255,240,180', 3); } }
   if (p.kind === 'fire') { glow(p.x, p.y, 48, 0.3, '255,170,80', 0.5); ring(p.x, p.y, 4, 52, 0.35, c, 3); sparks(p.x, p.y, 16, '255,180,90', 300, 0.5); puff(p.x, p.y, 6, '60,55,50', 16, 0.7, 50); decal(p.x, p.y, 30, '15,10,8', 'scorch', 6); }
   else if (p.kind === 'ice') { fx('frost', tgt.x, tgt.y, 62, 0.55, c); ring(p.x, p.y, 3, 44, 0.4, c, 2); sparks(p.x, p.y, 10, '200,240,255', 260, 0.4); for (let i = 0; i < 8; i++) { const a = rnd(0,TAU), sp = rnd(80,240); P({ k:'shard', x:p.x, y:p.y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, size:rnd(5,8), rot:rnd(0,TAU), vr:rnd(-8,8), color:'190,235,255', life:0.55, drag:3 }); } decal(p.x, p.y, 34, '170,225,255', 'frost', 5); }
@@ -3251,6 +3281,7 @@ function moveUnit(u, e, dt) {
   const m = u.r + 8; let wallHit = false;
   if (u.x < m) { u.x = m; wallHit = u.vx < -120; u.vx = Math.max(0, u.vx); } if (u.x > WW-m) { u.x = WW-m; wallHit = wallHit || u.vx > 120; u.vx = Math.min(0, u.vx); }
   if (u.y < m) { u.y = m; wallHit = wallHit || u.vy < -120; u.vy = Math.max(0, u.vy); } if (u.y > WH-m) { u.y = WH-m; wallHit = wallHit || u.vy > 120; u.vy = Math.min(0, u.vy); }
+  for (const w of B.walls) if (w.hp > 0 && w.owner !== u) wallPush(u, w, dt);
   if (wallHit && u.wallT > 0) { u.wallT = 0; trueDmg(u.wallSrc, u, u.wallDmg, '255,200,110', '벽 충돌'); stunUnit(u, 2); shake(12); B.flash = Math.max(B.flash, 0.12); ring(u.x, u.y, u.r, u.r*3, 0.45, '255,210,140', 5); sparks(u.x, u.y, 22, '255,225,170', 420, 0.5); B.hitstop = Math.max(B.hitstop, 0.08); }
   u.face = u.act && u.act.data && u.act.data.ang != null ? u.act.data.ang : angTo(u, e);
   if (Math.hypot(u.vx, u.vy) > 150 && Math.random() < dt*14 && !(u.act && u.act.type === 'dodge')) puff(u.x - u.vx*0.03, u.y + u.r*0.6, 1, '200,210,190', 9, 0.4, 14);
@@ -3266,7 +3297,7 @@ function updateUnit(u, dt) {
   u.strafeT -= dt; if (u.strafeT <= 0) { u.strafe *= -1; u.strafeT = rnd(1.2, 2.8); }
   if (u.chip) { u.chip.t += dt; if (u.chip.t > u.chip.life) u.chip = null; }
   for (const s of u.skills) s.cd -= dt;
-  for (const k of ['mspdT','drT','stealthT','vanish','surfT','twiT','wallT','markT','counterT']) if (u[k] > 0) u[k] = Math.max(0, u[k] - dt);
+  for (const k of ['inkT','mspdT','drT','stealthT','vanish','surfT','twiT','wallT','markT','counterT']) if (u[k] > 0) u[k] = Math.max(0, u[k] - dt);
   if (u.counter && !(u.counterT > 0)) u.counter = false;
   if (u.rageCd > 0 && !u.buffs.some(b => b.k === 'tiger')) u.rageCd = Math.max(0, u.rageCd - dt);
   if (u.immuneT > 0) { u.immuneT = Math.max(0, u.immuneT - dt); u.slow = 0; u.stun = 0; u.poison = null; u.bleed = null; u.frost = 0; for (const k in DEBUFF_NAME) u[k] = 0; }
@@ -3281,10 +3312,15 @@ function updateUnit(u, dt) {
     if (u.bleed.t <= 0) u.bleed = null;
   }
   if (u.buffs.length) { for (const bf of u.buffs) bf.t -= dt; if (Math.random() < dt*12) P({ k:'spark', x:u.x + rnd(-u.r,u.r), y:u.y + u.r*0.5, vy:-rnd(60,140), size:1.8, color:u.buffColor || '255,200,120', life:0.5 }); if (u.buffs.some(bf => bf.t <= 0)) { u.buffs = u.buffs.filter(bf => bf.t > 0); aggBuff(u); } }
+  if (u.mirror && u.mirror.t > 0) { u.mirror.t -= dt; u.mirror.flash = Math.max(0, (u.mirror.flash || 0) - dt); }
   if (u.shieldT > 0) { u.shieldT -= dt; if (u.shieldT <= 0) u.shield = 0; }
   if (u.hiberT > 0) { u.hiberT -= dt; regen(u, healHp(u)*0.16929*dt/HEAL_MUL, 'passive'); if (u.hiberT <= 0 && u.pas === 'bear') { addBuff(u, 'bear', 1e9, { atk:1.4, color:'255,190,120' }); chip(u, '각성'); ring(u.x, u.y, u.r, u.r*2.6, 0.5, '255,190,120', 4); } }
   if (u.pas === 'panda') regen(u, healHp(u)*0.00765*dt/HEAL_MUL, 'passive');
-  if (u.hot) { u.hot.t -= dt; regen(u, healHp(u)*u.hot.pct*dt, u.hot.key || 'hot'); if (Math.random() < dt*8) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); if (u.hot.t <= 0) u.hot = null; }
+  if (u.pas === 'beaver' && !B.over) {
+    const w = B.walls.find(q => q.owner === u && q.hp > 0);
+    if (w) { u.damT = 6; if (B.time - w.born > 10) { w.hp = 0; wallBreak(w, true); } }
+    else { u.damT = (u.damT == null ? 0 : u.damT) - dt; if (u.damT <= 0) { buildDam(u, !u.damBuilt); u.damBuilt = true; u.damT = 6; } }
+  }
   if (u.pas === 'dog') { u.dogT -= dt; if (u.dogT <= 0) { u.dogT += 5; addBuff(u, 'dog', 2, { spd:1.3, color:'255,230,150' }); const h0 = u.hp; regen(u, healHp(u)*dogHealPct(u)/HEAL_MUL, 'passive'); if (u.hp - h0 >= 1) { addText(u.x, u.y - u.r*1.4, '+' + Math.round(u.hp - h0), '110,231,160', 22, 0.9); for (let i = 0; i < 4; i++) P({ k:'cross', x:u.x + rnd(-u.r,u.r), y:u.y, vy:-50, size:4, color:'110,231,160', life:0.7 }); } } }
   if (u.poison) {
     u.poison.t -= dt; u.poison.tick -= dt;
@@ -3311,6 +3347,104 @@ function updateUnit(u, dt) {
   if (u.act) progressAct(u, e, dt);
   else if (u.stun <= 0) { u.thinkT -= dt; if (u.thinkT <= 0) { u.thinkT = rnd(0.09, 0.16)*(u.isBoss ? 1.6 : 1); think(u, e); } }
   moveUnit(u, e, dt);
+}
+/* ---- 비버 방벽 ---- */
+function buildDam(u, first) {
+  const e = foe(u), a = angTo(u, e), hp = healHp(u)*(first ? 0.18 : 0.10);
+  const w = { owner:u, x:clamp(u.x + Math.cos(a)*80, 40, WW - 40), y:clamp(u.y + Math.sin(a)*80, 40, WH - 40), ang:a + Math.PI/2, hl:54, ht:11, hp, maxHp:hp, flash:0, born:B.time };
+  B.walls.push(w); rec(u, 'passive', 's', hp);
+  ring(w.x, w.y, 10, 70, 0.45, '205,150,85', 4); glow(w.x, w.y, 70, 0.3, '205,150,85', 0.5); puff(w.x, w.y, 8, '170,140,100', 18, 0.7, 60);
+  for (let i = 0; i < 10; i++) P({ k:'shard', x:w.x + Math.cos(w.ang)*rnd(-50, 50), y:w.y + Math.sin(w.ang)*rnd(-50, 50), vx:rnd(-60, 60), vy:-rnd(60, 180), g:500, size:rnd(3, 5), rot:rnd(0, TAU), vr:rnd(-8, 8), color:'170,115,60', life:0.6 });
+  chip(u, first ? '🪵 댐 건설' : '🪵 재건', true);
+}
+function wallLocal(w, x, y) { const ca = Math.cos(w.ang), sa = Math.sin(w.ang), dx = x - w.x, dy = y - w.y; return [dx*ca + dy*sa, -dx*sa + dy*ca]; }
+function wallHitP(w, p) { const [l, n] = wallLocal(w, p.x, p.y); return Math.abs(l) <= w.hl + p.r && Math.abs(n) <= w.ht + p.r; }
+function wallPush(u, w, dt) {
+  const ca = Math.cos(w.ang), sa = Math.sin(w.ang), [l, n] = wallLocal(w, u.x, u.y), rr = u.r*0.85;
+  const ex = l - clamp(l, -w.hl, w.hl), ey = n - clamp(n, -w.ht, w.ht), d = Math.hypot(ex, ey); if (d >= rr) return;
+  let nl, nn, pen; if (d > 0.01) { nl = ex/d; nn = ey/d; pen = rr - d; } else { nl = 0; nn = n >= 0 ? 1 : -1; pen = rr + w.ht - Math.abs(n); }
+  const px = nl*ca - nn*sa, py = nl*sa + nn*ca; u.x += px*pen; u.y += py*pen;
+  const vn = u.vx*px + u.vy*py; if (vn < 0) { u.vx -= px*vn; u.vy -= py*vn; }
+  const sg = Math.abs(l) > 4 ? Math.sign(l) : u.strafe; u.x += ca*sg*70*dt; u.y += sa*sg*70*dt;
+}
+function wallDamage(w, raw, x, y) {
+  if (w.hp <= 0) return;
+  const dm = Math.max(1, Math.round(raw*(1 - defRed(w.owner)))); w.hp -= dm; w.flash = 0.15;
+  addText(w.x, w.y - 30, '-' + dm, '235,190,125', 20, 0.7); sparks(x, y, 7, '240,200,140', 220, 0.3);
+  for (let i = 0; i < 3; i++) P({ k:'shard', x, y, vx:rnd(-120, 120), vy:rnd(-160, -20), g:400, size:rnd(3, 5), rot:rnd(0, TAU), vr:rnd(-8, 8), color:'170,115,60', life:0.5, drag:1 });
+  if (w.hp <= 0) { w.hp = 0; wallBreak(w); }
+}
+function wallBreak(w, quiet) {
+  ring(w.x, w.y, 10, 80, 0.4, '205,150,85', 4); puff(w.x, w.y, 10, '150,125,95', 20, 0.8, 90);
+  for (let i = 0; i < 16; i++) P({ k:'shard', x:w.x + Math.cos(w.ang)*rnd(-50, 50), y:w.y + Math.sin(w.ang)*rnd(-50, 50), vx:rnd(-200, 200), vy:-rnd(60, 260), g:600, size:rnd(3, 7), rot:rnd(0, TAU), vr:rnd(-10, 10), color:'170,115,60', life:0.8 });
+  if (!quiet) { addText(w.x, w.y - 30, '방벽 파괴', '235,190,125', 22, 0.9); shake(4); }
+}
+function drawWalls() {
+  for (const w of B.walls) {
+    const k = easeOut(Math.min(1, (B.time - w.born)/0.3)), age = B.time - w.born, bl = age > 9 ? 0.55 + 0.35*Math.sin(B.time*18) : 1, hr = w.hp/w.maxHp;
+    ctx.save(); ctx.translate(w.x, w.y); ctx.globalAlpha = bl; ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(0, 6, w.hl*Math.abs(Math.cos(w.ang)) + w.ht + 6, w.hl*Math.abs(Math.sin(w.ang))*0.55 + w.ht*0.8 + 4, 0, 0, TAU); ctx.fill();
+    ctx.rotate(w.ang); ctx.scale(1, k);
+    const n = 4, sw = w.hl*2/n;
+    for (let i = 0; i < n; i++) { const x0 = -w.hl + i*sw; ctx.fillStyle = i % 2 ? '#8b5a2b' : '#a06a35'; ctx.strokeStyle = '#4a2c12'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.roundRect(x0 + 1, -w.ht, sw - 2, w.ht*2, 5); ctx.fill(); ctx.stroke(); ctx.strokeStyle = 'rgba(60,30,10,0.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0 + 5, -w.ht*0.35); ctx.lineTo(x0 + sw - 6, -w.ht*0.35); ctx.moveTo(x0 + 6, w.ht*0.4); ctx.lineTo(x0 + sw - 8, w.ht*0.4); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(255,225,170,0.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(-w.hl + 4, -w.ht + 3); ctx.lineTo(w.hl - 4, -w.ht + 3); ctx.stroke();
+    if (hr < 0.66) { ctx.strokeStyle = 'rgba(30,15,5,0.85)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-w.hl*0.4, -w.ht); ctx.lineTo(-w.hl*0.3, 0); ctx.lineTo(-w.hl*0.42, w.ht); ctx.stroke(); }
+    if (hr < 0.33) { ctx.beginPath(); ctx.moveTo(w.hl*0.35, -w.ht); ctx.lineTo(w.hl*0.45, -2); ctx.lineTo(w.hl*0.3, w.ht); ctx.stroke(); }
+    if (w.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${w.flash/0.15*0.5})`; ctx.beginPath(); ctx.roundRect(-w.hl, -w.ht, w.hl*2, w.ht*2, 5); ctx.fill(); }
+    ctx.restore();
+    const by = w.y - (Math.abs(Math.sin(w.ang))*w.hl + w.ht + 14), bw = 54;
+    ctx.save(); ctx.fillStyle = 'rgba(20,12,6,0.65)'; ctx.beginPath(); ctx.roundRect(w.x - bw/2 - 1, by - 1, bw + 2, 7, 3); ctx.fill(); ctx.fillStyle = hr > 0.33 ? '#d9a35f' : '#e0674f'; ctx.beginPath(); ctx.roundRect(w.x - bw/2, by, Math.max(2, bw*hr), 5, 2.5); ctx.fill(); ctx.restore();
+  }
+}
+/* ---- 문어: 팔 공격 / 먹물 ---- */
+function octoArm(src, tgt, raw) {
+  src.armN = (src.armN || 0) + 1; const life = 0.4;
+  B.arms.push({ src, tgt, t:0, life, side:src.armN % 2 ? 1 : -1 });
+  B.timers.push({ ctx:ATT, t:life*0.4, fn:() => {
+    if (src.dead || tgt.dead || tgt.hp <= 0) return;
+    ring(tgt.x, tgt.y, 4, 46, 0.3, '200,130,230', 3); sparks(tgt.x, tgt.y, 10, '225,170,250', 300, 0.3); glow(tgt.x, tgt.y, 44, 0.25, '200,130,230', 0.4);
+    if (tgt.invuln > 0) { missText(tgt); return; }
+    applyHit(src, tgt, raw, { basic:true, arm:true, zone:true, quiet:true, color:'200,130,230' });
+  } });
+}
+function drawArm(a) {
+  const s = a.src, t = a.tgt; if (!s || !t || s.dead) return;
+  const k = a.t/a.life, ext = k < 0.4 ? easeOut(k/0.4) : 1 - easeOut((k - 0.4)/0.6), dx = t.x - s.x, dy = t.y - s.y, dist = Math.max(1, Math.hypot(dx, dy)), ux = dx/dist, uy = dy/dist, nx = -uy, ny = ux;
+  const len = Math.max(0, (dist - t.r*0.4 - s.r*0.5)*ext), sway = a.side*(1 - ext*0.6)*0.55 + Math.sin(k*18)*0.06, N = 14, pts = [];
+  for (let i = 0; i <= N; i++) { const u2 = i/N, al = s.r*0.5 + u2*len, off = Math.sin(u2*Math.PI)*sway*Math.min(110, dist)*0.45 + Math.sin(u2*7 + B.time*14)*3*u2; pts.push([s.x + ux*al + nx*off, s.y + uy*al + ny*off]); }
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const [wm, col] of [[1.35, '#4a1f63'], [1, '#a65bc8'], [0.35, '#d9a6ee']]) for (let i = 1; i <= N; i++) { const u2 = i/N; ctx.strokeStyle = col; ctx.lineWidth = (13 - 8*u2)*wm*(wm < 0.5 ? 0.8 : 1); ctx.beginPath(); ctx.moveTo(pts[i - 1][0], pts[i - 1][1]); ctx.lineTo(pts[i][0], pts[i][1]); ctx.stroke(); }
+  ctx.fillStyle = '#f1d4fa'; for (let i = 3; i < N; i += 2) { const u2 = i/N; ctx.beginPath(); ctx.arc(pts[i][0] + nx*a.side*(3 - 2*u2), pts[i][1] + ny*a.side*(3 - 2*u2), 1.6, 0, TAU); ctx.fill(); }
+  ctx.restore();
+}
+function octoInk(tgt) {
+  tgt.inked = true; const e = foe(tgt); debuff(e, 'silence', 4); e.inkT = 4; addBuff(tgt, 'ink', 1.5, { spd:1.5, color:'110,110,170' }); chip(tgt, '🦑 먹물', true);
+  const ang = Math.atan2(e.y - tgt.y, e.x - tgt.x), dd = Math.hypot(e.x - tgt.x, e.y - tgt.y);
+  for (let i = 0; i < 26; i++) { const a2 = ang + rnd(-0.25, 0.25), sp = rnd(dd*2.2, dd*3.4); P({ k:'dot', add:false, x:tgt.x, y:tgt.y, vx:Math.cos(a2)*sp, vy:Math.sin(a2)*sp, size:rnd(4, 8), color:'30,22,55', life:rnd(0.3, 0.45), drag:3 }); }
+  puff(tgt.x, tgt.y, 18, '30,24,52', 30, 1.3, 130); puff(e.x, e.y, 18, '30,24,52', 28, 1.4, 120);
+  ring(tgt.x, tgt.y, tgt.r, tgt.r*3.2, 0.5, '90,70,140', 4); ring(e.x, e.y, e.r, e.r*2.6, 0.5, '60,40,110', 4);
+  for (let i = 0; i < 12; i++) P({ k:'smoke', add:false, x:tgt.x + rnd(-14, 14), y:tgt.y + rnd(-14, 14), vx:rnd(-50, 50), vy:rnd(-50, 50), size:rnd(14, 22), grow:rnd(22, 40), color:'28,20,48', life:rnd(1.2, 2.2), drag:1.2 });
+  decal(tgt.x, tgt.y, 46, '28,20,48', 'scorch', 5); decal(e.x, e.y, 40, '28,20,48', 'scorch', 5);
+  addText(e.x, e.y - e.r*2.3, '침묵', '170,150,230', 24, 0.9);
+}
+function mirrorBounce(p, tgt) {
+  const m = tgt.mirror, sp = Math.hypot(p.vx, p.vy) || 1; let near;
+  if (p.hw) { const dx = tgt.x - p.x, dy = tgt.y - p.y, al = (dx*p.vx + dy*p.vy)/sp, pe = Math.abs((-dx*p.vy + dy*p.vx)/sp); near = Math.abs(al) < 46 + tgt.r*1.5 && pe < p.hw + tgt.r*0.5; }
+  else near = Math.hypot(tgt.x - p.x, tgt.y - p.y) < p.r + tgt.r*1.45;
+  if (!near) return false;
+  const osk = p.sk || null, angs = (m.split && !p.hw) ? [0, -0.32, 0.32] : [0], vx0 = -p.vx, vy0 = -p.vy, raw0 = p.raw*m.pow;
+  angs.forEach((a, i) => {
+    const q = i === 0 ? p : Object.assign({}, p, { id:++B.actId });
+    q.owner = tgt; q.vx = vx0*Math.cos(a) - vy0*Math.sin(a); q.vy = vx0*Math.sin(a) + vy0*Math.cos(a); q.raw = raw0; q.fxSk = osk; q.sk = m.sk; q.refl = true; q.burn = m.burn; q.grp = null; q.life = Math.max(p.life, 1.4);
+    if (q.hw) q.hits = new Set();
+    if (i > 0) B.projs.push(q);
+  });
+  m.flash = 0.25; const tc = m.tint || '215,238,255';
+  ring(p.x, p.y, 4, 52, 0.32, tc, 3); ring(p.x, p.y, 2, 30, 0.22, '255,255,255', 2); sparks(p.x, p.y, 16, '235,246,255', 380, 0.4); glow(p.x, p.y, 62, 0.34, tc, 0.45);
+  B.beams.push({ pts:[[p.x - vx0/sp*60, p.y - vy0/sp*60], [p.x + vx0/sp*170, p.y + vy0/sp*170]], t:0, life:0.22, color:tc, thin:true });
+  for (let i = 0; i < 6; i++) P({ k:'shard', x:p.x, y:p.y, vx:rnd(-220, 220), vy:rnd(-220, 220), size:rnd(3, 6), rot:rnd(0, TAU), vr:rnd(-9, 9), color:tc, life:0.5, drag:3 });
+  P({ k:'cross', x:p.x, y:p.y, size:10, color:'255,255,255', life:0.3 });
+  addText(tgt.x, tgt.y - tgt.r*1.9, '반사!', '190,225,255', 24, 0.8);
+  return true;
 }
 function updateProjs(h) {
   for (const p of B.projs) {
@@ -3345,6 +3479,8 @@ function updateProjs(h) {
       if (bm.ph === 1 && (o.dead || Math.hypot(o.x - p.x, o.y - p.y) < o.r + 14)) { p.life = -1; boomCatch(p); }
       continue;
     }
+    if (tgt.mirror && tgt.mirror.t > 0 && !p.refl && mirrorBounce(p, tgt)) continue;
+    if (B.walls.length && !p.boom) { const w = B.walls.find(q => q.hp > 0 && q.owner !== p.owner && wallHitP(q, p) && !(p.hw && p.wh && p.wh.has(q))); if (w) { wallDamage(w, p.raw, p.x, p.y); if (p.hw) { (p.wh = p.wh || new Set()).add(w); } else { p.life = -1; continue; } } }
     if (tgt.stealthT > 0) { if (p.x < -60 || p.x > WW+60 || p.y < -60 || p.y > WH+60) p.life = -1; continue; }
     if (p.hw) {
       const sp = Math.hypot(p.vx, p.vy) || 1, dx = tgt.x-p.x, dy = tgt.y-p.y, al = (dx*p.vx + dy*p.vy)/sp, pe = Math.abs((-dx*p.vy + dy*p.vx)/sp);
@@ -3421,6 +3557,8 @@ function updateFx(h) {
   for (const f of B.fxs) fxTick(f, h); B.fxs = B.fxs.filter(f => f.t < f.life);
   for (const s of B.slashes) s.t += h; B.slashes = B.slashes.filter(s => s.t < s.life);
   for (const b of B.beams) b.t += h; B.beams = B.beams.filter(b => b.t < b.life);
+  for (const a of B.arms) a.t += h; B.arms = B.arms.filter(a => a.t < a.life);
+  for (const w of B.walls) w.flash = Math.max(0, w.flash - h); B.walls = B.walls.filter(w => w.hp > 0);
   for (const f of B.feathers) featherStep(f, h); B.feathers = B.feathers.filter(f => !f.done);
   for (const d of B.decals) d.t += h; B.decals = B.decals.filter(d => d.t < d.life);
   for (const g of B.ghosts) g.t += h; B.ghosts = B.ghosts.filter(g => g.t < g.life);
@@ -3649,8 +3787,22 @@ function drawUnit(u) {
   ctx.save(); ctx.scale(Math.cos(u.face) > 0 ? -1 : 1, 1);
   drawEmoji(u.emoji, u.r*1.5, 0, 2); ctx.restore();
   if (u.hitFlash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,255,255,${u.hitFlash/0.16*0.55})`; ctx.beginPath(); ctx.arc(0, 0, u.r, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+  if (u.inkT > 0) { const ia = Math.min(1, u.inkT/0.8)*0.6; ctx.fillStyle = `rgba(28,20,50,${ia})`; for (const [bx, by, br] of [[-0.35, -0.2, 0.42], [0.3, 0.1, 0.36], [-0.05, 0.45, 0.34], [0.2, -0.45, 0.26]]) { ctx.beginPath(); ctx.ellipse(bx*u.r, by*u.r, br*u.r, br*u.r*0.8, bx, 0, TAU); ctx.fill(); } }
   if (u.invuln > 0.3) { ctx.strokeStyle = `rgba(255,255,255,${0.55 + 0.3*Math.sin(B.time*14)})`; ctx.lineWidth = 3; ctx.setLineDash([5,5]); ctx.beginPath(); ctx.arc(0, 0, u.r + 5, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   if (u.shield > 0) { ctx.fillStyle = 'rgba(150,200,255,0.16)'; ctx.strokeStyle = `rgba(170,215,255,${0.5 + 0.3*(u.shield/(u.shieldMax||1))})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(0, 0, u.r + 8, 0, TAU); ctx.fill(); ctx.stroke(); }
+  if (u.mirror && u.mirror.t > 0) {
+    const m = u.mirror, fo = foe(u), fa = Math.atan2(fo.y - u.y, fo.x - u.x), bl = m.t < 0.8 ? 0.5 + 0.4*Math.sin(B.time*30) : 1, R = u.r + 20, fl = Math.min(1, (m.flash || 0)*3), tc = m.tint || '190,225,255', W = '255,255,255';
+    ctx.save(); ctx.rotate(fa); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const ag = ctx.createRadialGradient(0, 0, u.r*0.6, 0, 0, R + 12); ag.addColorStop(0, rgba(tc, 0)); ag.addColorStop(0.75, rgba(tc, (0.10 + fl*0.25)*bl)); ag.addColorStop(1, rgba(tc, 0)); ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(0, 0, R + 12, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, R, -1.15, 1.15); ctx.arc(0, 0, R - 10, 1.15, -1.15, true); ctx.closePath();
+    const gg = ctx.createLinearGradient(R - 10, -R, R, R); gg.addColorStop(0, rgba(W, 0.5*bl)); gg.addColorStop(0.5, rgba(tc, (0.32 + fl*0.4)*bl)); gg.addColorStop(1, rgba(W, 0.6*bl)); ctx.fillStyle = gg; ctx.fill();
+    ctx.strokeStyle = rgba(W, Math.min(1, (0.8 + fl)*bl)); ctx.lineWidth = 2; ctx.stroke();
+    for (let i = -3; i <= 3; i++) { const a2 = i*0.32; ctx.strokeStyle = rgba(W, 0.32*bl); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(Math.cos(a2)*(R - 10), Math.sin(a2)*(R - 10)); ctx.lineTo(Math.cos(a2)*R, Math.sin(a2)*R); ctx.stroke(); }
+    const gs = ((B.time*0.85) % 1)*2.5 - 1.25;
+    if (Math.abs(gs) < 1.1) { const gx = Math.cos(gs)*(R - 5), gy = Math.sin(gs)*(R - 5); ctx.strokeStyle = rgba(W, 0.95*bl); ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(Math.cos(gs - 0.07)*(R - 10), Math.sin(gs - 0.07)*(R - 10)); ctx.lineTo(Math.cos(gs + 0.1)*R, Math.sin(gs + 0.1)*R); ctx.stroke(); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(gx - 8, gy); ctx.lineTo(gx + 8, gy); ctx.moveTo(gx, gy - 8); ctx.lineTo(gx, gy + 8); ctx.stroke(); }
+    for (let i = 0; i < 3; i++) { const oa = B.time*1.7 + i*TAU/3, ox = Math.cos(oa)*(R + 4), oy = Math.sin(oa)*(R + 4); ctx.save(); ctx.translate(ox, oy); ctx.rotate(oa*2); ctx.fillStyle = rgba(tc, 0.85*bl); ctx.strokeStyle = rgba(W, 0.9*bl); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(3.5, 0); ctx.lineTo(0, 5); ctx.lineTo(-3.5, 0); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+    ctx.restore();
+  }
   const a = u.act;
   if (a && (a.type === 'cast' || a.type === 'atk' || a.type === 'poke')) {
     const c = a.type === 'cast' ? a.data.sk.b.color : '255,255,255';
@@ -3675,7 +3827,7 @@ function drawUnit(u) {
   ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(8,14,28,0.85)'; ctx.strokeText(label, hx, y + bh/2 + 1);
   ctx.fillStyle = u.shield > 0 ? '#eaf6ff' : '#fff'; ctx.fillText(label, hx, y + bh/2 + 1);
   { const sts = []; for (const k of ['vuln','weak','silence','blind','root','curse','sunder']) if (u[k] > 0) sts.push([ST_ICON[k], 0]);
-    if (u.bleed) sts.push(['🩸', u.bleed.st]); if (u.frost > 0) sts.push(['🧊', u.frost]); if (u.poison) sts.push([u.poison.burn ? '🔥' : '☠️', 0]); if (u.thorns > 0) sts.push(['🌵', 0]); if (u.evade > 0) sts.push(['💨', u.evade]); if (u.hot) sts.push(['💚', 0]);
+    if (u.bleed) sts.push(['🩸', u.bleed.st]); if (u.frost > 0) sts.push(['🧊', u.frost]); if (u.poison) sts.push([u.poison.burn ? '🔥' : '☠️', 0]); if (u.thorns > 0) sts.push(['🌵', 0]); if (u.evade > 0) sts.push(['💨', u.evade]); if (u.hot) sts.push(['💚', 0]); if (u.mirror && u.mirror.t > 0) sts.push(['🪞', 0]);
     if (sts.length) { const sp = 27, per = Math.max(1, Math.min(sts.length, Math.floor((w + 20)/sp))); sts.forEach(([t, n], i) => { const r = Math.floor(i/per), inRow = Math.min(per, sts.length - r*per), cx = clamp(hx + (i%per - (inRow-1)/2)*sp, 16, WW - 16), cy = y + bh + 18 + r*28; ctx.fillStyle = 'rgba(8,14,28,0.55)'; ctx.beginPath(); ctx.arc(cx, cy, 13, 0, TAU); ctx.fill(); drawEmoji(t, 16, cx, cy);
       if (n > 1) { ctx.font = '800 11px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(8,14,28,0.9)'; ctx.strokeText(n, cx + 9, cy + 9); ctx.fillStyle = '#fff'; ctx.fillText(n, cx + 9, cy + 9); } }); } }
   if (u.chip) {
@@ -3774,7 +3926,9 @@ function draw() {
     ctx.save(); ctx.globalAlpha = a*0.45; ctx.translate(g.x, g.y); ctx.fillStyle = rgba(team, 0.5); ctx.beginPath(); ctx.arc(0, 0, g.r, 0, TAU); ctx.fill();
     ctx.scale(g.flip, 1); drawEmoji(g.emoji, g.r*1.5, 0, 2); ctx.restore();
   }
+  drawWalls();
   for (const u of [B.me, B.en].sort((a,b) => a.y - b.y)) drawUnit(u);
+  for (const a of B.arms) drawArm(a);
   for (const p of B.projs) drawProj(p);
   drawScope();
   drawScope();
@@ -3897,7 +4051,7 @@ function startBattle() {
   const bi = ao ? { style:calcStyle(ao.fb.mc, ao.entries), emoji:ao.fb.emoji, name:ao.name } : bossInfo(stage);
   B = { feathers:[], projs:[], parts:[], rings:[], slashes:[], beams:[], decals:[], ghosts:[], texts:[], zones:[], warns:[], meteors:[], timers:[], fxs:[],
     time:0, fightT:0, introT:1.0, over:false, win:false, timeout:false, speed:battleSpeed, acc:0, actId:0,
-    mines:[], links:[], pickups:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage, arena:ao, lagMe:1, lagEn:1,
+    mines:[], links:[], pickups:[], walls:[], arms:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage, arena:ao, lagMe:1, lagEn:1,
     stats:{ dealt:0, taken:0, dodges:0 }, att:{ me:{}, en:{} }, bossStyleLabel:bi.style.label, bg:bgFor(stage), contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
   const me = mkUnit({ side:'me', hpK:ao ? ARENA_HP : 1, emoji:fb.emoji, name:fb.name, st:fighterStats(fb, 0, true), fmc:fb.mc, entries, pas:fb.pas.id, plv:curLv('f', fb.id) });
   const en = ao ? mkUnit({ side:'en', arena:true, hpK:ARENA_HP, emoji:ao.fb.emoji, name:ao.name, st:ao.st, fmc:ao.fb.mc, entries:ao.entries, pas:ao.fb.pas.id, plv:ao.team.f.lv })
@@ -4113,7 +4267,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-53', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-54', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
