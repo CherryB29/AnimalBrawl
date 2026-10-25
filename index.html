@@ -585,6 +585,13 @@ const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
    새 패치는 PATCHES 맨 앞에 추가하면 된다. 접속했을 때 아직 안 본 최신 패치가 있으면 팝업으로 보여준다.
    type: 'buff'(버프) · 'nerf'(너프) · 'adjust'(조정) / sk: 스킬 id, f: 파이터 id, 또는 emoji + tier 직접 지정 */
 const PATCHES = [
+  { ver:'3-53', date:'2026.10.25', title:'친선전 나가기', items:[
+    { type:'adjust', emoji:'🏟️', tier:'n', name:'아레나', text:'친선전 도중 나갈 수 있고, 나갈 때 전투 상세 통계를 볼 수 있다. 나가도 기록에는 남지 않는다.', from:'', to:'' }
+  ] },
+  { ver:'3-52', date:'2026.10.25', title:'아레나·덱 개선', items:[
+    { type:'adjust', emoji:'🏟️', tier:'n', name:'아레나', text:'내 방어덱에도 도전해 볼 수 있다. 결과는 기록되지 않는다.', from:'', to:'' },
+    { type:'adjust', emoji:'🗂️', tier:'n', name:'덱 저장', text:'저장할 수 있는 덱 수 증가', from:'3개', to:'5개' }
+  ] },
   { ver:'3-51', date:'2026.10.25', title:'용의 숨결·운명의 실 조정', items:[
     { type:'buff', sk:'breath', text:'쿨타임 감소', from:'9초', to:'7.5초' },
     { type:'buff', sk:'breath', text:'2진화(얼음 숨결) 기절 시간 증가', from:'1초', to:'2초' },
@@ -1073,6 +1080,7 @@ function renderNav() {
 }
 function setTab(t) {
   if (Arn.fight && t !== 'arena') { Arn.fight = false; Arn.opp = null; startBattle(); }
+  if (t !== 'arena') { Arn.view = 'list'; Arn.cur = null; }
   tab = t; render(true); window.scrollTo({ top:0 }); if (t === 'arena') arenaEnter();
 }
 function render(animate) {
@@ -1347,13 +1355,15 @@ function again(kind, n) { closeGacha(); n && n > 1 ? pullMulti(kind, n) : pull(k
 
 /* ===================== 덱 프리셋 (세팅 탭 · 3슬롯) ===================== */
 /* 선택한 덱을 수정하면 그 슬롯에 자동 저장된다. 진화·시작 쿨타임도 슬롯마다 따로 기억한다. */
+const PRESET_N = 5;
 function presetFromCurrent() {
   const ids = state.eq.s.filter(Boolean), evo = {}, scd = {};
   for (const id of ids) { evo[id] = state.evo[id] || null; scd[id] = scdOf(id); }
   return { f:state.eq.f, s:state.eq.s.slice(), evo, scd };
 }
 function presetsEnsure() {
-  if (!Array.isArray(state.presets) || state.presets.length !== 3) { state.presets = [presetFromCurrent(), null, null]; state.presetIdx = 0; }
+  if (!Array.isArray(state.presets)) { state.presets = [presetFromCurrent(), null, null, null, null]; state.presetIdx = 0; }
+  while (state.presets.length < PRESET_N) state.presets.push(null); if (state.presets.length > PRESET_N) state.presets.length = PRESET_N;
   if (!state.presets[state.presetIdx]) state.presetIdx = state.presets.findIndex(Boolean);
 }
 function presetTap(i) {
@@ -1377,7 +1387,7 @@ function presetClear(i, ev) {
 }
 function presetPillsHtml() {
   presetsEnsure();
-  return `<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px">${[0, 1, 2].map(i => {
+  return `<div style="display:grid;grid-template-columns:repeat(${PRESET_N},minmax(0,1fr));gap:5px">${[0, 1, 2, 3, 4].map(i => {
     const p = state.presets[i], on = state.presetIdx === i, fb = p && p.f ? F(p.f) : null;
     if (!p) return `<button onclick="presetTap(${i})" class="press" style="height:40px;border-radius:13px;border:1.5px dashed #cfd5dc;background:transparent;color:var(--ink4);font-size:12px;font-weight:800">+ 덱 ${i + 1}</button>`;
     return `<div style="position:relative;min-width:0"><button onclick="presetTap(${i})" class="press" style="width:100%;height:40px;border-radius:13px;border:0;background:${on ? 'var(--blue)' : '#fff'};color:${on ? '#fff' : 'var(--ink2)'};box-shadow:${on ? '0 4px 12px -4px rgba(49,130,246,.6)' : 'inset 0 0 0 1.5px #e1e5ea'};font-size:12.5px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:5px"><span>덱 ${i + 1}</span>${fb ? `<span class="emoji" style="font-size:15px">${fb.emoji}</span>` : ''}</button>${on ? '' : `<button onclick="presetClear(${i}, event)" aria-label="덱 비우기" class="press" style="position:absolute;top:-6px;right:-4px;width:18px;height:18px;border:0;border-radius:50%;background:#8b95a1;color:#fff;font-size:10px;font-weight:800;line-height:1">✕</button>`}</div>`;
@@ -1700,6 +1710,7 @@ function openDetail(kind, id) {
 function closeDetail() { detail = null; const m = $('detailModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
 function renderDetail() {
   if (!detail) return;
+  const keepEl = $('detailModal').firstElementChild, keepY = keepEl ? keepEl.scrollTop : 0;
   const { kind, id } = detail, b = baseOf(kind, id), t = tierOf(b.tier), n = owned(kind, id), li = lvInfo(n), lv = curLv(kind, id), up = canUp(kind, id);
   const w = kind === 's' ? skillWith(id) : null, ev = w && w.evo;
   const body = kind === 'f'
@@ -1738,6 +1749,7 @@ function renderDetail() {
     ${eqIdx >= 0 ? `<button class="btn ghost" style="width:100%;margin-top:8px" onclick="unequipItem('${kind}','${id}')">장착 해제</button>` : ''}
   </div>`;
   $('detailModal').onclick = closeDetail;
+  if (keepEl) { const e2 = $('detailModal').firstElementChild; if (e2) { e2.style.animation = 'none'; e2.scrollTop = keepY; } }
 }
 
 /* ---- 전투 탭 ---- */
@@ -3096,6 +3108,12 @@ function _resolveAct(u, e, a) {
       spawnZone(u, zx, zy, b, sk);
       
       if (b.zstyle === 'sanct') { fx('halo', zx, zy, b.radius, 1.1, b.color); glow(zx, zy, b.radius*1.2, 0.8, '255,240,180', 0.4); }
+      else if (b.zstyle === 'fire') {
+        ring(zx, zy, 8, b.radius*1.25, 0.5, '255,150,60', 6); ring(zx, zy, 4, b.radius*0.8, 0.4, '255,235,170', 3, 0.05); glow(zx, zy, b.radius*1.3, 0.5, '255,140,50', 0.7);
+        for (let i = 0; i < 34; i++) { const a = rnd(0, TAU), rr = rnd(0, b.radius*0.9), sp = rnd(80, 220); P({ k:'flame', x:zx + Math.cos(a)*rr, y:zy + Math.sin(a)*rr*0.8, vx:Math.cos(a)*sp*0.4, vy:-rnd(120, 300), size:rnd(9, 18), color:i % 3 ? '255,140,40' : '255,200,90', life:rnd(0.5, 0.9), drag:0.8 }); }
+        for (let i = 0; i < 20; i++) { const a = rnd(0, TAU), sp = rnd(160, 380); P({ k:'dot', x:zx, y:zy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp*0.5 - rnd(100, 260), g:600, size:rnd(2, 3.6), color:'255,200,90', life:rnd(0.6, 1.1) }); }
+        puff(zx, zy, 10, '70,58,52', 26, 1.0, 70); decal(zx, zy, b.radius*0.95, '30,14,8', 'scorch', 8); shake(6); B.flash = Math.max(B.flash, 0.06);
+      }
       else if (b.zstyle === 'void') { ring(zx, zy, b.radius*1.35, b.radius*0.95, 0.5, '190,150,255', 4); ring(zx, zy, b.radius*0.4, b.radius*1.1, 0.7, '120,80,220', 3, 0.1); glow(zx, zy, b.radius, 0.6, '120,80,220'); shake(4); }
       break; }
     case 'flurry': {
@@ -3343,7 +3361,12 @@ function updateZones(h) {
   for (const z of B.zones) {
     z.t += h; z.tt -= h; const e = foe(z.owner), c = z.color;
     const rr = Math.sqrt(Math.random())*z.r, aa = rnd(0,TAU), px = z.x + Math.cos(aa)*rr, py = z.y + Math.sin(aa)*rr;
-    if (z.style === 'fire' && Math.random() < h*30) P({ k:'glow', x:px, y:py, vy:-rnd(30,90), size:rnd(6,12), color:'255,130,40', life:0.6 });
+    if (z.style === 'fire') {
+      if (Math.random() < h*34) P({ k:'flame', x:px, y:py + 4, vx:rnd(-14, 14), vy:-rnd(60, 130), size:rnd(7, 13), color:'255,140,40', life:rnd(0.4, 0.7), drag:0.6 });
+      if (Math.random() < h*26) P({ k:'dot', x:px, y:py, vx:rnd(-34, 34), vy:-rnd(70, 170), size:rnd(1.4, 2.6), color:'255,205,100', life:rnd(0.7, 1.3), drag:0.5 });
+      if (Math.random() < h*8) { const ea = rnd(0, TAU); P({ k:'smoke', add:false, x:z.x + Math.cos(ea)*z.r*0.9, y:z.y + Math.sin(ea)*z.r*0.8, vx:rnd(-8, 8), vy:-rnd(24, 48), size:rnd(7, 11), grow:16, color:'58,48,44', life:rnd(1, 1.6), drag:0.5 }); }
+      if (Math.random() < h*2.2) { const sx = z.x + rnd(-0.7, 0.7)*z.r, sy = z.y + rnd(-0.6, 0.6)*z.r; glow(sx, sy, 26, 0.22, '255,170,60', 0.6); for (let i = 0; i < 6; i++) P({ k:'dot', x:sx, y:sy, vx:rnd(-80, 80), vy:-rnd(120, 240), g:520, size:rnd(1.8, 3), color:'255,190,80', life:0.7 }); }
+    }
     else if (z.style === 'swamp') {
       if (Math.random() < h*7) P({ k:'bubble', add:false, x:px, y:py, vx:rnd(-4,4), vy:-rnd(10,26), size:rnd(3,7), color:'120,90,50', rim:'235,215,160', life:rnd(0.9,1.5) });
       if (Math.random() < h*4) P({ k:'smoke', add:false, x:px, y:py, vy:-rnd(6,16), size:rnd(5,9), grow:8, color:'150,125,80', life:rnd(1,1.6), drag:0.6 });
@@ -3374,6 +3397,7 @@ function updateZones(h) {
         const inside = Math.hypot(e.x-z.x, e.y-z.y) < z.r + e.r*0.4;
         if (z.style === 'storm') { const bx = inside ? e.x : px, by = inside ? e.y : py; B.beams.push({ pts:mkBolt(bx + rnd(-20,20), by - 380, bx, by), t:0, life:0.18, color:c, thin:true }); ring(bx, by, 3, 34, 0.25, c, 2); sparks(bx, by, 8, '210,230,255', 300, 0.3); B.flash = Math.max(B.flash, 0.07); }
         if (inside) {
+          if (z.style === 'fire') { P({ k:'flame', x:e.x + rnd(-e.r*0.6, e.r*0.6), y:e.y + e.r*0.4, vy:-rnd(80, 150), size:rnd(8, 13), color:'255,150,50', life:0.45 }); for (let i = 0; i < 3; i++) P({ k:'dot', x:e.x, y:e.y, vx:rnd(-90, 90), vy:-rnd(60, 160), g:420, size:rnd(1.6, 2.6), color:'255,210,110', life:0.5 }); }
           if (z.raw > 0) { if (e.invuln > 0) missText(e); else applyHit(z.owner, e, z.raw, { color:c, quiet:true, zone:true }); }
           if (z.slow) setSlow(e, 0.6, z.slowM);
           if (zev && zev.z) fxList(z.owner, e, z.sk, zev.z, z.raw);
@@ -3562,6 +3586,28 @@ function drawSwamp(z) {
   ctx.fillStyle = 'rgba(255,245,210,0.55)'; for (let i = 0; i < 6; i++) { const a = i*TAU/6 + t*0.2, rr = R*(0.3 + 0.5*((i*0.37 + t*0.08) % 1)); ctx.beginPath(); ctx.arc(z.x + Math.cos(a)*rr, z.y + Math.sin(a)*rr, 1.8 + Math.sin(t*3 + i)*0.6, 0, TAU); ctx.fill(); }
   ctx.restore();
 }
+function drawInferno(z) {
+  const R = z.r, t = z.t; if (z.seed == null) z.seed = Math.random()*100;
+  ctx.save();
+  const g = ctx.createRadialGradient(z.x, z.y, R*0.1, z.x, z.y, R); g.addColorStop(0, 'rgba(48,18,8,0.62)'); g.addColorStop(0.75, 'rgba(34,14,8,0.4)'); g.addColorStop(1, 'rgba(34,14,8,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(z.x, z.y, R, 0, TAU); ctx.fill();
+  ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const fr = x => x - Math.floor(x), pulse = 0.55 + 0.35*Math.sin(t*4);
+  for (let i = 0; i < 9; i++) {
+    const ang = i*TAU/9 + Math.sin(z.seed + i*3.1)*0.3, L = R*(0.55 + 0.4*fr(Math.sin(z.seed*(i + 1.7))*43758.5)); let x = z.x + Math.cos(ang)*R*0.08, y = z.y + Math.sin(ang)*R*0.08*0.8; const pts = [[x, y]];
+    for (let st = 1; st <= 5; st++) { const aa = ang + Math.sin(z.seed*7 + i*5 + st*2.3)*0.35, sl = L/5; x += Math.cos(aa)*sl; y += Math.sin(aa)*sl*0.8; pts.push([x, y]); }
+    for (const [w, c, al] of [[7, '255,70,20', 0.16*pulse], [3.2, '255,140,40', 0.55*pulse + 0.15], [1.2, '255,235,150', 0.8*pulse + 0.1]]) { ctx.strokeStyle = rgba(c, al); ctx.lineWidth = w; ctx.beginPath(); pts.forEach((q, k) => k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); }
+  }
+  const hg = ctx.createRadialGradient(z.x, z.y, 0, z.x, z.y, R*0.7); hg.addColorStop(0, rgba('255,170,60', 0.22*pulse + 0.06)); hg.addColorStop(1, rgba('255,90,20', 0)); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(z.x, z.y, R*0.7, 0, TAU); ctx.fill();
+  const N = 26;
+  for (let i = 0; i < N; i++) {
+    const a = i*TAU/N + Math.sin(z.seed + i)*0.05, bx = z.x + Math.cos(a)*R*0.96, by = z.y + Math.sin(a)*R*0.96*0.86, ph = t*7 + i*1.9;
+    const h = 15 + 11*Math.sin(ph) + 5*Math.sin(ph*2.3 + i), w = 7 + 2*Math.sin(ph*1.3), sway = Math.sin(ph*0.8)*3.5 + Math.cos(a)*3;
+    const fg = ctx.createLinearGradient(bx, by, bx + sway, by - h); fg.addColorStop(0, rgba('255,70,20', 0.7)); fg.addColorStop(0.55, rgba('255,150,40', 0.55)); fg.addColorStop(1, rgba('255,235,150', 0));
+    ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(bx - w, by); ctx.quadraticCurveTo(bx - w*0.6, by - h*0.55, bx + sway, by - h); ctx.quadraticCurveTo(bx + w*0.6, by - h*0.55, bx + w, by); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
 function drawZone(z) {
   const a = Math.min(1, z.t/0.3, (z.dur - z.t)/0.5), c = z.color;
   ctx.save(); ctx.globalAlpha = clamp(a, 0, 1);
@@ -3569,6 +3615,7 @@ function drawZone(z) {
   g.addColorStop(0, rgba(z.style === 'void' ? '25,10,50' : c, z.style === 'fire' ? 0.35 : z.style === 'void' ? 0.45 : 0.22)); g.addColorStop(0.7, rgba(c, 0.1)); g.addColorStop(1, rgba(c, 0));
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.fill();
   ctx.strokeStyle = rgba(c, 0.6); ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -z.t*30; ctx.beginPath(); ctx.arc(z.x, z.y, z.r, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  if (z.style === 'fire') drawInferno(z);
   if (z.style === 'void') drawVoid(z);
   if (z.style === 'sanct') drawSanct(z);
   if (z.style === 'swamp') drawSwamp(z);
@@ -4048,7 +4095,7 @@ function arenaShown() {
   if (sn) { const me = arenaPrep({ uid:'me', me:true, name:state.nick || '나', stage:state.stage, team:sn }); if (me) list.push(me); }
   return arenaSorted(list);
 }
-function arenaQuick(i) { const o = (Arn.shown || [])[i]; if (!o || o.me) return; Arn.cur = o; arenaChallenge(); }
+function arenaQuick(i) { const o = (Arn.shown || [])[i]; if (!o) return; Arn.cur = o; arenaChallenge(); }
 function arenaOpen(i) { const o = (Arn.shown || [])[i]; if (!o) return; Arn.cur = o; Arn.view = 'detail'; render(true); window.scrollTo({ top:0 }); }
 function arenaClose() { Arn.view = 'list'; Arn.cur = null; render(true); window.scrollTo({ top:0 }); }
 function arenaChallenge() {
@@ -4056,12 +4103,17 @@ function arenaChallenge() {
   if (!state.eq.f) { toast('파이터를 먼저 장착해 주세요'); return; }
   Arn.opp = o; Arn.fight = true; startBattle(); render(true); window.scrollTo({ top:0 });
 }
-function arenaBack() { Arn.fight = false; Arn.opp = null; startBattle(); render(true); }
+function arenaLeave() {
+  if (!B || !B.arena || B.over) { arenaBack(); return; }
+  B.over = true; B.win = false; B.forfeit = true; B.reported = true; B.resultShown = true;
+  showArenaResult(); window.scrollTo({ top:0 });
+}
+function arenaBack() { Arn.fight = false; Arn.opp = null; Arn.view = 'list'; Arn.cur = null; startBattle(); render(true); }
 function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai.innerHTML = arenaFightInfoHtml(); icons(); } }
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-51', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-53', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
@@ -4088,14 +4140,14 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function arenaReport(win) {
   if (B.reported) return; B.reported = true;
   statLog('a', win);
-  if (FBok() && Arn.opp && !Arn.opp.sample) window.ArenaFB.logMatch({ defenderUid:Arn.opp.uid, attackerName:state.nick || '이름 없음', win:!!win }).catch(() => {});
+  if (FBok() && Arn.opp && !Arn.opp.sample && !Arn.opp.me) window.ArenaFB.logMatch({ defenderUid:Arn.opp.uid, attackerName:state.nick || '이름 없음', win:!!win }).catch(() => {});
 }
 function showArenaResult() {
   B.resolved = true;
   const win = B.win, st = B.stats, o = B.arena, hr = A('hResult'); hr.classList.add('on');
   const row = (l, v) => `<div style="display:flex;justify-content:space-between;padding:.45em 0;border-top:1px solid #eef0f2"><span style="color:#8b95a1;font-weight:500">${l}</span><span style="font-weight:800">${v}</span></div>`;
   hr.innerHTML = `<div class="rcard a-pop">
-    <div style="margin-bottom:.8em"><div style="font-size:.8em;font-weight:700;color:#8b95a1">친선전 · ${esc(o.name)}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${win ? '#3182f6' : '#f04452'}">${win ? '승리' : '패배'}</div></div>
+    <div style="margin-bottom:.8em"><div style="font-size:.8em;font-weight:700;color:#8b95a1">친선전 · ${esc(o.name)}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${B.forfeit ? '#8b95a1' : win ? '#3182f6' : '#f04452'}">${B.forfeit ? '중도 퇴장' : win ? '승리' : '패배'}</div></div>
     ${row('가한 피해 / 회피', `${fmt(st.dealt)} / ${st.dodges}회`)}${row('받은 피해', fmt(st.taken))}
     <div style="font-size:.8em;color:#8b95a1;margin-top:.7em;font-weight:500">친선전이라 보상은 없어요. 스킬별 수치는 아래에서 볼 수 있어요.</div>
     <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:.5em;margin-top:.9em"><button class="rbtn g" onclick="arenaBack()">돌아가기</button><button class="rbtn p" onclick="arenaRematch()">다시 도전</button></div></div>`;
@@ -4121,11 +4173,12 @@ function attBlockHtml(side, title, color) {
 }
 function arenaStatsHtml() {
   if (!B || !B.arena || !B.over || !B.resultShown) return '';
-  return `<div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">전투 상세 <span style="font-size:12px;color:var(--ink3);font-weight:600">${B.win ? '승리' : '패배'} · ${Math.round(B.time)}초</span></div>${attBlockHtml('me', esc(state.nick || '나'), 'var(--blue)')}${attBlockHtml('en', esc(B.arena.name), 'var(--red)')}</div>`;
+  return `<div class="card soft"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">전투 상세 <span style="font-size:12px;color:var(--ink3);font-weight:600">${B.forfeit ? '중도 퇴장' : B.win ? '승리' : '패배'} · ${Math.round(B.time)}초</span></div>${attBlockHtml('me', esc(state.nick || '나'), 'var(--blue)')}${attBlockHtml('en', esc(B.arena.name), 'var(--red)')}</div>`;
 }
 function arenaFightInfoHtml() {
   const o = Arn.opp; if (!o || !state.eq.f) return '';
-  return arenaStatsHtml() + arenaFightInfoHtml0(o);
+  const leave = B && B.arena && !B.over ? `<button class="btn ghost" style="width:100%;height:46px" onclick="arenaLeave()">친선전 나가기</button>` : '';
+  return arenaStatsHtml() + leave + arenaFightInfoHtml0(o);
 }
 function arenaFightInfoHtml0(o) {
   const fb = F(state.eq.f), my = fighterStats(fb, 0, true), mp = myPower(), ms = myStyle(), os = calcStyle(o.fb.mc, o.entries);
@@ -4201,7 +4254,7 @@ function viewArenaList() {
         <div style="display:flex;align-items:center;gap:6px;min-width:0"><span style="flex:1;min-width:0;display:flex;align-items:center;gap:5px"><span style="font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0">${esc(o.name)}</span>${o.me ? '<span class="chip" style="flex:none;height:19px;padding:0 7px;font-size:10px;background:var(--blue);color:#fff">나</span>' : `<span class="chip t-${o.fb.tier}" style="height:19px;padding:0 6px;font-size:10px;flex:none">Lv.${o.team.f.lv}</span>`}</span><span style="flex:none;font-size:15px;font-weight:800;white-space:nowrap;color:${Arn.sort === 'power' && !o.me ? pc : 'var(--ink)'}">${fmt(o.power)}</span></div>
         <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:4px 6px;flex-wrap:wrap"><span style="display:flex;gap:3px">${skIcons(sks, true)}</span><span style="flex:none;font-size:11px;font-weight:700;color:var(--ink3);white-space:nowrap;margin-left:auto">STAGE ${o.stage}</span></div>
       </div></button>
-      ${o.me ? '<div style="width:12px"></div>' : `<button onclick="arenaQuick(${i})" aria-label="바로 도전" ${canFight ? '' : 'disabled'} class="press" style="flex:none;width:52px;border:0;border-left:1px solid rgba(25,31,40,.08);background:none;color:var(--blue);display:flex;align-items:center;justify-content:center;${canFight ? '' : 'opacity:.35'}">${ic('swords', 'w-5 h-5')}</button>`}</div>`; }).join('');
+      <button onclick="arenaQuick(${i})" aria-label="${o.me ? '내 방어덱 공격' : '바로 도전'}" ${canFight ? '' : 'disabled'} class="press" style="flex:none;width:52px;border:0;border-left:1px solid rgba(25,31,40,.08);background:none;color:var(--blue);display:flex;align-items:center;justify-content:center;${canFight ? '' : 'opacity:.35'}">${ic('swords', 'w-5 h-5')}</button></div>`; }).join('');
   const logs = Arn.logs.length ? Arn.logs.map(l => `<div style="display:flex;align-items:center;justify-content:space-between;height:44px;border-top:1px solid var(--line)"><span style="font-size:14px;font-weight:700">${esc(l.attackerName)}</span><span class="chip" style="${l.win ? 'background:var(--red-s);color:var(--red)' : 'background:#e9f9f1;color:var(--green)'}">${l.win ? '방어 실패' : '방어 성공'}</span></div>`).join('') : '<div style="padding:18px 0 8px;text-align:center;font-size:13px;color:var(--ink3);border-top:1px solid var(--line)">아직 도전 기록이 없어요</div>';
   return `<div class="space-y-3">${arenaHeadHtml()}${arenaDefCardHtml()}
     <div style="display:flex;align-items:center;justify-content:space-between;padding:0 4px"><div style="font-size:17px;font-weight:800;letter-spacing:-0.02em">플레이어</div><button class="btn ghost sm" onclick="arenaRefresh()">${Arn.loading ? '불러오는 중…' : '새로고침'}</button></div>
@@ -4229,7 +4282,7 @@ function viewArenaDetail() {
       <div style="display:flex;height:8px;border-radius:99px;overflow:hidden;margin-top:14px;background:#eceff2"><div style="width:${ratio}%;background:var(--blue)"></div><div style="flex:1;background:var(--red)"></div></div>
       <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;font-weight:800"><span style="color:var(--blue)">${fmt(mp)}</span><span style="font-size:11px;color:var(--ink3);font-weight:600">전투력</span><span style="color:var(--red)">${fmt(o.power)}</span></div>
       ${my ? `<div style="margin-top:12px;background:#f5f6f8;border-radius:14px;padding:4px 14px">${arenaStatRows(my, o.st)}</div>` : ''}</div>
-    <button class="btn primary" style="width:100%;height:54px;font-size:16px" ${fbm && !o.me ? '' : 'disabled'} onclick="arenaChallenge()">${o.me ? '내 방어덱이에요' : '친선전 도전'}</button>
+    <button class="btn primary" style="width:100%;height:54px;font-size:16px" ${fbm ? '' : 'disabled'} onclick="arenaChallenge()">${o.me ? '내 방어덱 공격해보기' : '친선전 도전'}</button>
   </div>`;
 }
 
