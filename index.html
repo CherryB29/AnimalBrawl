@@ -118,6 +118,10 @@
   .a-slide { animation:slideUp .38s cubic-bezier(.2,.8,.2,1) backwards; }
   .a-fade { animation:fadeIn .25s ease backwards; }
   .a-out { animation:fadeOut .45s ease both; }
+  @keyframes splashOut { 0% { opacity:1; } 100% { opacity:0; } }
+  @keyframes splashBg { 0%,30% { background-color:rgb(49,130,246); } 100% { background-color:rgba(49,130,246,0); } }
+  .s-out { animation:splashBg .65s ease both; pointer-events:none; }
+  .s-out > * { animation:fadeOut .2s ease both; }
   .a-flip { animation:flipIn .5s cubic-bezier(.2,1.2,.4,1) both; }
   .a-pulse { animation:pulse 1.7s ease-in-out infinite; }
   .a-lvup { animation:lvUp .5s cubic-bezier(.2,1.4,.4,1) both; }
@@ -189,7 +193,7 @@
 
 <!-- 로딩 -->
 <div id="splash" style="position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#3182f6;">
-  <div id="splashLogo" style="will-change:transform"><div style="width:84px;height:84px;border-radius:26px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 18px 34px -12px rgba(10,40,110,.55);animation:popIn .7s cubic-bezier(.2,1.2,.4,1) both;">
+  <div id="splashLogo" style="will-change:transform"><div style="width:84px;height:84px;border-radius:26px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 7px -4px rgba(8,30,90,.5);animation:popIn .7s cubic-bezier(.2,1.2,.4,1) both;">
     <svg viewBox="0 0 48 48" width="52" height="52" fill="#3182f6"><ellipse cx="24" cy="31" rx="10.5" ry="8.6"/><ellipse cx="11.5" cy="22" rx="4.4" ry="5.6" transform="rotate(-16 11.5 22)"/><ellipse cx="19.2" cy="13.5" rx="4.4" ry="5.8" transform="rotate(-6 19.2 13.5)"/><ellipse cx="28.8" cy="13.5" rx="4.4" ry="5.8" transform="rotate(6 28.8 13.5)"/><ellipse cx="36.5" cy="22" rx="4.4" ry="5.6" transform="rotate(16 36.5 22)"/></svg>
   </div></div>
   <canvas id="splashCv" style="position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none"></canvas>
@@ -336,7 +340,7 @@ const SKILLS = [
   { id:'poison', tier:'r', emoji:'☠️', name:'맹독',   dmg:23.1, cd:6, mc:0.18, range:300, shape:'proj', kind:'poison', wind:0.35, speed:360, pr:10, kb:100, fx:'poison', fxv:6.75, pdur:5, color:'150,230,90' },
   { id:'rush',   tier:'r', emoji:'💨', name:'질풍참', dmg:72, cd:5, mc:0.90, range:300, shape:'rush', wind:0.20, kb:260, color:'200,230,255' },
   { id:'barrier',tier:'r', emoji:'🛡️', name:'보호막', dmg:0,  cd:10, mc:0.50, range:0, shape:'shield', self:true, wind:0.35, pct:0.14, dur:4, color:'150,200,255' },
-  { id:'boomerang', tier:'r', emoji:'🪃', name:'부메랑', dmg:41.8, cd:5, mc:0.18, range:435, cm:1.12, shape:'proj', kind:'boomerang', wind:0.30, speed:520, pr:16, kb:140, color:'255,200,90' },
+  { id:'boomerang', tier:'r', emoji:'🪃', name:'부메랑', dmg:41.8, cd:5, mc:0.18, range:435, cm:1.12, shape:'proj', kind:'boomerang', wind:0.30, speed:572, pr:16, kb:140, color:'255,200,90' },
   { id:'hook',   tier:'r', emoji:'🎣', name:'갈고리', dmg:30, cd:7, mc:0.30, range:340, shape:'proj', kind:'hook', wind:0.30, speed:760, pr:10, kb:0, fx:'hook', fxv:0.5, color:'190,200,215' },
   // ── 영웅 (상향)
   { id:'bolt',   tier:'e', emoji:'⚡', name:'번개',   dmg:82, cd:6, mc:0.10, range:360, shape:'strike', wind:0.48, radius:42, kb:140, color:'170,200,255' },
@@ -597,6 +601,9 @@ const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
    새 패치는 PATCHES 맨 앞에 추가하면 된다. 접속했을 때 아직 안 본 최신 패치가 있으면 팝업으로 보여준다.
    type: 'buff'(버프) · 'nerf'(너프) · 'adjust'(조정) / sk: 스킬 id, f: 파이터 id, 또는 emoji + tier 직접 지정 */
 const PATCHES = [
+  { ver:'3-57', date:'2026.10.26', title:'부메랑 조정', items:[
+    { type:'buff', sk:'boomerang', text:'투사체 속도 증가', from:'520', to:'572' }
+  ] },
   { ver:'3-56', date:'2026.10.26', title:'스킬 미리보기', items:[
     { type:'adjust', emoji:'🎬', tier:'n', name:'스킬 미리보기', text:'스킬 상세창에서 허수아비를 상대로 한 시연 영상을 볼 수 있다. 진화와 레벨이 그대로 반영된다.', from:'', to:'' },
     { type:'adjust', emoji:'🐾', tier:'n', name:'파이터 미리보기', text:'파이터 상세창에서도 스파링 상대와 싸우며 고유 특성이 발동하는 모습을 볼 수 있다.', from:'', to:'' },
@@ -3767,6 +3774,21 @@ function drawSwamp(z) {
   ctx.fillStyle = 'rgba(255,245,210,0.55)'; for (let i = 0; i < 6; i++) { const a = i*TAU/6 + t*0.2, rr = R*(0.3 + 0.5*((i*0.37 + t*0.08) % 1)); ctx.beginPath(); ctx.arc(z.x + Math.cos(a)*rr, z.y + Math.sin(a)*rr, 1.8 + Math.sin(t*3 + i)*0.6, 0, TAU); ctx.fill(); }
   ctx.restore();
 }
+/* 불꽃 한 줄기: 아래가 넓고 위로 갈수록 가늘어지며 흔들리는 모양. 겉(붉은색)·중간(주황)·속(노랑) 세 겹 */
+function drawFlame(x, y, h, w, t, ph, al) {
+  const n = 9, LAY = [[1, 1, '255,70,20', '255,110,30', 0.6], [0.8, 0.6, '255,140,35', '255,175,50', 0.72], [0.52, 0.34, '255,225,130', '255,245,190', 0.85]];
+  const sg = ctx.globalCompositeOperation; ctx.globalCompositeOperation = 'lighter';
+  for (const [hk, wk, c0, c1, a0] of LAY) {
+    const hh = h*hk, ww = w*wk, pts = [];
+    for (let i = 0; i <= n; i++) { const s2 = i/n, sway = (Math.sin(t*6.5 + ph + s2*3.1)*0.5 + Math.sin(t*12 + ph*1.7 + s2*6.5)*0.22)*w*1.05*s2*s2, hw = ww*Math.pow(1 - s2, 0.82)*Math.min(1, 0.4 + s2*3.4); pts.push([x + sway, y - hh*s2, hw]); }
+    const g = ctx.createLinearGradient(x, y, x, y - hh); g.addColorStop(0, rgba(c1, a0*al)); g.addColorStop(0.5, rgba(c0, a0*0.7*al)); g.addColorStop(1, rgba(c0, 0));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(pts[0][0] - pts[0][2], pts[0][1]);
+    for (let i = 1; i <= n; i++) ctx.lineTo(pts[i][0] - pts[i][2], pts[i][1]);
+    for (let i = n; i >= 0; i--) ctx.lineTo(pts[i][0] + pts[i][2], pts[i][1]);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.globalCompositeOperation = sg;
+}
 function drawInferno(z) {
   const R = z.r, t = z.t;
   if (!z.inf) {
@@ -3774,7 +3796,7 @@ function drawInferno(z) {
     const blob = Array.from({ length:32 }, () => 0.86 + rn()*0.14); for (let k = 0; k < 2; k++) for (let i = 0; i < 32; i++) blob[i] = (blob[(i + 31) % 32] + blob[i]*2 + blob[(i + 1) % 32])/4;
     const cracks = [];
     for (let i = 0; i < 7; i++) { let a = i*TAU/7 + rn()*0.5, x = 0, y = 0; const pts = [[0, 0]], L = R*(0.6 + rn()*0.35); for (let k = 1; k <= 6; k++) { a += (rn() - 0.5)*0.9; x += Math.cos(a)*L/6; y += Math.sin(a)*L/6*0.86; pts.push([x, y]); } cracks.push({ pts, ph:rn()*6 }); }
-    const fl = Array.from({ length:15 }, () => { const a = rn()*TAU, d = Math.sqrt(rn())*0.85; return { x:Math.cos(a)*d*R, y:Math.sin(a)*d*R*0.86, ph:rn(), sz:0.7 + rn()*0.8, sp:0.55 + rn()*0.5 }; });
+    const fl = Array.from({ length:19 }, () => { const a = rn()*TAU, d = Math.sqrt(rn())*0.85; return { x:Math.cos(a)*d*R, y:Math.sin(a)*d*R*0.86, ph:rn(), sz:0.7 + rn()*0.8, sp:0.55 + rn()*0.5 }; });
     z.inf = { blob, cracks, fl };
   }
   const { blob, cracks, fl } = z.inf, pulse = 0.55 + 0.35*Math.sin(t*3.2);
@@ -3783,13 +3805,14 @@ function drawInferno(z) {
   const g = ctx.createRadialGradient(0, 0, R*0.1, 0, 0, R); g.addColorStop(0, 'rgba(40,14,6,0.7)'); g.addColorStop(0.8, 'rgba(28,12,6,0.5)'); g.addColorStop(1, 'rgba(28,12,6,0.1)'); ctx.fillStyle = g; path(); ctx.fill();
   ctx.strokeStyle = 'rgba(18,8,4,0.55)'; ctx.lineWidth = 3; ctx.lineJoin = 'round'; path(); ctx.stroke();
   ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-  for (const c of cracks) { const pp = 0.5 + 0.5*Math.sin(t*2.6 + c.ph); for (const [w, col, al] of [[6, '255,70,20', 0.14 + 0.1*pp], [2.8, '255,130,35', 0.45 + 0.3*pp], [1, '255,230,150', 0.55 + 0.35*pp]]) { ctx.strokeStyle = rgba(col, al); ctx.lineWidth = w; ctx.beginPath(); c.pts.forEach((q, k) => k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); } }
+  for (const c of cracks) { const pp = 0.5 + 0.5*Math.sin(t*2.6 + c.ph); for (const [w, col, al] of [[6, '255,70,20', 0.08 + 0.06*pp], [2.8, '255,120,35', 0.26 + 0.18*pp], [1, '255,210,130', 0.3 + 0.2*pp]]) { ctx.strokeStyle = rgba(col, al); ctx.lineWidth = w; ctx.beginPath(); c.pts.forEach((q, k) => k ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.stroke(); } }
   const hg = ctx.createRadialGradient(0, 0, 0, 0, 0, R*0.6); hg.addColorStop(0, rgba('255,150,50', 0.2*pulse + 0.05)); hg.addColorStop(1, rgba('255,90,20', 0)); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(0, 0, R*0.6, 0, TAU); ctx.fill();
-  for (const f of fl) {
-    const c = (t*f.sp + f.ph) % 1, gr = Math.min(1, c/0.35), al = c < 0.35 ? c/0.35 : Math.max(0, 1 - (c - 0.35)/0.65), h = (12 + 18*f.sz)*(0.4 + 0.6*gr)*(1 - Math.max(0, c - 0.7)*1.2), w = 5*f.sz, sw = Math.sin(t*5 + f.ph*9)*2.5;
-    const fg = ctx.createLinearGradient(f.x, f.y, f.x + sw, f.y - h); fg.addColorStop(0, rgba('255,80,25', 0.75*al)); fg.addColorStop(0.55, rgba('255,160,45', 0.6*al)); fg.addColorStop(1, rgba('255,235,150', 0));
-    ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(f.x - w, f.y); ctx.quadraticCurveTo(f.x - w*0.6, f.y - h*0.55, f.x + sw, f.y - h); ctx.quadraticCurveTo(f.x + w*0.6, f.y - h*0.55, f.x + w, f.y); ctx.closePath(); ctx.fill();
-  }
+  ctx.globalCompositeOperation = 'lighter';
+  fl.slice().sort((p, q) => p.y - q.y).forEach(f => {
+    const fk = 0.78 + 0.22*Math.sin(t*(4.5 + 3*f.sp) + f.ph*6.3), grow = Math.min(1, t*1.6 + f.ph*0.3), h = (20 + 22*f.sz)*fk*grow*(R/109), w = (7 + 4*f.sz)*(R/109);
+    drawFlame(f.x, f.y, h, w, t, f.ph*9, 0.72*grow);
+  });
+  for (let k = 0; k < 5; k++) { const f = fl[k], c = (t*0.5 + f.ph*1.7 + k*0.31) % 1, ex = f.x + Math.sin(t*3 + k*2)*8 + c*6, ey = f.y - 14 - c*54*(R/109); ctx.fillStyle = rgba('255,190,90', 0.7*(1 - c)); ctx.beginPath(); ctx.arc(ex, ey, 1.6*(1 - c*0.5), 0, TAU); ctx.fill(); }
   ctx.restore();
 }
 function drawZone(z) {
@@ -3811,8 +3834,9 @@ function drawBuffAura(u) {
   const fx = u.buffFx, t = B.time, R = u.r; ctx.save();
   if (fx === 'rage') {
     ctx.globalCompositeOperation = 'lighter';
-    for (let i = 0; i < 5; i++) { const a = -Math.PI/2 + (i - 2)*0.55, ph = t*6 + i*1.7, h = 10 + 6*Math.sin(ph), bx = Math.cos(a)*(R + 2), by = Math.sin(a)*(R + 2), sw = Math.sin(ph*0.9)*2.5, g = ctx.createLinearGradient(bx, by, bx + sw, by - h); g.addColorStop(0, rgba('255,80,40', 0.7)); g.addColorStop(1, rgba('255,200,90', 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(bx - 3.2, by); ctx.quadraticCurveTo(bx - 2, by - h*0.5, bx + sw, by - h); ctx.quadraticCurveTo(bx + 2, by - h*0.5, bx + 3.2, by); ctx.fill(); }
-    ctx.strokeStyle = rgba('255,90,60', 0.22 + 0.14*Math.sin(t*9)); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, R + 4, 0, TAU); ctx.stroke();
+    { const g = ctx.createRadialGradient(0, 0, R*0.5, 0, 0, R + 10); g.addColorStop(0, 'rgba(255,60,20,0)'); g.addColorStop(1, rgba('255,70,25', 0.22 + 0.08*Math.sin(t*7))); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R + 10, 0, TAU); ctx.fill(); }
+    for (let i = 0; i < 6; i++) { const a = -Math.PI/2 + (i - 2.5)*0.52, ph = i*1.9, fk = 0.8 + 0.2*Math.sin(t*(7 + i) + ph), bx = Math.cos(a)*(R*0.92), by = Math.sin(a)*(R*0.92); drawFlame(bx, by, (R*1.0 + (i % 2)*R*0.3)*fk, R*0.24, t, ph, 0.8); }
+    for (let k = 0; k < 3; k++) { const c = (t*0.9 + k/3) % 1, ex = Math.sin(t*4 + k*2.4)*R*0.7, ey = -R*0.8 - c*R*1.1; ctx.fillStyle = rgba('255,190,90', 0.7*(1 - c)); ctx.beginPath(); ctx.arc(ex, ey, 1.5, 0, TAU); ctx.fill(); }
   } else if (fx === 'bloodlust') {
     const hb = 0.5 + 0.5*Math.sin(t*5), g = ctx.createRadialGradient(0, 0, R*0.55, 0, 0, R + 3); g.addColorStop(0, 'rgba(150,10,35,0)'); g.addColorStop(1, `rgba(150,10,35,${0.3 + 0.22*hb})`);
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R + 3, 0, TAU); ctx.fill();
@@ -4076,7 +4100,7 @@ function loop(ts) {
   try { loopBody(ts); } catch (e) { console.warn('loop', e); }
 }
 function loopBody(ts) {
-  if (document.getElementById('splash')) { lastTs = ts; return; }
+  if (!window.__splashOut && document.getElementById('splash')) { lastTs = ts; return; }
   if (Arn.fight && B && B.arena && B.over && tab !== 'arena' && tab !== 'fight') { const w = B.win, f = B.forfeit; arenaDrop(); toast(f ? '친선전에서 나왔어요' : w ? '친선전 승리!' : '친선전 패배'); }
   const raw = Math.min(0.05, (ts - lastTs)/1000 || 0); lastTs = ts;
   if (B) {
@@ -4345,7 +4369,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-56', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-57', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
@@ -4670,9 +4694,9 @@ async function accDoLogout() {
 /* ---------- 로딩 화면: 동물 3마리가 실제 게임 스킬로 로고를 공격한다 (전투 엔진 그대로 사용) ---------- */
 const SplashZoo = (() => {
   const ANI = [['🐶', 'trot'], ['🐰', 'hop'], ['🦊', 'prowl'], ['🐸', 'hop'], ['🦫', 'scurry'], ['🐙', 'sway'], ['🐺', 'prowl'], ['🐼', 'waddle'], ['🐯', 'prowl'], ['🐻', 'waddle'], ['🦁', 'trot'], ['🦅', 'fly'], ['🐉', 'fly'], ['🦄', 'gallop']];
-  const SKS = ['fire', 'stone', 'ice', 'poison', 'bolt', 'bomb', 'volley', 'boomerang', 'snipe', 'meteor', 'wave', 'breath'];
+  const SKS = ['fire', 'stone', 'ice', 'poison', 'bolt', 'bomb', 'volley', 'boomerang', 'meteor', 'breath', 'smash', 'vamp', 'rush', 'leap', 'bladedance', 'moonblade'], MELEE = ['smash', 'vamp', 'bladedance'], DASH = ['rush', 'leap', 'moonblade'];
   let scv, c, wrap, W = 0, H = 0, raf = 0, last = 0, t = 0, acc = 0, run = false, zoo = [], dpr = 1, size = 38, cx = 0, cy = 0, hits = 0, sprites = {}, dizzy = [];
-  const L = { x:0, vx:0, y:0, vy:0, sq:0 };
+  const L = { x:0, vx:0, y:0, vy:0, sq:0 }, SC = .5;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), TAU = Math.PI*2, R = (a, b) => a + Math.random()*(b - a);
   const FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   function spr(txt, px) {
@@ -4684,7 +4708,7 @@ const SplashZoo = (() => {
   const put = (s, x, y, rot, sx, sy) => { c.save(); c.translate(x, y); if (rot) c.rotate(rot); if (sx !== 1 || sy !== 1) c.scale(sx, sy); c.drawImage(s.o, -s.ox, -s.oy, s.w, s.h); c.restore(); };
   /* 엔진 전역을 잠깐 빌려 쓴다 */
   function withB(b, fn) {
-    const sv = { B, WW, WH, cv, ctx, ATT }; B = b; WW = W; WH = H; cv = c.canvas; ctx = c; window.__demo = true;
+    const sv = { B, WW, WH, cv, ctx, ATT }; B = b; WW = W/SC; WH = H/SC; cv = c.canvas; ctx = c; window.__demo = true;
     try { fn(); } finally { window.__demo = false; B = sv.B; WW = sv.WW; WH = sv.WH; cv = sv.cv; ctx = sv.ctx; ATT = sv.ATT; }
   }
   function mkBattle(a) {
@@ -4694,7 +4718,7 @@ const SplashZoo = (() => {
       stats:{ dealt:0, taken:0, dodges:0 }, att:{ me:{}, en:{} }, bossStyleLabel:'', bg:null, splash:true, contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
     const me = mkUnit({ side:'me', emoji:'🐶', name:'', st:{ hp:900, atk:60, def:5, spd:100 }, fmc:.5, entries:[entry], pas:null, plv:1 });
     const en = mkUnit({ side:'en', emoji:'🎯', name:'', st:{ hp:900000, atk:1, def:0, spd:1 }, fmc:.5, entries:[], pas:null });
-    nb.me = me; nb.en = en; en.x = cx - a.dir*22; en.y = cy; me.face = a.dir > 0 ? 0 : Math.PI; en.face = me.face + Math.PI; a.stat0 = 0;
+    nb.me = me; nb.en = en; en.x = (cx - a.dir*22)/SC; en.y = cy/SC; me.face = a.dir > 0 ? 0 : Math.PI; en.face = me.face + Math.PI; a.stat0 = 0;
     return nb;
   }
   function onHit(a) {
@@ -4703,16 +4727,16 @@ const SplashZoo = (() => {
   function init() {
     scv = document.getElementById('splashCv'); wrap = document.getElementById('splashLogo'); const sp = document.getElementById('splash'); if (!scv || !wrap || !sp) return; c = scv.getContext('2d');
     const sr = sp.getBoundingClientRect(), lr = wrap.getBoundingClientRect(); dpr = Math.min(1.5, window.devicePixelRatio || 1); W = Math.round(sr.width); H = 400;
-    const lcy = lr.top + lr.height/2 - sr.top + 8, top = Math.max(0, lcy - 250); scv.style.top = top + 'px'; scv.style.height = H + 'px'; scv.style.left = '0'; scv.style.width = '100%';
+    const lcy = wrap.offsetTop + wrap.offsetHeight/2, top = Math.max(0, lcy - 250); scv.style.top = top + 'px'; scv.style.height = H + 'px'; scv.style.left = '0'; scv.style.width = '100%';
     scv.width = Math.round(W*dpr); scv.height = Math.round(H*dpr);
-    size = clamp(W/9.5, 32, 46); cx = lr.left + lr.width/2 - sr.left; cy = lcy - top;
-    const ani = ANI.slice().sort(() => Math.random() - .5).slice(0, 3), sks = SKS.slice().sort(() => Math.random() - .5).slice(0, 3), g = cy + 26;
-    const side = Math.random() < .5 ? 1 : -1, third = clamp(cx + side*(112 + size*1.7), size, W - size);
-    const st = [{ x:cx - 112, y:g, sc:1 }, { x:cx + 112, y:g, sc:1 }, { x:third, y:g - 34, sc:.86 }];
+    size = clamp(W/9.5, 32, 46)*.6; cx = wrap.offsetLeft + wrap.offsetWidth/2; cy = lcy - top;
+    const ani = ANI.slice().sort(() => Math.random() - .5).slice(0, 3), sks = SKS.slice().sort(() => Math.random() - .5).slice(0, 3), g = cy + 46;
+    const side = Math.random() < .5 ? 1 : -1, third = clamp(cx + side*(80 + size*1.9), size, W - size);
+    const st = [{ x:cx - 80, y:g, sc:1 }, { x:cx + 80, y:g, sc:1 }, { x:third, y:g - 28, sc:.88 }];
     zoo = ani.map((d, j) => { const s = st[j], dir = s.x < cx ? 1 : -1, fromX = dir > 0 ? -50 : W + 50;
-      return { e:d[0], gait:d[1], skId:sks[j], j, dir, tx:s.x, fromX, x:fromX, y:s.y, sc:s.sc, start:.1 + .22*j, dur:.85, ph:R(0, 6), fy:d[1] === 'fly' ? -size*.95 : 0, casts:[1.3 + .52*j, 1.3 + .52*(j + 3)], castN:0, bt:null, recoil:0 }; });
+      return { e:d[0], gait:d[1], skId:sks[j], j, dir, tx:s.x, fromX, x:fromX, y:s.y, sc:s.sc, start:.1 + .22*j, dur:.85, ph:R(0, 6), fy:d[1] === 'fly' ? -size*.95 : 0, casts:[1.3 + .52*j, 1.3 + .52*(j + 3)], castN:0, bt:null, recoil:0, melee:MELEE.includes(sks[j]), dash:DASH.includes(sks[j]), off:0, ddx:0, ddy:0 }; });
     withB({ projs:[], parts:[] }, () => {}); /* 전역 복원 확인용 */
-    for (const a of zoo) { a.bt = mkBattle(a); a.bt.me.x = a.tx; a.bt.me.y = a.y + a.fy - 14; }
+    for (const a of zoo) { a.bt = mkBattle(a); a.bt.me.x = a.tx/SC; a.bt.me.y = (a.y + a.fy)/SC - 14; }
     zoo.sort((a, b) => a.y - b.y);
     t = 0; acc = 0; hits = 0; dizzy = []; last = performance.now(); run = true; raf = requestAnimationFrame(tick);
   }
@@ -4738,25 +4762,28 @@ const SplashZoo = (() => {
     /* 엔진 진행 */
     let n = 0; while (acc >= STEP && n < 4) { acc -= STEP; n++;
       for (const a of zoo) { const b = a.bt, me = b.me, en = b.en;
-        if (a.castN < 2 && t >= a.casts[a.castN] && !me.act) { a.castN++; me.skills[0].cd = 0; startCast(me, en, me.skills[0]); a.recoil = t; }
+        const near = a.casts.some(ct => t > ct - .35 && t < ct + .95), want = a.melee && near ? 1 : 0; a.off += (want - a.off)*Math.min(1, STEP*9);
+        a.ex = a.x + ((cx - a.dir*(44 + size*.45)) - a.x)*a.off;
+        if (a.castN < 2 && t >= a.casts[a.castN] && !me.act && (!a.melee || a.off > .85)) { a.castN++; me.skills[0].cd = 0; startCast(me, en, me.skills[0]); a.recoil = t; }
         me.thinkT = 9; me.atkCd = 9; en.thinkT = 9; en.atkCd = 9;
         withB(b, () => { simulate(STEP); b.shake = 0; b.flash = 0; b.hitstop = 0; b.slowmo = 0; });
-        en.hp = en.maxHp; me.hp = me.maxHp; me.x = a.x; me.y = a.y + a.fy - 14; me.vx = me.vy = 0; en.x = cx - a.dir*22; en.y = cy; en.vx = en.vy = 0;
+        en.hp = en.maxHp; me.hp = me.maxHp; if (a.dash && me.act) { a.ddx = me.x*SC - a.ex; a.ddy = me.y*SC - (a.y + a.fy - 14*SC); } else { me.x = a.ex/SC; me.y = (a.y + a.fy)/SC - 14; me.vx = me.vy = 0; a.ddx *= .8; a.ddy *= .8; } en.x = (cx - a.dir*(a.melee ? 14 : 22))/SC; en.y = cy/SC; en.vx = en.vy = 0;
         if (b.stats.dealt > a.stat0 + .5) { a.stat0 = b.stats.dealt; onHit(a); } }
     }
     if (n >= 4) acc = 0;
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, W, H);
+    c.globalAlpha = .34; c.fillStyle = '#06204f'; c.beginPath(); c.ellipse(cx + L.x*.4, cy + 46, 38, 4.5, 0, 0, TAU); c.fill(); c.globalAlpha = 1;
     for (const a of zoo) {
       const k = clamp((t - a.start)/a.dur, 0, 1), mv = k < 1, e = 1 - Math.pow(1 - k, 2.4);
       a.x = a.fromX + (a.tx - a.fromX)*e;
       if (mv) a.ph += dt*(1 + (1 - k)*.9)*1.7; else a.ph += dt*(a.gait === 'fly' ? 1.3 : .5);
-      const g = gait(a); let dy = mv || a.gait === 'fly' ? g.dy : 0, rot = mv ? g.rot : (a.gait === 'fly' ? g.rot : 0), sx = mv ? g.sx : 1, sy = mv ? g.sy : 1 + Math.sin(t*3 + a.j)*.025, dx = 0, sc = a.sc;
+      const g = gait(a); g.dy *= .72; let dy = mv || a.gait === 'fly' ? g.dy : 0, rot = mv ? g.rot : (a.gait === 'fly' ? g.rot : 0), sx = mv ? g.sx : 1, sy = mv ? g.sy : 1 + Math.sin(t*3 + a.j)*.025, dx = 0, sc = a.sc;
       const arr = t - (a.start + a.dur); if (arr > 0 && arr < .3) dy -= Math.sin(arr/.3*Math.PI)*6;
       const act = a.bt.me.act; if (act && act.type === 'cast') { const w = clamp(act.t/act.dur, 0, 1); sy *= 1 - .12*Math.sin(w*Math.PI); dx -= a.dir*4*w; }
       if (a.recoil && t - a.recoil < .25) { const w = (t - a.recoil)/.25; dx -= a.dir*7*(1 - w)*.6; }
-      const x = a.x + dx, gy = a.y;
-      c.globalAlpha = .2; c.fillStyle = '#0a2a6a'; c.beginPath(); c.ellipse(x, gy + 3, size*.4*sc, size*.1*sc, 0, 0, TAU); c.fill();
-      c.globalAlpha = 1; put(spr(a.e, size), x, gy + a.fy + dy, rot*a.dir, -a.dir*sx*sc, sy*sc);
+      const x = (a.ex == null ? a.x : a.ex) + dx + a.ddx, gy = a.y;
+      const lift = clamp(-(dy + a.fy + a.ddy)/90, 0, .5); c.globalAlpha = .38*(1 - lift*.7); c.fillStyle = '#06204f'; c.beginPath(); c.ellipse(x, gy + 3, size*.46*sc*(1 - lift), size*.13*sc*(1 - lift), 0, 0, TAU); c.fill();
+      c.globalAlpha = 1; put(spr(a.e, size), x, gy + a.fy + dy + a.ddy, rot*a.dir, -a.dir*sx*sc, sy*sc);
     }
     /* 엔진이 그리는 실제 스킬 이펙트 (투명 배경 위에 겹쳐 그린다) */
     for (const a of zoo) if (a.castN > 0) withB(a.bt, () => { draw(); c.setTransform(dpr, 0, 0, dpr, 0, 0); });
@@ -4764,18 +4791,19 @@ const SplashZoo = (() => {
     for (const d of dizzy) { d.t += dt; if (d.t < 1.4) { c.globalAlpha = Math.min(1, (1.4 - d.t)*2); put(spr('💫', 22), d.x, d.y - d.t*8, d.t*2.5, 1, 1); } }
     c.globalAlpha = 1;
   }
+  function freeze() { for (const a of zoo) a.castN = 2; if (scv) { scv.style.transition = 'opacity .25s'; scv.style.opacity = '0'; } }
   function stop() { run = false; cancelAnimationFrame(raf); if (wrap) wrap.style.transform = ''; sprites = {}; zoo = []; }
-  return { init, stop, dbg:() => zoo.map(a => ({ sk:a.skId, e:a.e, x:Math.round(a.x), warns:a.bt.warns ? 0 : a.bt.warns, w:a.bt.warns.map(w => [Math.round(w.x), Math.round(w.y), w.r]), pr:a.bt.projs.length, z:a.bt.zones.length, me:[Math.round(a.bt.me.x), Math.round(a.bt.me.y)], en:[Math.round(a.bt.en.x), Math.round(a.bt.en.y)], act:a.bt.me.act && a.bt.me.act.type })) };
+  return { init, stop, freeze, dbg:() => zoo.map(a => ({ sk:a.skId, e:a.e, x:Math.round(a.x), warns:a.bt.warns ? 0 : a.bt.warns, w:a.bt.warns.map(w => [Math.round(w.x), Math.round(w.y), w.r]), pr:a.bt.projs.length, z:a.bt.zones.length, me:[Math.round(a.bt.me.x), Math.round(a.bt.me.y)], en:[Math.round(a.bt.en.x), Math.round(a.bt.en.y)], act:a.bt.me.act && a.bt.me.act.type })) };
 })();
 
 /* ===================== 시작 ===================== */
 (function initSplash() {
-  try { SplashZoo.init(); } catch (e) { console.warn('zoo', e); }
   { const v = $('splashVer'); if (v) v.textContent = 'v' + GAME_VER; }
   $('splashTitle').innerHTML = 'Animal Brawl'.split('').map((ch, i) => ch === ' ' ? '<span style="width:11px"></span>' : `<span style="display:inline-block;animation:letterIn .5s cubic-bezier(.2,.9,.3,1) ${0.06*i}s both">${ch}</span>`).join('');
+  try { SplashZoo.init(); } catch (e) { console.warn('zoo', e); }
   const minWait = new Promise(r => { const sp0 = $('splash'); const done = () => r(); setTimeout(done, 3900); if (sp0) sp0.addEventListener('click', () => { if (performance.now() > 1500) done(); }); });
   const fontsReady = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 3000))]);
-  Promise.all([minWait, fontsReady]).then(() => { const sp = $('splash'); if (sp) { sp.classList.add('a-out'); setTimeout(() => { sp.remove(); try { SplashZoo.stop(); } catch (e) {} }, 480); } setTimeout(() => { try { showPatchNote(); } catch (e) { console.warn('patch note', e); } }, 650); });
+  Promise.all([minWait, fontsReady]).then(() => { const sp = $('splash'); window.__splashOut = true; if (sp) { SplashZoo.freeze(); sp.classList.add('s-out'); setTimeout(() => { sp.remove(); try { SplashZoo.stop(); } catch (e) {} }, 620); } setTimeout(() => { try { showPatchNote(); } catch (e) { console.warn('patch note', e); } }, 2300); });
 })();
 render(true);
 startBattle();
@@ -4942,6 +4970,30 @@ function demoStep(h) {
     en.x += Demo.dir*v*h; en.face = Demo.dir > 0 ? 0 : Math.PI;
   }
 }
+/* 미리보기: 상태이상·버프를 이름과 남은 시간으로 크게 표시 */
+function demoStatuses(u) {
+  const o = [], add = (n, col, tm) => o.push([n, col, tm]);
+  if (u.stun > 0) add('기절', '255,220,120', u.stun); if (u.slow > 0) add('둔화', '140,210,255', u.slow); if (u.root > 0) add('속박', '190,150,100', u.root);
+  if (u.poison) add(u.poison.burn ? '화상' : '중독', u.poison.burn ? '255,130,50' : '130,220,90', 0); if (u.bleed) add('출혈', '235,60,80', 0); if (u.frost > 0) add('냉기 ' + u.frost, '170,230,255', 0);
+  for (const k of ['vuln', 'weak', 'silence', 'blind', 'curse', 'sunder']) if (u[k] > 0) add(DEBUFF_NAME[k], DEBUFF_COL[k], u[k]);
+  if (u.markT > 0) add('표식', '255,200,120', u.markT); if (u.invuln > 0) add('무적', '255,240,160', u.invuln); if (u.immuneT > 0) add('면역', '255,240,160', u.immuneT);
+  if (u.shield > 0) add('보호막', '170,215,255', 0); if (u.thorns > 0) add('가시', '150,230,150', 0); if (u.evade > 0) add('회피', '200,230,255', u.evade); if (u.buffT > 0) add('강화', '255,170,90', u.buffT);
+  if (u.hot) add('재생', '120,235,160', 0); if (u.mirror && u.mirror.t > 0) add('반사', '200,230,255', u.mirror.t);
+  return o;
+}
+function drawDemoStatus() {
+  if (!B || Demo.kind === 'f') return;
+  for (const u of [B.en, B.me]) {
+    if (u.dead) continue; const list = demoStatuses(u); if (!list.length) continue;
+    ctx.save(); ctx.font = '800 14px Pretendard, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    list.slice(0, 5).forEach(([n, col, tm], i) => {
+      const txt = tm > 0 ? n + ' ' + tm.toFixed(1) : n, w = ctx.measureText(txt).width + 22, x = clamp(u.x, w/2 + 6, WW - w/2 - 6), y = u.y + u.r + 20 + i*24;
+      ctx.fillStyle = 'rgba(10,16,30,0.78)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w/2, y - 11, w, 22, 11) : ctx.rect(x - w/2, y - 11, w, 22); ctx.fill();
+      ctx.strokeStyle = rgba(col, 0.9); ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = '#fff'; ctx.fillText(txt, x, y + 1);
+    });
+    ctx.restore();
+  }
+}
 function demoFrame(ts) {
   if (!Demo.on) return;
   try { demoFrame0(ts); } catch (e) { console.warn('demo', e); }
@@ -4953,7 +5005,7 @@ function demoFrame0(ts) {
   withDemo(() => {
     let n = 0; while (Demo.acc >= STEP && n < 6) { demoStep(STEP); Demo.acc -= STEP; n++; } if (n >= 6) Demo.acc = 0;
     B.shake *= Math.pow(0.0008, raw); B.punch *= Math.pow(0.003, raw); B.hitstop = 0; B.slowmo = 0;
-    fitCanvas(); if (cv.width > 0) draw();
+    fitCanvas(); if (cv.width > 0) { draw(); drawDemoStatus(); }
   });
   if (Demo.t >= Demo.len) withDemo(() => { B = buildDemoBattle(); });
 }
