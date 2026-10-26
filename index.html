@@ -4716,9 +4716,9 @@ const SplashZoo = (() => {
     const nb = { feathers:[], projs:[], parts:[], rings:[], slashes:[], beams:[], decals:[], ghosts:[], texts:[], zones:[], warns:[], meteors:[], timers:[], fxs:[],
       time:0, fightT:0, introT:0, over:false, win:false, timeout:false, speed:1, acc:0, actId:0, mines:[], links:[], pickups:[], walls:[], arms:[], hitstop:0, slowmo:0, shake:0, punch:0, flash:0, endT:0, resultShown:false, resolved:false, autoT:3, stage:1, arena:null, lagMe:1, lagEn:1,
       stats:{ dealt:0, taken:0, dodges:0 }, att:{ me:{}, en:{} }, bossStyleLabel:'', bg:null, splash:true, contrib:0, bonus:0, ratio:0, firstClear:false, opts:null };
-    const me = mkUnit({ side:'me', emoji:'🐶', name:'', st:{ hp:900, atk:60, def:5, spd:100 }, fmc:.5, entries:[entry], pas:null, plv:1 });
+    const me = mkUnit({ side:'me', emoji:a.e, name:'', st:{ hp:900, atk:60, def:5, spd:100 }, fmc:.5, entries:[entry], pas:null, plv:1 });
     const en = mkUnit({ side:'en', emoji:'🎯', name:'', st:{ hp:900000, atk:1, def:0, spd:1 }, fmc:.5, entries:[], pas:null });
-    nb.me = me; nb.en = en; en.x = (cx - a.dir*22)/SC; en.y = cy/SC; me.face = a.dir > 0 ? 0 : Math.PI; en.face = me.face + Math.PI; a.stat0 = 0;
+    nb.me = me; nb.en = en; en.x = (cx - a.dir*10)/SC; en.y = cy/SC; me.face = a.dir > 0 ? 0 : Math.PI; en.face = me.face + Math.PI; a.stat0 = 0;
     return nb;
   }
   function onHit(a) {
@@ -4730,7 +4730,7 @@ const SplashZoo = (() => {
     const lcy = wrap.offsetTop + wrap.offsetHeight/2, top = Math.max(0, lcy - 250); scv.style.top = top + 'px'; scv.style.height = H + 'px'; scv.style.left = '0'; scv.style.width = '100%';
     scv.width = Math.round(W*dpr); scv.height = Math.round(H*dpr);
     size = clamp(W/9.5, 32, 46)*.6; cx = wrap.offsetLeft + wrap.offsetWidth/2; cy = lcy - top;
-    const ani = ANI.slice().sort(() => Math.random() - .5).slice(0, 3), sks = SKS.slice().sort(() => Math.random() - .5).slice(0, 3), g = cy + 46;
+    const ani = ANI.slice().sort(() => Math.random() - .5).slice(0, 3), sks = window.__splashSk || SKS.slice().sort(() => Math.random() - .5).slice(0, 3), g = cy + 46;
     const side = Math.random() < .5 ? 1 : -1, third = clamp(cx + side*(80 + size*1.9), size, W - size);
     const st = [{ x:cx - 80, y:g, sc:1 }, { x:cx + 80, y:g, sc:1 }, { x:third, y:g - 28, sc:.88 }];
     zoo = ani.map((d, j) => { const s = st[j], dir = s.x < cx ? 1 : -1, fromX = dir > 0 ? -50 : W + 50;
@@ -4766,8 +4766,8 @@ const SplashZoo = (() => {
         a.ex = a.x + ((cx - a.dir*(44 + size*.45)) - a.x)*a.off;
         if (a.castN < 2 && t >= a.casts[a.castN] && !me.act && (!a.melee || a.off > .85)) { a.castN++; me.skills[0].cd = 0; startCast(me, en, me.skills[0]); a.recoil = t; }
         me.thinkT = 9; me.atkCd = 9; en.thinkT = 9; en.atkCd = 9;
-        withB(b, () => { simulate(STEP); b.shake = 0; b.flash = 0; b.hitstop = 0; b.slowmo = 0; });
-        en.hp = en.maxHp; me.hp = me.maxHp; if (a.dash && me.act) { a.ddx = me.x*SC - a.ex; a.ddy = me.y*SC - (a.y + a.fy - 14*SC); } else { me.x = a.ex/SC; me.y = (a.y + a.fy)/SC - 14; me.vx = me.vy = 0; a.ddx *= .8; a.ddy *= .8; } en.x = (cx - a.dir*(a.melee ? 14 : 22))/SC; en.y = cy/SC; en.vx = en.vy = 0;
+        withB(b, () => { simulate(STEP); b.shake = 0; b.flash = 0; b.hitstop = 0; b.slowmo = 0; b.decals.length = 0; b.ghosts.length = 0; if (b.parts.length) b.parts = b.parts.filter(q => q.add !== false); });
+        en.hp = en.maxHp; me.hp = me.maxHp; if (a.dash && me.act) { a.ddx = me.x*SC - a.ex; a.ddy = me.y*SC - (a.y + a.fy - 14*SC); } else { me.x = a.ex/SC; me.y = (a.y + a.fy)/SC - 14; me.vx = me.vy = 0; a.ddx *= .8; a.ddy *= .8; } en.x = (cx - a.dir*10)/SC; en.y = cy/SC; en.vx = en.vy = 0;
         if (b.stats.dealt > a.stat0 + .5) { a.stat0 = b.stats.dealt; onHit(a); } }
     }
     if (n >= 4) acc = 0;
