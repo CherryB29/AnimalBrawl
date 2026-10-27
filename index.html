@@ -88,6 +88,10 @@
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
   @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
   @keyframes flipIn { 0% { transform:perspective(500px) rotateY(80deg) scale(.7); opacity:0; } 100% { transform:none; opacity:1; } }
+  .att-pal { position:absolute; bottom:4px; left:2%; font-size:17px; animation:attRun linear infinite; }
+  @keyframes attRun { 0% { left:2%; transform:scaleX(-1); } 48% { left:calc(100% - 26px); transform:scaleX(-1); } 50% { left:calc(100% - 26px); transform:scaleX(1); } 98% { left:2%; transform:scaleX(1); } 100% { left:2%; transform:scaleX(-1); } }
+  .attHop { animation:attHopK ease-in-out infinite; } @keyframes attHopK { 0%,100% { transform:translateY(0) scaleY(.93); } 45% { transform:translateY(calc(var(--h) * -1)) scaleY(1.04); } 55% { transform:translateY(calc(var(--h) * -1)) scaleY(1.04); } }
+  .attWob { animation:attWobK ease-in-out infinite; } @keyframes attWobK { 0%,100% { transform:translateY(0) rotate(-7deg); } 50% { transform:translateY(calc(var(--h) * -1)) rotate(7deg); } }
   @keyframes rise { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
   @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(49,130,246,.35); } 50% { box-shadow:0 0 0 7px rgba(49,130,246,0); } }
   @keyframes spinSlow { to { transform:rotate(360deg); } }
@@ -344,7 +348,7 @@ const SKILLS = [
   { id:'hook',   tier:'r', emoji:'🎣', name:'갈고리', dmg:30, cd:7, mc:0.30, range:340, shape:'proj', kind:'hook', wind:0.30, speed:760, pr:10, kb:0, fx:'hook', fxv:0.5, color:'190,200,215' },
   // ── 영웅 (상향)
   { id:'bolt',   tier:'e', emoji:'⚡', name:'번개',   dmg:82, cd:6, mc:0.10, range:360, shape:'strike', wind:0.48, radius:42, kb:140, color:'170,200,255' },
-  { id:'bomb',   tier:'e', emoji:'💥', name:'폭발',   dmg:137.5, cd:6.3, mc:0.75, range:170, shape:'blast', wind:0.70, radius:82, kb:480, color:'255,120,60' },
+  { id:'bomb',   tier:'e', emoji:'💥', name:'폭발',   dmg:151.25, cd:6.3, mc:0.75, range:170, shape:'blast', wind:0.70, radius:82, kb:480, color:'255,120,60' },
   { id:'volley', tier:'e', emoji:'🏹', name:'화살비', dmg:33, cd:7, mc:0.15, range:340, shape:'proj', kind:'arrow', n:6, spread:0.6, wind:0.40, speed:620, pr:7, kb:80, cm:0.76, color:'235,230,180' },
   { id:'swamp',  tier:'e', emoji:'🕸️', name:'끈끈이 늪', dmg:0, cd:6, mc:0.30, range:260, shape:'zone', zstyle:'swamp', radius:109, dur:4.5, tick:0.5, tickDmg:13, zslow:true, slowM:0.1, wind:0.45, color:'200,175,110' },
   { id:'rage',   tier:'e', emoji:'😡', name:'광폭화', dmg:0,  cd:9, mc:0.75, range:0, shape:'buff', self:true, wind:0.30, dur:6, batk:1.55, bspd:1.25, color:'255,100,90' },
@@ -357,8 +361,8 @@ const SKILLS = [
   { id:'bloodlust', tier:'m', emoji:'🧛', name:'혈귀화',  dmg:0, cd:12, mc:0.80, range:0, shape:'buff', self:true, wind:0.30, dur:8, batk:1.3, bspd:1, bls:0.2, bls2:0.05, color:'235,60,80' },
   { id:'mirror',    tier:'m', emoji:'🪞', name:'반사경', dmg:0, cd:11, mc:0.30, range:0, shape:'mirror', self:true, wind:0.30, dur:4, refl:0.6, color:'190,225,255' },
   // ── 전설 (상향)
-  { id:'meteor',     tier:'l', emoji:'☄️', name:'운석',     dmg:174, cd:10, mc:0.20, range:380, shape:'blast', meteor:true, wind:0.9, radius:135, kb:700, color:'255,120,50' },
-  { id:'bladedance', tier:'l', emoji:'🗡️', name:'검무',     dmg:195.36, cd:6, mc:0.95, range:100, shape:'flurry', hits:5, radius:100, wind:0.30, kb:90, color:'220,235,255' },
+  { id:'meteor',     tier:'l', emoji:'☄️', name:'운석',     dmg:208.8, cd:10, mc:0.20, range:380, shape:'blast', meteor:true, wind:0.63, radius:135, kb:700, color:'255,120,50' },
+  { id:'bladedance', tier:'l', emoji:'🗡️', name:'검무',     dmg:185.59, cd:6, mc:0.95, range:100, shape:'flurry', hits:5, radius:100, wind:0.30, kb:90, color:'220,235,255' },
   { id:'wave',       tier:'l', emoji:'🌊', name:'해일',     dmg:136, cd:8, mc:0.30, range:520, shape:'proj', kind:'wave', wind:0.45, speed:560, pr:36, hw:240, kb:140, fx:'airstun', fxv:1.5, color:'90,170,255' },
   { id:'timestop',   tier:'l', emoji:'⏳', name:'시간 정지', dmg:0, cd:11, mc:0.30, range:400, shape:'bind', radius:190, wind:0.40, fxv:2.7, color:'255,235,160' },
   { id:'sanctuary',  tier:'l', emoji:'✨', name:'성역',     dmg:0, cd:12, mc:0.50, range:0, shape:'zone', self:true, zstyle:'sanct', radius:110, dur:6, tick:0.5, heal:0.0731, wind:0.50, color:'255,240,170' },
@@ -437,12 +441,12 @@ const EVO = {
          {"key":"b","name":"황혼","s":[{"k":"twilight","dur":7}],"desc":"지속 중 기본 공격이 적중하면 1초간 실명시키고 60% 둔화시킨다."} ],
   boomerang:[ {"key":"a","name":"예리한 날","sharp":1,"desc":"돌아올 때 피해가 120% 늘어나고, 적중 시 3초간 출혈을 입힌다."},
          {"key":"b","name":"되받아치기","catch":1,"desc":"돌아온 부메랑을 받으면 쿨타임이 1.5초 줄어든다. 두 번 모두 적중했다면 쿨타임이 초기화된다."} ],
-  hook:[ {"key":"a","name":"사슬 걸기","x":[{"k":"root","v":1.8}],"desc":"끌려온 적을 1.8초간 속박한다."},
+  hook:[ {"key":"a","name":"사슬 걸기","x":[{"k":"root","v":1.8}],"home":1,"desc":"갈고리가 적을 끝까지 추적해 반드시 적중한다. 끌려온 적을 1.8초간 속박한다."},
          {"key":"b","name":"반동 도약","leap":1,"desc":"적을 끌어오는 대신 내가 적에게 날아간다. 피해가 80% 늘어난다."} ],
   leap:[ {"key":"a","name":"육중","p":{"fxv":2},"air":1,"desc":"기절 시간이 2초로 늘어나고 적을 공중에 띄운다."},
          {"key":"b","name":"스카이 콩콩","p":{"cd":"*0.4"},"desc":"쿨타임이 60% 줄어든다."} ],
   breath:[ {"key":"a","name":"역린","rage":1,"desc":"내 체력이 낮을수록 피해가 늘어난다. 체력이 거의 없으면 최대 120% 늘어난다."},
-         {"key":"b","name":"얼음 숨결","ice":1,"desc":"화염 대신 냉기를 뿜는다. 0.5초마다 서리가 쌓이고, 3중첩이 되면 2초간 기절한다."} ],
+         {"key":"b","name":"얼음 숨결","ice":1,"p":{"dmg":"*0.85"},"desc":"화염 대신 냉기를 뿜는다. 0.5초마다 서리가 쌓이고, 3중첩이 되면 2초간 기절한다. 피해량 15% 감소."} ],
   mirror:[ {"key":"a","name":"오목렌즈","burn":1,"desc":"반사한 투사체가 적에게 명중하면 화상을 입힌다."},
          {"key":"b","name":"볼록 렌즈","split":1,"desc":"반사한 투사체가 렌즈를 지나 세 갈래로 퍼져 각각 원래 위력의 50%로 되돌아간다."} ],
   thread:[ {"key":"a","name":"끊을 수 없는 인연","p":{"dur":"+1"},"leash":1,"desc":"지속시간이 6초로 늘어난다. 적은 실이 처음 걸린 거리보다 멀어질 수 없다."},
@@ -514,7 +518,7 @@ const STATUS_GUIDE = [
   ['💪','강인함','받는 상태이상 지속 시간이 줄어든다'], ['🌵','가시','맞은 피해 일부를 공격자에게 반사'], ['💨','회피 n회','다음 n번의 피격을 무효화'], ['✨','정화','걸려 있는 상태이상을 모두 제거'],
   ['⚔️','처형','체력이 낮은 적에게 추가 피해'],
 ];
-const statusGuideHtml = () => `<div style="display:grid;gap:6px">${STATUS_GUIDE.map(([e,n,d]) => `<div style="display:flex;gap:10px;align-items:center"><span style="width:26px;text-align:center;font-size:17px">${e}</span><span style="font-size:13px;font-weight:800;min-width:62px">${n}</span><span style="font-size:12px;color:var(--ink3);font-weight:500;line-height:1.4">${d}</span></div>`).join('')}<div style="font-size:11px;color:var(--ink4);margin-top:4px;line-height:1.5">보스는 침묵·속박·실명 지속시간이 40% 짧고, 기절은 절반만 걸려요.</div></div>`;
+const statusGuideHtml = () => `<div style="display:grid;gap:6px">${STATUS_GUIDE.map(([e,n,d]) => `<div style="display:flex;gap:10px;align-items:center"><span style="width:26px;text-align:center;font-size:17px">${e}</span><span style="font-size:13px;font-weight:800;min-width:62px">${n}</span><span style="font-size:12px;color:var(--ink3);font-weight:500;line-height:1.4">${d}</span></div>`).join('')}<div style="font-size:11px;color:var(--ink4);margin-top:4px;line-height:1.5">보스는 침묵·속박·실명 지속시간이 40% 짧아요.</div></div>`;
 const mcText = mc => Math.abs(mc - 0.5) < 0.005 ? '균형 0.50' : mc < 0.5 ? `원거리 ${(1 - mc).toFixed(2)}` : `근접 ${mc.toFixed(2)}`;
 const mcGauge = (mc, bg) => `<div style="background:${bg || '#fff'};border-radius:14px;padding:12px 14px;text-align:left"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px"><span style="font-size:11px;font-weight:600;color:var(--ink3)">전투 성향</span><span style="font-size:15px;font-weight:800;letter-spacing:-0.02em">${mcText(mc)}</span></div><div style="position:relative;height:8px;border-radius:99px;background:linear-gradient(90deg,#8ec5ff,#e5e8eb 50%,#ff9ca3)"><div style="position:absolute;top:50%;left:${Math.round(mc*100)}%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px var(--ink),0 2px 6px rgba(0,0,0,.25)"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;font-weight:700;color:var(--ink3);margin-top:8px"><span>원거리</span><span>근접</span></div></div>`;
 const infoCard = (kind, id) => {
@@ -601,6 +605,20 @@ const FIGHTER_COST = 1000, SKILL_COST = 500, INIT_GOLD = 5000;
    새 패치는 PATCHES 맨 앞에 추가하면 된다. 접속했을 때 아직 안 본 최신 패치가 있으면 팝업으로 보여준다.
    type: 'buff'(버프) · 'nerf'(너프) · 'adjust'(조정) / sk: 스킬 id, f: 파이터 id, 또는 emoji + tier 직접 지정 */
 const PATCHES = [
+  { ver:'3-59', date:'2026.10.27', title:'출석 보상', items:[
+    { type:'adjust', emoji:'📅', tier:'n', name:'출석 보상', text:'접속하면 출석 보상 팝업이 가장 먼저 뜬다. 1~2일차 5,000 · 3~4일차 7,500 · 5일차부터 매일 10,000 골드를 준다.', from:'', to:'' },
+    { type:'adjust', emoji:'🎁', tier:'n', name:'무료 뽑기', text:'출석 5의 배수 날마다 파이터 100회 · 스킬 100회 뽑기를 무료로 준다.', from:'', to:'' },
+    { type:'adjust', emoji:'🪙', tier:'n', name:'골드 획득 연출', text:'골드를 얻으면 보상이 표시된 곳에서 동전이 날아와 골드 창으로 들어간다. 동전 개수는 얻은 양에 비례한다.', from:'', to:'' }
+  ] },
+  { ver:'3-58', date:'2026.10.27', title:'밸런스 조정', items:[
+    { type:'nerf', sk:'breath', text:'2진화(얼음 숨결) 피해량 감소', from:'100%', to:'85%' },
+    { type:'buff', sk:'meteor', text:'낙하 시간 감소', from:'0.9초', to:'0.63초' },
+    { type:'buff', sk:'meteor', text:'피해량 증가', from:'174', to:'208.8' },
+    { type:'nerf', sk:'bladedance', text:'피해량 감소', from:'195.36', to:'185.59' },
+    { type:'buff', sk:'bomb', text:'피해량 증가', from:'137.5', to:'151.25' },
+    { type:'buff', sk:'hook', text:'1진화(사슬 걸기) 갈고리가 적을 추적해 반드시 적중한다.', from:'', to:'' },
+    { type:'adjust', emoji:'👑', tier:'n', name:'보스 기절', text:'보스의 기절 시간 감소 효과를 없앴다.', from:'', to:'' }
+  ] },
   { ver:'3-57', date:'2026.10.26', title:'부메랑 조정', items:[
     { type:'buff', sk:'boomerang', text:'투사체 속도 증가', from:'520', to:'572' }
   ] },
@@ -683,7 +701,7 @@ const SAVE_KEY = 'animal-brawl-save-v2';
 
 
 /* ===================== 상태 ===================== */
-function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{ dog:1 }, s:{} }, lv: { f:{}, s:{} }, evo: {}, eq: { f:'dog', s:[null,null,null] }, startCd: 2, scd: {}, patchSeen: PATCHES[0].ver, autoUp: false, cdDec: false, vol: { sfx:50, bgm:30 } }; }
+function freshState() { return { gold: INIT_GOLD, stage: 1, sel: 1, own: { f:{ dog:1 }, s:{} }, lv: { f:{}, s:{} }, evo: {}, eq: { f:'dog', s:[null,null,null] }, startCd: 2, scd: {}, patchSeen: PATCHES[0].ver, autoUp: false, cdDec: false, vol: { sfx:50, bgm:30 }, att: { last:'', total:0 }, attPend: [] }; }
 let state = load();
 let tab = 'fight', invTab = 'f', invFilter = 'all', flashSlot = null, battleSpeed = 1, mounted = false, repeatStage = null;
 let sel = { type:'fighter', idx:0 };
@@ -697,7 +715,7 @@ function load() {
         const r = Object.assign(d, s); if (!s.patchSeen) r.patchSeen = null; /* 기존 저장에는 본 패치 기록이 없으니 최신 패치 노트를 보여준다 */
         r.stage = Math.max(1, r.stage|0); r.sel = Math.min(Math.max(1, r.sel|0), r.stage);
         if (!Array.isArray(r.eq.s)) r.eq.s = [null,null,null];
-        if (!r.lv) r.lv = { f:{}, s:{} }; if (!r.evo) r.evo = {}; if (![1,2,3,4].includes(r.startCd)) r.startCd = 2; if (!r.scd) r.scd = {}; if (!r.vol || typeof r.vol !== 'object') r.vol = { sfx:50, bgm:30 }; r.vol.sfx = Math.max(0, Math.min(100, +r.vol.sfx || 0)); r.vol.bgm = Math.max(0, Math.min(100, +r.vol.bgm || 0));
+        if (!r.att || typeof r.att !== 'object') r.att = { last:'', total:0 }; r.att.total = r.att.total|0; delete r.att.streak; if (!Array.isArray(r.attPend)) r.attPend = []; if (!r.lv) r.lv = { f:{}, s:{} }; if (!r.evo) r.evo = {}; if (![1,2,3,4].includes(r.startCd)) r.startCd = 2; if (!r.scd) r.scd = {}; if (!r.vol || typeof r.vol !== 'object') r.vol = { sfx:50, bgm:30 }; r.vol.sfx = Math.max(0, Math.min(100, +r.vol.sfx || 0)); r.vol.bgm = Math.max(0, Math.min(100, +r.vol.bgm || 0));
         if (!Object.keys(r.own.f).length) { r.own.f.dog = 1; if (!r.eq.f) r.eq.f = 'dog'; }
         return r;
       }
@@ -1096,10 +1114,10 @@ const ic = (name, cls) => `<i data-lucide="${name}" class="${cls||'w-5 h-5'}"></
 const COIN = '<svg class="coin" viewBox="0 0 20 20"><defs><linearGradient id="cgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd45e"/><stop offset="1" stop-color="#ee9605"/></linearGradient></defs><circle cx="10" cy="10" r="9.2" fill="url(#cgd)"/><circle cx="10" cy="10" r="6.4" fill="none" stroke="#b86e00" stroke-opacity=".5" stroke-width="1.3"/><path d="M7.7 10h4.6M10 7.7v4.6" stroke="#b86e00" stroke-opacity=".6" stroke-width="1.3" stroke-linecap="round"/></svg>';
 $('coinIcon').style.cssText = 'display:flex;font-size:17px';
 $('coinIcon').innerHTML = COIN;
-let shownGold = state.gold, goldAnim = 0;
+let shownGold = state.gold, goldAnim = 0, goldHold = 0, coinFly = 0;
 
 function setGold() {
-  const el = $('goldText'), to = state.gold, from = shownGold;
+  const el = $('goldText'), to = state.gold - goldHold, from = shownGold;
   cancelAnimationFrame(goldAnim);
   if (from === to) { el.textContent = fmt(to); return; }
   const t0 = performance.now();
@@ -1109,6 +1127,36 @@ function setGold() {
     if (p < 1) goldAnim = requestAnimationFrame(tick); else shownGold = to;
   };
   goldAnim = requestAnimationFrame(tick);
+}
+/* 골드가 들어올 때: 보상이 표시된 자리(from)에서 동전이 양에 비례해 날아가 골드 창으로 들어가고, 다 들어가면 +얼마가 뜬다.
+   state.gold는 먼저 올려 두고(저장 안전), 화면의 골드 숫자는 goldHold만큼 눌러 두었다가 동전이 닿을 때마다 풀어 준다. */
+function goldTick(d) {
+  goldHold = Math.max(0, goldHold - d); if (goldHold < 0.5) goldHold = 0; cancelAnimationFrame(goldAnim);
+  shownGold = state.gold - goldHold; const el = $('goldText'); if (el) el.textContent = fmt(shownGold);
+}
+function flyCoins(amount, from, done) {
+  const ci = $('coinIcon') || $('goldText'), tr = ci ? ci.getBoundingClientRect() : null;
+  if (!(amount > 0) || !tr || !tr.width || !from || !(from.x > 0 || from.y > 0)) { goldTick(amount); done && done(); return; }
+  const n = clamp(Math.round(amount/400), 3, 40), per = amount/n, tx = tr.left + tr.width/2, ty = tr.top + tr.height/2, gap = Math.min(1100, 350 + n*24)/n;
+  let landed = 0, ended = false, per0 = per; const els = []; coinFly++;
+  const bump = () => { const g = $('goldText') && $('goldText').parentElement; if (g && g.animate) g.animate([{ transform:'scale(1)' }, { transform:'scale(1.13)' }, { transform:'scale(1)' }], { duration:170 }); };
+  const finish = () => {
+    if (ended) return; ended = true; coinFly--; els.forEach(e => e.remove()); if (landed < n) goldTick(amount - per0*landed);
+    const g = $('goldText'), pill = (g && g.closest('div')) || g, r0 = pill ? pill.getBoundingClientRect() : tr, r = { left:r0.left, width:r0.width, bottom:r0.top + r0.height*0.85 }, t = document.createElement('div');
+    t.textContent = '+' + fmt(amount); t.style.cssText = `position:fixed;left:${r.left + r.width/2}px;top:${r.bottom - 2}px;transform:translateX(-50%);z-index:100000;pointer-events:none;font-weight:800;font-size:13px;color:#191f28;white-space:nowrap`;
+    document.body.appendChild(t);
+    if (t.animate) { const a = t.animate([{ opacity:0, transform:'translate(-50%,4px)' }, { opacity:1, transform:'translate(-50%,-2px)', offset:.15 }, { opacity:0, transform:'translate(-50%,-26px)' }], { duration:1100, easing:'ease-out' }); a.onfinish = () => t.remove(); } else setTimeout(() => t.remove(), 1100);
+    done && setTimeout(done, 350);
+  };
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement('div'); el.innerHTML = COIN; el.style.cssText = 'position:fixed;left:0;top:0;width:22px;height:22px;z-index:100000;pointer-events:none;will-change:transform;opacity:0';
+    el.firstChild.style.cssText = 'width:22px;height:22px;display:block;filter:drop-shadow(0 2px 2px rgba(120,80,0,.35))'; document.body.appendChild(el); els.push(el);
+    const sx = from.x + rnd(-24, 24) - 11, sy = from.y + rnd(-12, 12) - 11, ex = tx - 11, ey = ty - 11, mx = (sx + ex)/2 + rnd(-70, 70), my = Math.min(sy, ey) - rnd(20, 90);
+    if (!el.animate) { landed++; continue; }
+    const a = el.animate([{ transform:`translate(${sx}px,${sy}px) scale(.4)`, opacity:0 }, { transform:`translate(${sx}px,${sy - 22}px) scale(1.15)`, opacity:1, offset:.14 }, { transform:`translate(${mx}px,${my}px) scale(1)`, opacity:1, offset:.55 }, { transform:`translate(${ex}px,${ey}px) scale(.65)`, opacity:1 }], { duration:700, delay:i*gap, easing:'cubic-bezier(.4,0,.55,1)', fill:'both' });
+    a.onfinish = () => { el.remove(); landed++; if (landed < n) { goldTick(per); bump(); } else { goldTick(amount - per*(n - 1)); bump(); landed = n; per0 = 0; finish(); } };
+  }
+  setTimeout(() => { if (!ended) finish(); }, n*gap + 700 + 900);
 }
 const emojiArt = (e, px) => `<span class="emoji" style="font-size:${px}px;line-height:1;text-shadow:0 3px 3px rgba(25,31,40,.2)">${e}</span>`;
 
@@ -1259,10 +1307,10 @@ function pull(kind) {
   if (state.autoUp) autoUpgradeAll();
   save(); setGold(); showGacha(kind, b, had);
 }
-function pullMulti(kind, n) {
+function pullMulti(kind, n, free) {
   n = n || 10;
   if (pulling) return;
-  const cost = (kind === 'f' ? FIGHTER_COST : SKILL_COST) * n;
+  const cost = free ? 0 : (kind === 'f' ? FIGHTER_COST : SKILL_COST) * n;
   if (state.gold < cost) { toast('골드가 부족해요'); return; }
   state.gold -= cost; firstPullCap = isFirstPull();
   const results = [];
@@ -1387,13 +1435,14 @@ function showGachaMulti(results, kind, n) {
     await gcWait(520); if (dead()) return; finish();
   }));
 }
-function closeGacha() {
+function closeGacha(keep) {
   gachaTok++; multiTimers.forEach(clearTimeout); document.querySelectorAll('.dc').forEach(e => e.remove()); $('gachaModal').onclick = null;
   const m = $('gachaModal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = '';
   pulling = false;
   if (autoEq) { autoEq = false; gearBattle(); render(); toast('새로 얻은 카드를 빈 슬롯에 자동 장착했어요'); } else render();
+  if (!keep && (window.__attBoot || (state.attPend || []).length)) setTimeout(attNext, 350);
 }
-function again(kind, n) { closeGacha(); n && n > 1 ? pullMulti(kind, n) : pull(kind); }
+function again(kind, n) { closeGacha(true); n && n > 1 ? pullMulti(kind, n) : pull(kind); }
 
 /* ===================== 덱 프리셋 (세팅 탭 · 3슬롯) ===================== */
 /* 선택한 덱을 수정하면 그 슬롯에 자동 저장된다. 진화·시작 쿨타임도 슬롯마다 따로 기억한다. */
@@ -1950,6 +1999,72 @@ function showPatchNote(force) {
   if (patchFlow.nw.length) patchStepNew(); else if (patchFlow.rest.length) patchStepRest(); else closePatchNote();
 }
 let patchFlow = null;
+/* ===================== 출석 보상 =====================
+   접속하면 가장 먼저 출석 팝업이 뜬다. 하루에 한 번 받는다. (금액 숫자는 팝업에 보이지 않고 🪙 개수로만 비교한다)
+   · 누적 출석일(att.total) 기준: 1~2일 5,000 / 3~4일 7,500 / 5일부터 매일 10,000. 5의 배수 날에는 파이터·스킬 100회 뽑기를 무료로 준다.
+   · 무료 뽑기는 attPend에 적어 두고 하나씩 실행한다(도중에 닫아도 다음 접속 때 이어서 받는다). */
+const ATT_FREE_PULL = 100, ATT_COIN_UNIT = 2500;
+const attGold = n => n >= 5 ? 10000 : n >= 3 ? 7500 : 5000;
+/* 골드 아이콘을 겹쳐 쌓아 양을 보여 준다: 2개 비스듬히 / 3개 삼각형 / 4개 피라미드 */
+const ATT_PILE = { 2:[[0, .14], [.62, 0]], 3:[[0, .56], [.72, .56], [.36, 0]], 4:[[0, .56], [.66, .56], [1.32, .56], [.66, 0]] };
+const attCoins = (n, px) => { const k = Math.round(attGold(n)/ATT_COIN_UNIT), pos = ATT_PILE[k] || ATT_PILE[4], W = Math.max(...pos.map(p => p[0]))*px + px, H = Math.max(...pos.map(p => p[1]))*px + px;
+  return `<span style="position:relative;display:inline-block;width:${W}px;height:${H}px">${pos.map((p, z) => `<span style="position:absolute;left:${p[0]*px}px;top:${p[1]*px}px;width:${px}px;height:${px}px;z-index:${z + 1};filter:drop-shadow(0 1px 1.5px rgba(120,80,0,.35))">${COIN.replace('<svg class="coin"', '<svg class="coin" style="width:100%;height:100%;display:block"')}</span>`).join('')}</span>`; };
+const attDay = d => { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
+function attPlan() {
+  const a = state.att, today = attDay();
+  if (a.last >= today) return null; /* 오늘 이미 받았거나 기기 시계가 되돌려진 경우 */
+  const n = a.total + 1;
+  return { n, gold:attGold(n), free:n % 5 === 0 };
+}
+function attBoot() {
+  window.__attBoot = true; const p = attPlan();
+  if (p) attOpen(p); else attNext();
+}
+function attNext() {
+  if (pulling) { setTimeout(attNext, 500); return; }
+  const q = state.attPend || [];
+  if (q.length) { const k = q.shift(); state.attPend = q; save(); toast(k === 'f' ? '출석 보상: 파이터 100회 무료 뽑기!' : '출석 보상: 스킬 100회 무료 뽑기!'); pullMulti(k, ATT_FREE_PULL, true); return; }
+  if (window.__attBoot) { window.__attBoot = false; try { showPatchNote(); } catch (e) { console.warn('patch note', e); } }
+}
+function attOpen(p) {
+  const m = $('confirmModal'); if (!m) return;
+  m.classList.remove('hidden'); m.classList.add('flex');
+  const base = Math.floor((p.n - 1)/10)*10;
+  const cells = Array.from({ length:10 }, (_, i) => {
+    const d = base + i + 1, past = d < p.n, cur = d === p.n, gift = d % 5 === 0;
+    return `<div ${cur ? 'onclick="attClaim()" class="press"' : ''} style="position:relative;border-radius:14px;padding:7px 2px 7px;text-align:center;background:${cur ? 'var(--blue-s)' : '#f5f6f8'};${cur ? 'box-shadow:0 0 0 2px var(--blue);cursor:pointer;animation:pulse 1.6s ease-in-out infinite;' : ''}${past ? 'opacity:.4;' : ''}">
+      <div style="font-size:11px;font-weight:800;color:${cur ? 'var(--blue)' : 'var(--ink3)'}">${d}일</div>
+      <div ${cur ? 'id="attGoldSrc"' : ''} style="min-height:34px;display:flex;align-items:center;justify-content:center;padding:3px 4px 0">${attCoins(d, 20)}</div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink2);line-height:1.2;min-height:18px;white-space:nowrap">${gift ? '🎁' : ''}</div>
+      ${past ? '<div style="position:absolute;top:3px;right:5px;font-size:11px;font-weight:800;color:var(--green)">✓</div>' : ''}</div>`;
+  }).join('');
+  const zoo = FIGHTERS.map(x => x.emoji).sort(() => Math.random() - 0.5).slice(0, 3);
+  const pals = zoo.map((e, k) => { const dur = 6.5 + Math.random()*4, dl = -Math.random()*dur*2, hop = k % 2 ? 'attWob' : 'attHop'; return `<div class="att-pal" style="animation-duration:${dur.toFixed(2)}s;animation-delay:${dl.toFixed(2)}s"><span class="emoji ${hop}" style="display:block;line-height:1;--h:${3 + Math.round(Math.random()*3)}px;animation-duration:${(0.5 + Math.random()*0.6).toFixed(2)}s">${e}</span></div>`; }).join('');
+  m.innerHTML = `<div id="attCard" class="a-pop" style="background:#fff;border-radius:28px;width:100%;max-width:380px;max-height:90dvh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="position:relative;text-align:center;padding:22px 20px 10px;background:linear-gradient(180deg,#fff1c9,#fff)"><div style="position:absolute;left:18px;top:16px;font-size:16px;animation:rise 2.4s ease-in-out infinite">✨</div><div style="position:absolute;right:20px;top:30px;font-size:13px;animation:rise 2.9s ease-in-out .6s infinite">✨</div><div style="font-size:11px;font-weight:800;color:#c27a00;letter-spacing:.12em">DAILY CHECK-IN</div><div style="font-size:22px;font-weight:800;letter-spacing:-0.03em;margin-top:5px">출석 보상</div><div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:4px">${p.n}일째 출석</div></div>
+    <div style="overflow-y:auto;flex:1;min-height:0;padding:6px 18px 8px">
+      <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px">${cells}</div>
+      <div style="margin-top:14px;text-align:center;font-size:13px;font-weight:700;color:var(--blue)">오늘 칸을 눌러 보상을 받아요</div>
+      ${p.free ? '<div style="margin-top:6px;text-align:center;font-size:12px;font-weight:600;color:var(--ink2)">🎁 파이터 · 스킬 100회 무료 뽑기도 함께 받아요</div>' : ''}
+    </div>
+    <div style="position:relative;height:26px;flex:none;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:6px;background:linear-gradient(180deg,#bfe6a0,#a5d683)"></div>${pals}</div></div>`;
+}
+function attClaim() {
+  const p = attPlan(); if (!p) { closeConfirm(); attNext(); return; }
+  const src = $('attGoldSrc'), r = src ? src.getBoundingClientRect() : null, card = $('attCard');
+  state.att = { last:attDay(), total:p.n };
+  state.gold += p.gold; goldHold += p.gold;
+  if (p.free) state.attPend = ['f', 's'];
+  save(); setGold();
+  if (card) { card.style.animation = 'fadeOut .28s ease forwards'; card.style.pointerEvents = 'none'; }
+  flyCoins(p.gold, r ? { x:r.left + r.width/2, y:r.top + r.height/2 } : null, () => setTimeout(attNext, 250));
+  setTimeout(closeConfirm, 300);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || document.getElementById('splash') || window.__attBoot || pulling || !attPlan()) return;
+  for (const id of ['confirmModal', 'gachaModal', 'detailModal']) { const e = document.getElementById(id); if (e && !e.classList.contains('hidden')) return; }
+  attBoot();
+});
 /* 1단계: 신규 스킬 팝업 (가장 먼저) → 2단계: 밸런스 패치 팝업 */
 function patchStepNew() {
   const nw = patchFlow.nw, n = nw.reduce((a, P) => a + mergePatchItems(P.items).length, 0), more = patchFlow.rest.length > 0;
@@ -2487,13 +2602,13 @@ function applyHit(src, tgt, raw, o) {
 }
 function heal(u, amt, silent) {
   if (u.hp <= 0) return;
-  amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM);
-  amt = Math.round(Math.min(amt, u.maxHp - u.hp)); if (amt <= 0) return;
+  const amt0 = amt; amt *= HEAL_MUL; if (u.isBoss) amt *= BOSS_HEAL; if (u.curse > 0) amt *= (u.curseM == null ? 0.4 : u.curseM);
+  amt = Math.round(Math.min(amt, u.maxHp - u.hp)); if (amt <= 0) { if (amt0 > 0 && u.curse > 0 && window.__demo) addText(u.x, u.y - u.r*1.4, '회복 불가', '200,150,255', 22, 0.9); return; }
   u.hp += amt; rec(u, attId(u), 'h', amt); if (!silent) addText(u.x, u.y - u.r*1.4, '+' + amt, '110,231,160', 24, 0.95);
 }
 function stunUnit(u, t) {
   if (u.immuneT > 0) return;
-  t *= (u.isBoss ? 0.5 : 1)*ccK(u); if (t <= 0.01) return; u.stun = Math.max(u.stun, t); if (!(u.act && u.act.type === 'cast')) u.act = null; u.plan = { t:'idle' }; chip(u, '기절');
+  t *= ccK(u); if (t <= 0.01) return; u.stun = Math.max(u.stun, t); if (!(u.act && u.act.type === 'cast')) u.act = null; u.plan = { t:'idle' }; chip(u, '기절');
   ring(u.x, u.y, u.r, u.r*1.9, 0.4, '255,235,160', 2);
 }
 function _applyEffects(src, tgt, sk, dmg, pt) {
@@ -2890,7 +3005,7 @@ function explode(u, x, y, r, raw, b, sk, mini) {
   const ev = sk && sk.evo;
   if (ev && b.id === 'meteor' && !mini) {
     if (ev.key === 'a') { B.zones.push({ id:++B.actId, owner:u, x, y, r:105, t:0, dur:4, tick:0.5, tt:0.5, style:'crater', raw:0, heal:0, pull:0, slow:false, color:'190,110,60', sk, stayT:0, enterCd:0, wasIn:false, zsT:0, zf:null, trap:true }); ring(x, y, 20, 105, 0.5, '220,140,80', 5); }
-    else if (ev.key === 'b') { const w = 0.75; B.warns.push({ id:++B.actId, owner:u, x, y, r, t:0, dur:w }); B.meteors.push({ x, y, t:0, dur:w, s:0.9 }); B.timers.push({ ctx:ATT, t:w, fn:() => { if (!u.dead) explode(u, x, y, r, raw*0.75, b, null, false); } }); }
+    else if (ev.key === 'b') { const w = 0.525; B.warns.push({ id:++B.actId, owner:u, x, y, r, t:0, dur:w }); B.meteors.push({ x, y, t:0, dur:w, s:0.9 }); B.timers.push({ ctx:ATT, t:w, fn:() => { if (!u.dead) explode(u, x, y, r, raw*0.75, b, null, false); } }); }
   }
   if (ev && b.id === 'nova' && ev.key === 'a') B.zones.push({ id:++B.actId, owner:u, x, y, r:r*0.85, t:0, dur:6, tick:0.5, tt:0.5, style:'nebula', raw:0, heal:0, pull:0, slow:false, color:'190,140,255', sk, stayT:0, enterCd:0, wasIn:false, zsT:0, zf:null });
   return hit;
@@ -3115,7 +3230,7 @@ function _resolveAct(u, e, a) {
       const rr = n > 1 ? b.dmg*sk.mult*scCm(u, b.cm)*(u.pas === 'dragon' ? 1.35 : 1)*rangedMul(b) : raw;
       const grp = { n:0, done:false }; for (let i = 0; i < n; i++) { spawnProj(u, { kind:b.kind, ang:aa + (n > 1 ? (i - (n-1)/2)*(b.spread/(n-1)) : 0), speed:b.speed, r:b.pr, raw:rr, color:b.color, kb:b.kb, hw:b.hw, sk }); B.projs[B.projs.length - 1].grp = grp; }
       if (b.kind === 'boomerang') { const pr = B.projs[B.projs.length - 1]; pr.boom = { ph:0, d:0, max:Math.min(b.range + 30, dd + 90), sp:b.speed, n:0, hit:false }; pr.life = 8; }
-      if (b.kind === 'hook') { const pr = B.projs[B.projs.length - 1]; pr.life = (b.range + 30)/b.speed; }
+      if (b.kind === 'hook') { const pr = B.projs[B.projs.length - 1]; pr.life = (b.range + 30)/b.speed; if (sk.evo && sk.evo.home) { pr.homing = b.speed; pr.homeT = 0; pr.life = 3; } }
       if (b.id === 'wave' && sk.evo && sk.evo.key === 'a') B.timers.push({ ctx:ATT, t:0.3, fn:() => { if (u.dead) return; spawnProj(u, { kind:'wave', ang:aa, speed:b.speed, r:Math.round(b.pr*0.75), raw:rr*0.4, color:b.color, kb:b.kb, hw:Math.round(b.hw*0.7), sk:null }); B.projs[B.projs.length - 1].sk = sk; B.projs[B.projs.length - 1].noFx = true; shake(4); } });
       if (b.id === 'wave' && sk.evo && sk.evo.surf) { const dsh = b.speed*0.9; u.act = { type:'dash', t:0, dur:0.9, id:++B.actId, data:{ vx:Math.cos(aa)*b.speed*0.85, vy:Math.sin(aa)*b.speed*0.85, noImpact:true, after:() => { u.surfT = 4; } } }; puff(u.x, u.y + u.r*0.5, 10, '170,215,255', 16, 0.5, 70); }
       break; }
@@ -3496,8 +3611,9 @@ function mirrorBounce(p, tgt) {
 }
 function updateProjs(h) {
   for (const p of B.projs) {
-    p.life -= h; p.x += p.vx*h; p.y += p.vy*h; p.rot += h*10;
     const tgt = foe(p.owner), col = p.color;
+    if (p.homing && !tgt.dead) { p.homeT += h; const ha = Math.atan2(tgt.y - p.y, tgt.x - p.x); p.vx = Math.cos(ha)*p.homing; p.vy = Math.sin(ha)*p.homing; if (p.homeT < 3) p.life = Math.max(p.life, 0.4); }
+    p.life -= h; p.x += p.vx*h; p.y += p.vy*h; p.rot += h*10;
     if (p.kind === 'fire') { P({ k:'glow', x:p.x + rnd(-3,3), y:p.y + rnd(-3,3), size:rnd(8,14), color:'255,120,40', life:0.28 }); if (Math.random() < 0.5) P({ k:'smoke', add:false, x:p.x, y:p.y, vx:rnd(-15,15), vy:rnd(-15,15), size:8, grow:14, life:0.5, color:'70,60,55' }); }
     else if (p.kind === 'ice') { P({ k:'dot', x:p.x + rnd(-4,4), y:p.y + rnd(-4,4), size:3, color:'200,240,255', life:0.35 }); if (Math.random() < 0.3) P({ k:'glow', x:p.x, y:p.y, size:10, color:'120,210,255', life:0.25 }); }
     else if (p.kind === 'poison') { if (Math.random() < 0.6) P({ k:'dot', x:p.x + rnd(-5,5), y:p.y + rnd(-5,5), vy:rnd(5,30), size:rnd(2,4), color:'150,230,90', life:0.5 }); }
@@ -3679,7 +3795,8 @@ function checkEnd() {
   B.contrib = Math.round(ratio * contribMax(B.stage)); B.ratio = ratio;
   B.firstClear = B.win && B.stage === state.stage;
   B.bonus = B.firstClear ? clearBonus(B.stage) : 0;
-  state.gold += B.contrib + B.bonus;
+  state.gold += B.contrib + B.bonus; goldHold += B.contrib + B.bonus; B.goldHeld = B.contrib + B.bonus;
+  { const held = B.goldHeld; setTimeout(() => { if (!coinFly && goldHold >= held && B.goldHeld === held && !B.goldFlown) { goldTick(held); B.goldFlown = true; } }, 7000); }
   if (B.firstClear) state.stage += 1;
   save();
   battleLog.push({ win:B.win, stage:B.stage, gold:B.contrib + B.bonus, first:B.firstClear }); if (battleLog.length > 6) battleLog.shift();
@@ -4176,7 +4293,7 @@ function showResult() {
   hr.innerHTML = `<div class="rcard a-pop">
     <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:.8em">
       <div><div style="font-size:.8em;font-weight:700;color:#8b95a1">STAGE ${s}</div><div style="font-size:1.9em;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:${win ? '#3182f6' : '#f04452'}">${win ? '승리' : (B.timeout ? '시간 초과' : '패배')}</div></div>
-      <div style="text-align:right"><div style="font-size:.8em;font-weight:700;color:#8b95a1">획득 골드</div><div style="font-size:1.35em;font-weight:800">${coin} +${fmt(B.contrib + B.bonus)}</div></div>
+      <div style="text-align:right"><div style="font-size:.8em;font-weight:700;color:#8b95a1">획득 골드</div><div id="rGold" style="font-size:1.35em;font-weight:800">${coin} +${fmt(B.contrib + B.bonus)}</div></div>
     </div>
     ${row('기여도 보상', `${coin} ${fmt(B.contrib)} <span style="color:#8b95a1;font-weight:600">(${Math.round(B.ratio*100)}%)</span>`)}
     ${B.firstClear ? row('첫 클리어 보상', `${coin} ${fmt(B.bonus)}`) : ''}
@@ -4185,6 +4302,7 @@ function showResult() {
       <button class="rbtn p" onclick="pickNext('def')"><div class="fill" id="rbFill"></div><span style="position:relative">${defLabel} · <span id="rbSec">3</span></span></button>
       ${B.opts.alt ? `<button class="rbtn g" style="white-space:nowrap" onclick="pickNext('alt')">${B.rep ? '다음 스테이지' : '반복'}</button>` : ''}
     </div></div>`;
+  if (!B.goldFlown && B.goldHeld) { B.goldFlown = true; const g = $('rGold'), r = g ? g.getBoundingClientRect() : null, held = B.goldHeld; flyCoins(held, r && r.width ? { x:r.left + r.width/2, y:r.top + r.height/2 } : null); }
 }
 function pickNext(which) {
   if (!B || !B.opts || B.resolved) return;
@@ -4369,7 +4487,7 @@ function arenaRematch() { startBattle(); const ai = $('arenaInfo'); if (ai) { ai
 /* ---- 통계 전송: 전투 기록을 모아 한꺼번에 서버(battles)에 올린다 ----
    아레나 전투만 기록한다(스테이지는 기록하지 않음).
    서버에 올리기 전에는 이 기기(localStorage)에 쌓아 두고, 성공해야 지운다. */
-const GAME_VER = '3-57', STAT_KEY = 'ab_statq', STAT_MAX = 80;
+const GAME_VER = '3-59', STAT_KEY = 'ab_statq', STAT_MAX = 80;
 let statQ = [], statBusy = false;
 try { statQ = JSON.parse(localStorage.getItem(STAT_KEY) || '[]'); if (!Array.isArray(statQ)) statQ = []; } catch (e) { statQ = []; }
 const statSave = () => { try { localStorage.setItem(STAT_KEY, JSON.stringify(statQ)); } catch (e) {} };
@@ -4803,7 +4921,7 @@ const SplashZoo = (() => {
   try { SplashZoo.init(); } catch (e) { console.warn('zoo', e); }
   const minWait = new Promise(r => { const sp0 = $('splash'); const done = () => r(); setTimeout(done, 3900); if (sp0) sp0.addEventListener('click', () => { if (performance.now() > 1500) done(); }); });
   const fontsReady = Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 3000))]);
-  Promise.all([minWait, fontsReady]).then(() => { const sp = $('splash'); window.__splashOut = true; if (sp) { SplashZoo.freeze(); sp.classList.add('s-out'); setTimeout(() => { sp.remove(); try { SplashZoo.stop(); } catch (e) {} }, 620); } setTimeout(() => { try { showPatchNote(); } catch (e) { console.warn('patch note', e); } }, 2300); });
+  Promise.all([minWait, fontsReady]).then(() => { const sp = $('splash'); window.__splashOut = true; if (sp) { SplashZoo.freeze(); sp.classList.add('s-out'); setTimeout(() => { sp.remove(); try { SplashZoo.stop(); } catch (e) {} }, 620); } setTimeout(() => { try { attBoot(); } catch (e) { console.warn('attendance', e); try { showPatchNote(); } catch (e2) {} } }, 2300); });
 })();
 render(true);
 startBattle();
@@ -4833,19 +4951,19 @@ const DEMO_SC = (() => {
     smash: e => e === 'b' ? { meX:540, d:100, len:4, note:'벽 쪽으로 날려 보내면 벽에 부딪혀 추가 피해와 기절.' } : { d:100, casts:e === 'a' ? [0.5, 2.6] : [0.5], len:4.2, note: e === 'a' ? '약해진 적은 두 번째 강타를 더 아프게 맞는다.' : '가까운 적을 때려 기절시킨다.' },
     wind: e => e === 'a' ? { d:60, amp:45, len:4.4, ev:rock(1.8, 2.1, 2.4, 2.7), note:'실명된 적의 공격은 자주 빗나간다.' } : e === 'b' ? { d:60, amp:45, len:4, ev:hit(1.3, 2.0), note:'첫 공격은 회오리가 막아 주고 두 번째부터 맞는다.' } : { d:60, amp:45, note:'회오리로 적을 휘감아 피해를 준다.' },
     firstaid: e => e === 'a' ? { meHp:0.5, setup:me => sick(me), len:5, note:'걸려 있던 상태이상을 씻어 내고 서서히 회복한다.' } : e === 'b' ? { ev:hit(1.3, 1.8, 2.3), len:4, note:'공격 2회를 피하고 빨라진다.' } : { meHp:0.4, note:'체력이 줄었을 때 즉시 회복한다.' },
-    stone: e => ({ casts:[0.5, 2.0], len:4, note: e === 'a' ? '맞은 적은 잠시 스킬을 쓰지 못한다.' : e === 'b' ? '명중할 때마다 쿨타임이 줄어 더 자주 던진다.' : '돌을 던져 피해를 준다.' }),
+    stone: e => e === 'b' ? { realcd:1, cdBar:1, d:200, len:7, note:'명중할 때마다 쿨타임이 0.8초씩 줄어 더 자주 던진다.' } : ({ casts:[0.5, 2.0], len:4, note: e === 'a' ? '맞은 적은 잠시 스킬을 쓰지 못한다.' : '돌을 던져 피해를 준다.' }),
     ice: e => ({ free:e === 'b', realcd:e === 'b', d:e === 'b' ? 110 : 260, len:5.2, note: e === 'a' ? '맞은 적은 오래 기절하고 한동안 크게 느려진다.' : e === 'b' ? '표식이 남은 적을 두 번 공격하면 쿨타임이 초기화된다.' : '명중한 적을 얼려 잠시 기절시킨다.' }),
-    vamp: e => ({ meHp:0.4, enHp:e === 'a' ? 0.4 : 1, free:e !== 'a', d:100, len:5, note: e === 'a' ? '체력이 절반 이하인 적은 기절한다.' : e === 'b' ? '저주받은 적은 회복할 수 없다.' : '입힌 피해만큼 체력을 되찾는다.' }),
+    vamp: e => e === 'b' ? { meHp:0.4, enHp:0.5, enSk:['firstaid'], still:true, casts:[0.8], ev:[[0.2, D => D.enCast(0)], [2.0, D => D.enCast(0)]], d:100, len:4.6, note:'저주받은 적은 받는 회복량이 85% 줄어든다. 저주 전후의 응급처치 회복량을 비교해 보자.' } : ({ meHp:0.4, enHp:e === 'a' ? 0.4 : 1, free:e !== 'a', d:100, len:5, note: e === 'a' ? '체력이 절반 이하인 적은 기절한다.' : '입힌 피해만큼 체력을 되찾는다.' }),
     poison: e => ({ len:e === 'a' ? 8 : 5.6, note: e === 'a' ? '중독이 7초 동안 이어진다.' : e === 'b' ? '중독 피해마다 최대 체력 비례 피해가 더해진다.' : '독이 서서히 퍼지며 지속 피해를 준다.' }),
-    rush: e => ({ d:260, auto:e === 'a', len:e === 'a' ? 5.5 : 4, note: e === 'a' ? '명중하면 쿨타임이 크게 줄어 연달아 벤다.' : e === 'b' ? '돌진 대신 적 앞으로 순간이동해 벤다.' : '적에게 돌진해 베어 낸다.' }),
+    rush: e => ({ d:260, auto:e === 'a', realcd:e === 'a' ? 1 : 0, cdBar:e === 'a' ? 1 : 0, len:e === 'a' ? 7 : 4, note: e === 'a' ? '명중하면 쿨타임이 크게 줄어 연달아 벤다.' : e === 'b' ? '돌진 대신 적 앞으로 순간이동해 벤다.' : '적에게 돌진해 베어 낸다.' }),
     barrier: e => ({ ev:e === 'a' ? hit(1.1, 1.6, 2.1, 2.6) : e === 'b' ? hit(1.1, 1.6, 2.1, 2.6) : rock(1.1, 2.1), len:4.2, note: e === 'a' ? '보호막이 깨져도 3초간 받는 피해가 줄어든다.' : e === 'b' ? '보호막 직후 2초간 무적이 된다.' : '피해를 대신 맞아 주는 보호막을 두른다.' }),
     bolt: e => ({ casts:e === 'a' ? [0.5, 2.4] : [0.5], len:4.4, note: e === 'a' ? '맞은 적은 기절하고 이후 받는 피해가 늘어난다.' : e === 'b' ? '번개가 두 번 더 내리친다.' : '적에게 번개를 내리꽂는다.' }),
     bomb: e => e === 'b' ? { d:200, ev:[[0.9, D => D.go(600)], [2.3, D => D.go(Demo.enX0)]], len:5, note:'묻어 둔 지뢰를 적이 밟으면 터진다.' } : { d:220, len:4, note: e === 'a' ? '더 크게 터진다.' : '지정한 곳이 폭발한다.' },
-    volley: e => ({ still:e === 'b', d:e === 'b' ? 130 : 240, realcd:e === 'b', len:e === 'b' ? 4.6 : 4.2, note: e === 'a' ? '화살에 맞은 적은 움직이지 못한다.' : e === 'b' ? '화살이 4발 이상 맞으면 쿨타임이 초기화된다.' : '화살을 부채꼴로 쏟아붓는다.' }),
-    swamp: e => ({ len:6.4, ev:e === 'b' ? [[1.6, D => D.go(620)]] : [], note: e === 'a' ? '늪 안의 적은 체력을 회복할 수 없다.' : e === 'b' ? '늪 안의 적은 빠져나가지 못한다.' : '늪에 들어온 적을 느리게 하고 피해를 준다.' }),
+    volley: e => ({ still:e === 'b', d:e === 'b' ? 130 : 240, realcd:e === 'b', cdBar:e === 'b' ? 1 : 0, len:e === 'b' ? 4.6 : 4.2, note: e === 'a' ? '화살에 맞은 적은 움직이지 못한다.' : e === 'b' ? '화살이 4발 이상 맞으면 쿨타임이 초기화된다.' : '화살을 부채꼴로 쏟아붓는다.' }),
+    swamp: e => ({ len:6.4, still:e === 'a', enSk:e === 'a' ? ['firstaid'] : [], enHp:e === 'a' ? 0.5 : null, ev:e === 'b' ? [[1.6, D => D.go(620)]] : e === 'a' ? [[0.3, D => D.enCast(0)], [2.6, D => D.enCast(0)]] : [], note: e === 'a' ? '늪 안의 적은 체력을 회복할 수 없다. 늪에 들어가기 전과 후의 회복을 비교해 보자.' : e === 'b' ? '늪 안의 적은 빠져나가지 못한다.' : '늪에 들어온 적을 느리게 하고 피해를 준다.' }),
     rage: e => e === 'b' ? { ev:hit(1.0, 1.6, 2.2, 2.8), len:5.2, note:'맞은 피해를 공격자에게 되돌려 준다.' } : e === 'a' ? { len:4.6, note:'포효로 주변 적을 느리게 하고 약하게 만든다.' } : { free:true, d:100, len:5.5, note:'공격력과 이동속도가 올라 더 세게 때린다.' },
     inferno: e => e === 'a' ? { d:70, ev:hit(1.8, 2.4, 3.0, 3.6), len:5.4, note:'불바다 안에서는 내가 받는 피해가 줄어든다.' } : { len:e === 'b' ? 6.6 : 5.6, note: e === 'b' ? '오래 머무른 적은 기절한다.' : '넓은 땅을 불바다로 만들어 지속 피해를 준다.' },
-    hole: e => ({ len:4.4, note: e === 'a' ? '적을 침묵시키고 최대 체력 비례 피해를 준다.' : e === 'b' ? '적의 스킬 쿨타임이 늘어난다.' : '적을 끌어당겨 기절시킨다.' }),
+    hole: e => e === 'b' ? { enSk:['stone'], cdBar:'en', setup:(me, en) => { en.skills[0].cd = 3; }, len:5, note:'맞은 적의 남은 스킬 쿨타임이 4초 늘어난다. 시전 시 이동 속도도 오른다.' } : ({ len:4.4, note: e === 'a' ? '적을 침묵시키고 최대 체력 비례 피해를 준다.' : '적을 끌어당겨 기절시킨다.' }),
     snipe: e => e === 'a' ? { die:1, enHp:0.25, enMax:20000, casts:[0.5, 3.3], ev:[[3.0, D => { B.en.hp = Math.round(B.en.maxHp*0.12); Demo.hold = false; }]], len:6.6, note:'체력이 낮은 적은 추가 피해를 받고, 15% 이하면 처형된다.' } : e === 'b' ? { free:true, d:380, len:5.2, realcd:1, note:'떨어진 탄피를 주우면 쿨타임이 초기화된다.' } : { d:380, len:4.2, note:'먼 거리에서 정밀 탄환을 발사한다.' },
     storm: e => ({ len:6.2, ev:e === 'a' ? [[1.8, D => D.go(580)]] : [], note: e === 'a' ? '도망치는 적을 구름이 따라간다.' : e === 'b' ? '폭풍에 맞은 적이 잠깐씩 기절한다.' : '먹구름이 번개를 연달아 떨어뜨린다.' }),
     bloodlust: e => e === 'b' ? { setup:me => sick(me), ev:hit(1.1, 1.5), len:4.8, note:'상태이상을 씻고 빨라지며 잠시 무적이 된다.' } : e === 'a' ? { len:4.4, note:'주변 적이 한동안 더 많은 피해를 입는다.' } : { meHp:0.4, free:true, d:100, len:5.5, note:'공격력이 오르고 입힌 피해로 체력을 되찾는다.' },
@@ -4854,13 +4972,13 @@ const DEMO_SC = (() => {
     wave: e => ({ len:4.6, note: e === 'a' ? '조금 뒤 작은 파도가 한 번 더 밀려온다.' : e === 'b' ? '파도를 타고 미끄러진다.' : '거대한 파도로 적을 띄워 기절시킨다.' }),
     timestop: e => e === 'b' ? { realcd:1, extra:['fire'], casts:[], ev:[[0.4, D => D.meCast(1)], [2.0, D => D.meCast(0)], [2.3, D => D.castReady(1)]], len:5, note:'시전하면 다른 스킬 쿨타임이 초기화되어 곧바로 다시 쓴다.' } : { len:e === 'a' ? 5.4 : 4.8, note: e === 'a' ? '더 오래 멈추고 침묵·약화까지 건다.' : '넓은 범위의 시간을 멈춰 적을 기절시킨다.' },
     sanctuary: e => e === 'a' ? { meHp:0.6, ev:[[1.2, D => D.go(Demo.meX + 50)]], len:5.2, note:'성역에 들어온 적은 튕겨 나가고 기절한다.' } : e === 'b' ? { meHp:0.5, setup:me => applyPoison(me, 12, 70), ev:[[2.4, D => { applyPoison(B.me, 8, 70); setSlow(B.me, 4, 0.5); }]], len:5.2, note:'성역 안에서는 상태이상에 걸리지 않고 씻겨 나간다.' } : { meHp:0.4, len:5.2, note:'성역 안에 있는 동안 체력을 계속 회복한다.' },
-    nova: e => ({ len:5.2, note: e === 'a' ? '폭발 뒤 성운이 남아 쿨타임이 빨리 돈다.' : e === 'b' ? '더 크고 강하게 터지고 오래 기절시킨다.' : '넓은 범위를 폭발시켜 기절시킨다.' }),
+    nova: e => ({ len:e === 'a' ? 8 : 5.2, still:e === 'a', realcd:e === 'a' ? 1 : 0, cdBar:e === 'a' ? 1 : 0, note: e === 'a' ? '폭발 뒤 성운이 남는다. 성운 안에 적이 있으면 쿨타임이 1.5배 빠르게 돈다.' : e === 'b' ? '더 크고 강하게 터지고 오래 기절시킨다.' : '넓은 범위를 폭발시켜 기절시킨다.' }),
     moonblade: e => e === 'a' ? { enHp:0.3, len:4, note:'체력이 낮은 적에게 추가 피해를 입힌다.' } : e === 'b' ? { ev:rock(2.0, 2.5), len:4.6, note:'은신하면 적의 공격이 나를 맞히지 못한다.' } : { len:4, note:'적의 등 뒤로 순간이동해 벤다.' },
     prison: e => ({ len:e === 'b' ? 6.6 : 5.6, note: e === 'a' ? '영역 안의 적을 침묵시킨다.' : e === 'b' ? '오래 머문 적은 튕겨 나가 기절한다.' : '차원 감옥으로 적을 끌어당기고 느리게 한다.' }),
     eclipse: e => e === 'b' ? { free:true, d:100, len:5.6, note:'공격이 닿으면 적이 눈이 멀고 느려진다.' } : { meHp:0.4, free:true, d:100, len:5.6, note: e === 'a' ? '공격력이 더 오르고 상태이상에 강해진다.' : '공격력이 크게 오르고 체력을 회복한다.' },
     boomerang: e => ({ auto:e === 'b', realcd:e === 'b', len:e === 'b' ? 5.6 : 4.2, note: e === 'a' ? '돌아올 때 더 아프고 출혈을 입힌다.' : e === 'b' ? '받아 내면 쿨타임이 줄어 연달아 던진다.' : '나갈 때와 돌아올 때 두 번 맞힌다.' }),
-    hook: e => ({ d:e === 'b' ? 300 : 280, len:4.4, note: e === 'a' ? '끌려온 적은 한동안 움직이지 못한다.' : e === 'b' ? '적을 끌어오는 대신 내가 날아간다.' : '맞힌 적을 눈앞으로 끌어와 기절시킨다.' }),
-    leap: e => ({ auto:e === 'b', len:e === 'b' ? 6 : 4.2, note: e === 'a' ? '착지한 적은 공중에 떠 오래 기절한다.' : e === 'b' ? '쿨타임이 짧아 쉬지 않고 뛰어든다.' : '적에게 도약해 착지 피해와 기절을 준다.' }),
+    hook: e => ({ d:e === 'b' ? 300 : 280, len:e === 'b' ? 4.4 : 5, ev:e === 'a' ? [[1.0, D => D.dodge()], [1.1, D => D.go(600)], [1.9, D => D.stay()]] : e === 'b' ? [] : [[1.9, D => D.stay()]], note: e === 'a' ? '갈고리가 도망치는 적도 끝까지 쫓아가 반드시 맞힌다. 끌려온 적은 한동안 움직이지 못한다.' : e === 'b' ? '적을 끌어오는 대신 내가 날아간다.' : '맞힌 적을 눈앞으로 끌어와 기절시킨다.' }),
+    leap: e => ({ auto:e === 'b', realcd:e === 'b' ? 1 : 0, cdBar:e === 'b' ? 1 : 0, len:e === 'b' ? 8 : 4.2, note: e === 'a' ? '착지한 적은 공중에 떠 오래 기절한다.' : e === 'b' ? '쿨타임이 짧아 쉬지 않고 뛰어든다.' : '적에게 도약해 착지 피해와 기절을 준다.' }),
     breath: e => ({ d:150, meHp:e === 'a' ? 0.3 : null, len:4, note: e === 'a' ? '내 체력이 낮을수록 화염이 강해진다.' : e === 'b' ? '냉기가 쌓이면 적이 얼어붙는다.' : '화염을 뿜어 부채꼴 범위에 화상을 입힌다.' }),
     mirror: e => e === 'b' ? { enSk:['wave', 'fire'], ev:[[1.2, D => D.enCast(0)], [2.6, D => D.enCast(1)]], len:6, note:'되돌린 투사체가 세 갈래로 갈라진다.' } : e === 'a' ? { enSk:['stone'], ev:[[1.2, D => D.enCast(0)], [2.4, D => D.enCast(0)]], len:6, note:'되돌린 투사체가 명중하면 적이 불탄다.' } : { enSk:['ice'], ev:[[1.2, D => D.enCast(0)], [2.4, D => D.enCast(0)]], len:6, note:'적이 쏜 투사체를 되돌리고, 그 상태이상도 그대로 건다.' },
     thread: e => { const re = [2.6, 4.0].map(t => [t, D => { sick(B.me); return true; }]); return Object.assign({ setup:me => sick(me), ev:re, len:6.8, note: e === 'a' ? '내 상태이상이 실을 타고 적에게 옮겨 가고, 실이 걸린 적은 걸린 거리 밖으로 달아날 수 없다.' : e === 'b' ? '내 상태이상이 적에게 옮겨 가고, 이어져 있는 동안 적의 방어력이 깎인다.' : '내 상태이상이 적에게 옮겨 가고 적은 더 아프게 맞는다.' }, e === 'a' ? { ev:re.concat([[1.8, D => D.go(630)]]) } : {}); },
@@ -4884,6 +5002,7 @@ const DEMO_FT = {
   unicorn:{ meHp:0.3, keep:1, kill:2, enAtk:20, len:7, note:'치명상을 입으면 한 번 부활하며 상태이상을 씻고 적을 기절시킨다.' }
 };
 function buildFighterDemo() {
+  Demo.cdBar = 0;
   const id = Demo.id, fb = F(id), ft = DEMO_FT[id] || { len:6, note:'' }; Demo.ft = ft; Demo.sc = {}; Demo.ev = [];
   if (!Demo.bg) Demo.bg = bgFor(1);
   const nb = { feathers:[], projs:[], parts:[], rings:[], slashes:[], beams:[], decals:[], ghosts:[], texts:[], zones:[], warns:[], meteors:[], timers:[], fxs:[],
@@ -4938,7 +5057,7 @@ function buildDemoBattle() {
   let ln = sc.len || clamp((b.dur || 0) + 2.2, 3.8, 7); ln = (sc.realcd || sc.die) ? Math.max(ln, 5.6) : Math.max(3.2, ln*0.72);
   for (const e of Demo.ev) ln = Math.max(ln, e.t + 1.6);
   Demo.len = ln; Demo.t = 0; Demo.dir = 1; Demo.amp = sc.amp || 90; Demo.still = !!sc.still || sc.realcd === 1 && id === 'snipe' || id === 'snipe' || id === 'bomb' || id === 'hook' || id === 'rush' || id === 'leap' || id === 'moonblade' || id === 'smash';
-  Demo.auto = sc.auto !== false && !sc.extra && !sc.enSk; Demo.realcd = !!sc.realcd; Demo.dead = false;
+  Demo.auto = sc.auto !== false && !sc.extra && !sc.enSk; Demo.realcd = !!sc.realcd; Demo.dead = false; Demo.cdBar = sc.cdBar || 0;
   const cap = document.getElementById('demoNote'); if (cap) cap.textContent = sc.note || '';
   return nb;
 }
@@ -4948,13 +5067,22 @@ Demo.D = {
   meCast:i => { const u = B.me, sk = u.skills[i || 0]; if (u.act || !sk) return false; sk.cd = 0; startCast(u, B.en, sk); return true; },
   castReady:i => { const u = B.me, sk = u.skills[i]; if (u.act || !sk || sk.cd > 0) return false; startCast(u, B.en, sk); return true; },
   enCast:i => { const u = B.en, sk = u.skills[i || 0]; if (u.act || !sk) return false; startCast(u, B.me, sk); return true; },
-  go:x => { Demo.enX = x; return true; }
+  go:x => { Demo.enX = x; return true; },
+  stay:() => { Demo.enX = B.en.x; return true; },
+  dodge:() => { if (B.en.act) return false; startDodge(B.en, -Math.PI/2); return true; }
 };
 function demoStep(h) {
   if (Demo.kind === 'f') return fighterStep(h);
   const me = B.me, en = B.en, sc = Demo.sc;
   Demo.t += h;
   for (let i = 1; i < me.skills.length; i++) { const k = me.skills[i]; if (k._pc > 0.8 && k.cd <= 0) addText(me.x, me.y - me.r*2.3, '쿨타임 초기화', '255,230,150', 22, 0.9); k._pc = k.cd; }
+  if (Demo.cdBar) {
+    const s0 = me.skills[0], e0 = en.skills[0];
+    if (s0 && s0._pd != null && Demo.cdBar !== 'en' && s0._pd - s0.cd > 0.3 && s0.cd > 0.05) addText(me.x, me.y - me.r*2.3, '쿨타임 -' + (s0._pd - s0.cd).toFixed(1) + '초', '150,210,255', 21, 0.9);
+    if (s0) s0._pd = s0.cd;
+    if (e0 && e0._pd != null && Demo.cdBar === 'en' && e0.cd - e0._pd > 0.5) addText(en.x, en.y - en.r*2.3, '쿨타임 +' + (e0.cd - e0._pd).toFixed(1) + '초', '255,170,140', 21, 0.9);
+    if (e0) e0._pd = e0.cd;
+  }
   for (const e of Demo.ev) if (!e.done && Demo.t >= e.t) { if (e.fn(Demo.D) !== false) e.done = true; }
   if (Demo.auto || sc.auto) { const s0 = me.skills[0]; if (!Demo.realcd && s0.cd > 1.1) s0.cd = 1.1; if (Demo.t > 0.8 && !me.act && s0.cd <= 0 && Demo.t < Demo.len - 1.0) startCast(me, en, s0); }
   if (!sc.free) { me.thinkT = 9; me.atkCd = 9; }
@@ -4979,7 +5107,27 @@ function demoStatuses(u) {
   if (u.markT > 0) add('표식', '255,200,120', u.markT); if (u.invuln > 0) add('무적', '255,240,160', u.invuln); if (u.immuneT > 0) add('면역', '255,240,160', u.immuneT);
   if (u.shield > 0) add('보호막', '170,215,255', 0); if (u.thorns > 0) add('가시', '150,230,150', 0); if (u.evade > 0) add('회피', '200,230,255', u.evade); if (u.buffT > 0) add('강화', '255,170,90', u.buffT);
   if (u.hot) add('재생', '120,235,160', 0); if (u.mirror && u.mirror.t > 0) add('반사', '200,230,255', u.mirror.t);
+  if (u.drT > 0 && u.dr > 0) add('받는 피해 -' + Math.round(u.dr*100) + '%', '150,190,255', u.drT); if (u.stealthT > 0) add('은신', '175,150,255', u.stealthT); if (u.mspdT > 0) add('이동 속도 증가', '255,225,140', u.mspdT); else if (u.boostT > 0) add('이동 속도 증가', '255,225,140', u.boostT); if (u.twiT > 0) add('황혼', '255,170,120', u.twiT); if (u.vanish > 0) add('무적(사라짐)', '255,240,160', u.vanish);
   return o;
+}
+function drawDemoCd() {
+  if (!Demo.cdBar || !B) return;
+  const en = Demo.cdBar === 'en', u = en ? B.en : B.me, sk = u.skills[0]; if (!sk) return;
+  const cap = en ? 8 : Math.max(sk.b.cd, sk.cd, 1), fill = clamp(en ? sk.cd/cap : 1 - sk.cd/cap, 0, 1), W = 250, H = 38, x = WW - W - 10, y = 10;
+  ctx.save(); ctx.font = '800 17px Pretendard, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'rgba(10,16,30,0.82)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, W, H, 12) : ctx.rect(x, y, W, H); ctx.fill();
+  ctx.fillStyle = en ? 'rgba(255,150,120,0.55)' : (sk.cd <= 0.05 ? 'rgba(120,235,160,0.6)' : 'rgba(130,190,255,0.55)'); ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x + 5, y + H - 11, (W - 10)*fill, 6, 3) : ctx.rect(x + 5, y + H - 11, (W - 10)*fill, 6); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.fillText((en ? '적 스킬 쿨타임 ' : '쿨타임 ') + (sk.cd > 0.05 ? sk.cd.toFixed(1) + '초' : (en ? '0초' : '준비 완료')), x + 12, y + 14);
+  ctx.restore();
+}
+function drawDemoFade() {
+  if (!(Demo.fa > 0.001)) return;
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(11,18,16,' + Math.min(1, Demo.fa).toFixed(3) + ')'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
+}
+function demoQuiet() {
+  if (Demo.kind === 'f') return true;
+  const b = B, me = b.me, en = b.en;
+  return !(b.zones.length || b.projs.length || b.warns.length || b.meteors.length || b.timers.length || b.links.length || me.act || en.act || me.stun > 0 || en.stun > 0 || b.texts.length > 2 && b.texts.some(t => t.t < 0.3));
 }
 function drawDemoStatus() {
   if (!B || Demo.kind === 'f') return;
@@ -5005,16 +5153,18 @@ function demoFrame0(ts) {
   withDemo(() => {
     let n = 0; while (Demo.acc >= STEP && n < 6) { demoStep(STEP); Demo.acc -= STEP; n++; } if (n >= 6) Demo.acc = 0;
     B.shake *= Math.pow(0.0008, raw); B.punch *= Math.pow(0.003, raw); B.hitstop = 0; B.slowmo = 0;
-    fitCanvas(); if (cv.width > 0) { draw(); drawDemoStatus(); }
+    fitCanvas(); if (cv.width > 0) { draw(); drawDemoStatus(); drawDemoCd(); drawDemoFade(); }
   });
-  if (Demo.t >= Demo.len) withDemo(() => { B = buildDemoBattle(); });
+  if (Demo.ph === 'out') { Demo.fa = Math.min(1, Demo.fa + raw/0.45); if (Demo.fa >= 1) { withDemo(() => { B = buildDemoBattle(); }); Demo.ph = 'in'; } }
+  else if (Demo.ph === 'in') { Demo.fa = Math.max(0, Demo.fa - raw/0.4); if (Demo.fa <= 0) Demo.ph = 'play'; }
+  else if (Demo.t >= Demo.len) { let q = false; withDemo(() => { q = demoQuiet(); }); if (q || Demo.t >= Demo.len + 3.5) Demo.ph = 'out'; }
 }
-function demoRestart() { if (!Demo.on) return; withDemo(() => { B = buildDemoBattle(); }); }
+function demoRestart() { if (!Demo.on) return; withDemo(() => { B = buildDemoBattle(); }); Demo.ph = 'in'; Demo.fa = 0.7; }
 function demoMount() {
   demoStop();
   if (!detail) return;
   const c = document.getElementById('demoCv'); if (!c) return;
-  Demo.kind = detail.kind; Demo.canvas = c; Demo.ctx = c.getContext('2d'); Demo.id = detail.id; Demo.on = true; Demo.acc = 0; Demo.B = {};
+  Demo.kind = detail.kind; Demo.canvas = c; Demo.ctx = c.getContext('2d'); Demo.id = detail.id; Demo.on = true; Demo.acc = 0; Demo.B = {}; Demo.ph = 'in'; Demo.fa = 1;
   withDemo(() => { B = buildDemoBattle(); });
   Demo.last = performance.now(); Demo.raf = requestAnimationFrame(demoFrame);
 }
